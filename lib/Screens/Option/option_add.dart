@@ -1,8 +1,8 @@
-import 'package:thai7merchant/Screens/Option/option_detail.dart';
-import 'package:thai7merchant/Screens/Option/option_list.dart';
+import 'package:thai7merchant/screens/Option/option_detail.dart';
+import 'package:thai7merchant/screens/Option/option_list.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
-import 'package:thai7merchant/struct/choices.dart';
-import 'package:thai7merchant/struct/option.dart';
+import 'package:thai7merchant/model/choices.dart';
+import 'package:thai7merchant/model/option.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:group_radio_button/group_radio_button.dart';

@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/repositories/category_repository.dart';
 import 'package:thai7merchant/repositories/client.dart';
-import 'package:thai7merchant/struct/category.dart';
+import 'package:thai7merchant/model/category_model.dart';
 
 part 'category_event.dart';
 part 'category_state.dart';
@@ -27,8 +27,8 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     try {
       final _result = await _categoryRepository.getCategoryList();
 
-      List<Category> _category = (_result.data as List)
-          .map((category) => Category.fromJson(category))
+      List<CategoryModel> _category = (_result.data as List)
+          .map((category) => CategoryModel.fromJson(category))
           .toList();
       emit(CategoryLoadDropDownSuccess(_category));
     } catch (e) {
@@ -39,7 +39,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   void _onCategoryLoad(
       ListCategoryLoad event, Emitter<CategoryState> emit) async {
     CategoryLoadSuccess categoryLoadSuccess;
-    List<Category> _previousCategory = [];
+    List<CategoryModel> _previousCategory = [];
     if (state is CategoryLoadSuccess) {
       categoryLoadSuccess = (state as CategoryLoadSuccess).copyWith();
       _previousCategory = categoryLoadSuccess.category;
@@ -52,14 +52,14 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
 
       if (_result.success) {
         if (event.nextPage) {
-          List<Category> _category = (_result.data as List)
-              .map((category) => Category.fromJson(category))
+          List<CategoryModel> _category = (_result.data as List)
+              .map((category) => CategoryModel.fromJson(category))
               .toList();
           // print(_category);
           emit(CategoryLoadSuccess(category: _category, page: _result.page));
         } else {
-          List<Category> _category = (_result.data as List)
-              .map((category) => Category.fromJson(category))
+          List<CategoryModel> _category = (_result.data as List)
+              .map((category) => CategoryModel.fromJson(category))
               .toList();
           // print(_category);
           _previousCategory.addAll(_category);
@@ -81,7 +81,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       final _result = await _categoryRepository.getCategoryId(event.id);
 
       if (_result.success) {
-        Category _category = Category.fromJson(_result.data);
+        CategoryModel _category = CategoryModel.fromJson(_result.data);
         // print(_category);
         emit(CategoryLoadByIdLoadSuccess(category: _category));
       } else {

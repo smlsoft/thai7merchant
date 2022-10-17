@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:thai7merchant/app_const.dart';
-import 'package:thai7merchant/struct/pagination.dart';
+import 'package:thai7merchant/model/pagination.dart';
 
 class Client {
   Dio init() {

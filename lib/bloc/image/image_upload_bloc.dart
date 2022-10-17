@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:thai7merchant/repositories/image_upload_repository.dart';
-import 'package:thai7merchant/struct/image_upload.dart';
+import 'package:thai7merchant/model/image_upload.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 

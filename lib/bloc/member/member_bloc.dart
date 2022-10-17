@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/repositories/member_repository.dart';
 import 'package:thai7merchant/repositories/client.dart';
-import 'package:thai7merchant/struct/member.dart';
+import 'package:thai7merchant/model/member.dart';
 
 part 'member_event.dart';
 part 'member_state.dart';

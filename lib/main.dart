@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:thai7merchant/bloc/image/image_upload_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
+import 'package:thai7merchant/menu_screen.dart';
+import 'package:thai7merchant/screens/Product/product_list.dart';
 import 'package:thai7merchant/usersystem/login_with.dart';
 import 'package:thai7merchant/repositories/image_upload_repository.dart';
 import 'package:thai7merchant/repositories/option_repository.dart';
@@ -22,15 +24,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'auth.dart';
 import 'profile.dart';
+import 'package:flash/flash.dart';
+import 'package:device_preview/device_preview.dart';
+import 'global.dart' as global;
+
 bool shouldUseFirebaseEmulator = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+      global.loadConfig();
+
   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   // await SystemChrome.setPreferredOrientations(
   //     [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
 
-  if (!kIsWeb) {
+  /*if (!kIsWeb) {
     await Firebase.initializeApp();
   } else {
     await Firebase.initializeApp(
@@ -49,9 +57,10 @@ void main() async {
 
   if (shouldUseFirebaseEmulator) {
     await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-  }
-    BlocOverrides.runZoned(
-    () => runApp(const MyApp()),
+  }*/
+  BlocOverrides.runZoned(
+    () => runApp(
+        DevicePreview(enabled: false, builder: (context) => const MyApp())),
     blocObserver: AppObserver(),
   );
 }
@@ -99,7 +108,7 @@ class MyApp extends StatelessWidget {
         home: const LoaderOverlay(
           overlayColor: Colors.black,
           overlayOpacity: 0.8,
-          child: LoginWith(),
+          child: MenuScreen(),
         ),
       ),
     );

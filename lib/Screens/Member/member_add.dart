@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:thai7merchant/Screens/Member/member_list.dart';
-import 'package:thai7merchant/Screens/Product/product_image.dart';
+import 'package:thai7merchant/screens/Member/member_list.dart';
+import 'package:thai7merchant/screens/Product/product_image.dart';
 import 'package:thai7merchant/bloc/member/member_bloc.dart';
 import 'package:thai7merchant/components/appbar.dart';
 import 'package:thai7merchant/components/background_main.dart';
 import 'package:group_radio_button/group_radio_button.dart';
 import 'package:thai7merchant/components/textfield_input.dart';
-import 'package:thai7merchant/struct/member.dart';
+import 'package:thai7merchant/model/member.dart';
 import 'package:thai7merchant/util.dart';
 
 class MemberAdd extends StatefulWidget {

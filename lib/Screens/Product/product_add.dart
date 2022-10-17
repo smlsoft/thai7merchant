@@ -5,22 +5,22 @@ import 'dart:math';
 
 import 'package:thai7merchant/bloc/category/category_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
-import 'package:thai7merchant/struct/category.dart';
-import 'package:thai7merchant/struct/image_upload.dart';
-import 'package:thai7merchant/struct/option.dart';
+import 'package:thai7merchant/model/category_model.dart';
+import 'package:thai7merchant/model/image_upload.dart';
+import 'package:thai7merchant/model/option.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:thai7merchant/Screens/Product/product_image.dart';
-import 'package:thai7merchant/Screens/Product/product_list.dart';
+import 'package:thai7merchant/screens/Product/product_image.dart';
+import 'package:thai7merchant/screens/Product/product_list.dart';
 import 'package:thai7merchant/bloc/inventory/inventory_bloc.dart';
 import 'package:thai7merchant/components/appbar.dart';
 import 'package:thai7merchant/components/background_main.dart';
 import 'package:thai7merchant/components/textfield_input.dart';
-import 'package:thai7merchant/struct/inventory.dart';
+import 'package:thai7merchant/model/inventory.dart';
 import 'package:thai7merchant/util.dart';
 import 'package:material_tag_editor/tag_editor.dart';
 
@@ -48,9 +48,10 @@ class _ProductAddState extends State<ProductAdd> {
 
   String? categoryguid;
 
-  Category selectCate = Category(
-    guidfixed: 'null',
-    name1: 'กรุณาเลือหมวดหมู่',
+  CategoryModel selectCate = CategoryModel(
+    guidfixed: "",
+    parentGuid: "",
+    name1: 'กรุณาเลือกหมวดหมู่',
   );
 
   final _barcode = TextEditingController();
@@ -196,14 +197,15 @@ class _ProductAddState extends State<ProductAdd> {
         BlocListener<CategoryBloc, CategoryState>(
           listener: (context, state) {
             if (state is CategoryLoadDropDownSuccess) {
-              List<Category> _cat = state.category;
+              List<CategoryModel> _cat = state.category;
 
-              Category result = _cat.firstWhere(
+              CategoryModel result = _cat.firstWhere(
                   (element) => element.guidfixed == categoryguid,
                   orElse: () => selectCate);
               setState(() {
-                selectCate = Category(
+                selectCate = CategoryModel(
                   guidfixed: result.guidfixed,
+                  parentGuid: "",
                   name1: result.name1,
                 );
               });
@@ -214,7 +216,7 @@ class _ProductAddState extends State<ProductAdd> {
           listener: (context, state) {
             if (state is OptionLoadSelectSuccess) {
               if (state.option.isNotEmpty) {
-                _option = state.option;
+                //_option = state.option;
               }
             }
           },

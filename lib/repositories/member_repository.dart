@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:thai7merchant/struct/member.dart';
+import 'package:thai7merchant/model/member.dart';
 
 import 'client.dart';
 import 'package:dio/dio.dart';

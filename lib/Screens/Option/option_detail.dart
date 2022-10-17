@@ -1,7 +1,7 @@
-import 'package:thai7merchant/Screens/Option/option_add.dart';
+import 'package:thai7merchant/screens/Option/option_add.dart';
 import 'package:thai7merchant/components/appbar.dart';
 import 'package:thai7merchant/components/textfield_input.dart';
-import 'package:thai7merchant/struct/choices.dart';
+import 'package:thai7merchant/model/choices.dart';
 
 import 'package:flutter/material.dart';
 

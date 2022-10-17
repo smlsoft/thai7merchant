@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thai7merchant/Screens/Product/product_add.dart';
+import 'package:thai7merchant/screens/product/product_add.dart';
 import 'package:thai7merchant/bloc/inventory/inventory_bloc.dart';
 import 'package:thai7merchant/components/background_main.dart';
 import 'package:thai7merchant/components/textfield_search.dart';
-import 'package:thai7merchant/struct/inventory.dart';
+import 'package:thai7merchant/model/inventory.dart';
 import 'package:thai7merchant/util.dart';
 
 class Body extends StatefulWidget {

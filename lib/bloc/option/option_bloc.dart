@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/repositories/option_repository.dart';
-import 'package:thai7merchant/struct/option.dart';
+import 'package:thai7merchant/model/option.dart';
 import 'package:equatable/equatable.dart';
 
 part 'option_event.dart';

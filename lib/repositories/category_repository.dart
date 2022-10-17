@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:thai7merchant/struct/category.dart';
+import 'package:thai7merchant/model/category_model.dart';
 
 import 'client.dart';
 import 'package:dio/dio.dart';
@@ -67,7 +67,7 @@ class CategoryRepository {
     }
   }
 
-  Future<ApiResponse> saveCategory(Category category) async {
+  Future<ApiResponse> saveCategory(CategoryModel category) async {
     Dio client = Client().init();
     final data = category.toJson();
     print(data);
@@ -96,7 +96,7 @@ class CategoryRepository {
     }
   }
 
-  Future<ApiResponse> updateCategory(Category category) async {
+  Future<ApiResponse> updateCategory(CategoryModel category) async {
     Dio client = Client().init();
     final data = category.toJson();
     print(data);

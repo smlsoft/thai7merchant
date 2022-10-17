@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/repositories/user_repository.dart';
-import 'package:thai7merchant/struct/shop.dart';
+import 'package:thai7merchant/model/shop.dart';
 import 'package:get_storage/get_storage.dart';
 
 part 'shop_select_event.dart';

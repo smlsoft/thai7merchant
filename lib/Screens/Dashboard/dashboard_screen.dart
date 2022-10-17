@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/Screens/Dashboard/components/body.dart';
+import 'package:thai7merchant/screens/dashboard/components/body.dart';
 
 class DashboardScreen extends StatelessWidget {
   @override

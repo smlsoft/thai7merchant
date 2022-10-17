@@ -1,7 +1,7 @@
-import 'package:thai7merchant/Screens/Option/option_add.dart';
+import 'package:thai7merchant/screens/Option/option_add.dart';
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/Screens/Option/components/body.dart';
-import 'package:thai7merchant/Screens/Dashboard/dashboard_screen.dart';
+import 'package:thai7merchant/screens/Option/components/body.dart';
+import 'package:thai7merchant/screens/Dashboard/dashboard_screen.dart';
 import 'package:thai7merchant/components/appbar.dart';
 
 class OptionScreen extends StatelessWidget {

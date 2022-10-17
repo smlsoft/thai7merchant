@@ -12,7 +12,7 @@ class CategoryLoadDropDownInitial extends CategoryState {}
 class CategoryLoadDropDownInProgress extends CategoryState {}
 
 class CategoryLoadDropDownSuccess extends CategoryState {
-  final List<Category> category;
+  final List<CategoryModel> category;
 
   const CategoryLoadDropDownSuccess([this.category = const []]);
 
@@ -37,13 +37,13 @@ class CategoryInitial extends CategoryState {}
 class CategoryInProgress extends CategoryState {}
 
 class CategoryLoadSuccess extends CategoryState {
-  List<Category> category;
+  List<CategoryModel> category;
   final Page? page;
 
   CategoryLoadSuccess({required this.category, required this.page});
 
   CategoryLoadSuccess copyWith({
-    List<Category>? category,
+    List<CategoryModel>? category,
     final Page? page,
   }) =>
       CategoryLoadSuccess(
@@ -70,7 +70,7 @@ class CategoryLoadFailed extends CategoryState {
 class CategoryLoadByIdInProgress extends CategoryState {}
 
 class CategoryLoadByIdLoadSuccess extends CategoryState {
-  Category category;
+  CategoryModel category;
 
   CategoryLoadByIdLoadSuccess({
     required this.category,

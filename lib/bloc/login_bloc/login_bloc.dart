@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:thai7merchant/repositories/user_repository.dart';
-import 'package:thai7merchant/struct/userlogin.dart';
+import 'package:thai7merchant/model/userlogin.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';

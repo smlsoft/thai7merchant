@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:async';
-import 'package:thai7merchant/Screens/Product/product_add.dart';
+import 'package:thai7merchant/screens/Product/product_add.dart';
 import 'package:thai7merchant/bloc/image/image_upload_bloc.dart';
-import 'package:thai7merchant/struct/image_upload.dart';
+import 'package:thai7merchant/model/image_upload.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_crop/image_crop.dart';

@@ -1,7 +1,7 @@
-import 'package:thai7merchant/Screens/Dashboard/dashboard_screen.dart';
+import 'package:thai7merchant/screens/Dashboard/dashboard_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/Screens/Product/components/body.dart';
-import 'package:thai7merchant/Screens/Product/product_add.dart';
+import 'package:thai7merchant/screens/Product/components/body.dart';
+import 'package:thai7merchant/screens/Product/product_add.dart';
 import 'package:thai7merchant/components/appbar.dart';
 
 class ProductScreen extends StatefulWidget {

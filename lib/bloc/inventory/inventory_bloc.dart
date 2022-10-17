@@ -2,8 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/repositories/inventory_repository.dart';
-import 'package:thai7merchant/struct/inventory.dart';
-import 'package:thai7merchant/struct/pagination.dart';
+import 'package:thai7merchant/model/inventory.dart';
+import 'package:thai7merchant/model/pagination.dart';
 
 part 'inventory_event.dart';
 part 'inventory_state.dart';

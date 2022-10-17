@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:thai7merchant/struct/image_upload.dart';
+import 'package:thai7merchant/model/image_upload.dart';
 
 import 'client.dart';
 import 'package:dio/dio.dart';

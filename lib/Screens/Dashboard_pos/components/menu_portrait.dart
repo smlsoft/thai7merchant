@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
-import 'package:thai7merchant/Screens/Category/category_list.dart';
-import 'package:thai7merchant/Screens/Member/member_list.dart';
-import 'package:thai7merchant/Screens/Product/product_list.dart';
-import 'package:thai7merchant/Screens/Purchase/purchase_list.dart';
+import 'package:thai7merchant/screens/Member/member_list.dart';
+import 'package:thai7merchant/screens/Product/product_list.dart';
+import 'package:thai7merchant/screens/Purchase/purchase_list.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class MenuListPortraitPos extends StatefulWidget {
@@ -105,15 +104,6 @@ class _MenuListPortraitPosState extends State<MenuListPortraitPos> {
         MaterialPageRoute(
           builder: (context) {
             return MemberScreen();
-          },
-        ),
-      );
-    } else if (page == 'category') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) {
-            return CategoryScreen();
           },
         ),
       );

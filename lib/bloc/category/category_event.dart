@@ -39,7 +39,7 @@ class ListCategoryLoadById extends CategoryEvent {
 }
 
 class CategorySaved extends CategoryEvent {
-  final Category category;
+  final CategoryModel category;
 
   const CategorySaved({
     required this.category,
@@ -50,7 +50,7 @@ class CategorySaved extends CategoryEvent {
 }
 
 class CategoryUpdate extends CategoryEvent {
-  final Category category;
+  final CategoryModel category;
 
   const CategoryUpdate({
     required this.category,

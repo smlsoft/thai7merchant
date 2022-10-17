@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:thai7merchant/Screens/receive/receivelist.dart';
+import 'package:thai7merchant/screens/receive/receivelist.dart';
 import 'package:thai7merchant/bloc/list_shop/list_shop_bloc.dart';
 import 'package:thai7merchant/bloc/login_bloc/login_bloc.dart';
 import 'package:thai7merchant/bloc/shop_select/shop_select_bloc.dart';
-import 'package:thai7merchant/struct/shop.dart';
+import 'package:thai7merchant/model/shop.dart';
 import 'package:thai7merchant/util.dart';
 
-import '../Screens/Dashboard/dashboard_screen.dart';
+import '../screens/Dashboard/dashboard_screen.dart';
 
 class LoginShop extends StatefulWidget {
   const LoginShop({Key? key}) : super(key: key);

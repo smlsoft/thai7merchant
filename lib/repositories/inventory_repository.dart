@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:get_storage/get_storage.dart';
-import 'package:thai7merchant/struct/inventory.dart';
+import 'package:thai7merchant/model/inventory.dart';
 
 import 'client.dart';
 import 'package:dio/dio.dart';

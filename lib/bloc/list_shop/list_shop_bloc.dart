@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/repositories/user_repository.dart';
-import 'package:thai7merchant/struct/shop.dart';
+import 'package:thai7merchant/model/shop.dart';
 
 part 'list_shop_event.dart';
 part 'list_shop_state.dart';
@@ -14,6 +14,7 @@ class ListShopBloc extends Bloc<ListShopEvent, ListShopState> {
         super(ListShopInitial()) {
     on<ListShopLoad>(_onListShopLoad);
   }
+
   void _onListShopLoad(ListShopLoad event, Emitter<ListShopState> emit) async {
     emit(ListShopInProgress());
     try {
