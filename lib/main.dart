@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:thai7merchant/bloc/image/image_upload_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
 import 'package:thai7merchant/menu_screen.dart';
+import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/screens/Product/product_list.dart';
+import 'package:thai7merchant/usersystem/login_shop.dart';
 import 'package:thai7merchant/usersystem/login_with.dart';
 import 'package:thai7merchant/repositories/image_upload_repository.dart';
 import 'package:thai7merchant/repositories/option_repository.dart';
@@ -32,7 +34,33 @@ bool shouldUseFirebaseEmulator = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-      global.loadConfig();
+
+  if (global.apiConnected == false) {
+    if (!global.isLoginProcess) {
+      global.isLoginProcess = true;
+      UserRepository _userRepository = UserRepository();
+      await _userRepository
+          .authenUser(global.apiUserName, global.apiUserPassword)
+          .then((_result) async {
+        if (_result.success) {
+          global.apiConnected = true;
+          global.appConfig.write("token", _result.data["token"]);
+          print("Login Succerss");
+          ApiResponse _selectShop =
+              await _userRepository.selectShop(global.apiShopCode);
+          if (_selectShop.success) {
+            print("Select Shop Sucess");
+          }
+        }
+      }).catchError((e) {
+        print(e);
+      }).whenComplete(() async {
+        global.isLoginProcess = false;
+      });
+    }
+  }
+
+  global.loadConfig();
 
   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   // await SystemChrome.setPreferredOrientations(

@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:get_storage/get_storage.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/config_model.dart';
 import 'package:thai7merchant/model/language_mode.dart';
@@ -6,6 +7,14 @@ import 'package:thai7merchant/model/public_color_model.dart';
 import 'package:thai7merchant/model/public_name_model.dart';
 
 enum LoginType { none, google, facebook, apple }
+
+bool apiConnected = false;
+String apiUserName = "tester";
+String apiUserPassword = "tester";
+String apiShopCode =
+    "27dcEdktOoaSBYFmnN6G6ett4Jb"; // "27dcEdktOoaSBYFmnN6G6ett4Jb";
+bool isLoginProcess = false;
+GetStorage appConfig = GetStorage('AppConfig');
 
 String systemLanguage = "th";
 String loginName = "";
