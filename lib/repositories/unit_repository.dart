@@ -38,4 +38,60 @@ class UnitRepository {
       throw Exception(errorMessage);
     }
   }
+
+  Future<ApiResponse> deleteUnit(String id) async {
+    Dio client = Client().init();
+    try {
+      final response = await client.delete('/unit/${id}');
+      try {
+        // final rawData = json.decode(response.toString());
+
+        print(response.data);
+
+        // if (rawData['error'] != null) {
+        //   String errorMessage = '${rawData['code']}: ${rawData['message']}';
+        //   print(errorMessage);
+        //   throw new Exception('${rawData['code']}: ${rawData['message']}');
+        // }
+
+        return ApiResponse.fromMap(response.data);
+      } catch (ex) {
+        print(ex);
+        throw Exception(ex);
+      }
+    } on DioError catch (ex) {
+      String errorMessage = ex.response.toString();
+      print(ex);
+      throw Exception(errorMessage);
+    }
+  }
+
+  Future<ApiResponse> postUnitList(UnitModel unitModel) async {
+    Dio client = Client().init();
+    final data = unitModel.toJson();
+    print(data);
+    try {
+      final response = await client.post('/unit', data: data);
+      try {
+        // final rawData = json.decode(response.toString());
+
+        print(response.data);
+
+        // if (rawData['error'] != null) {
+        //   String errorMessage = '${rawData['code']}: ${rawData['message']}';
+        //   print(errorMessage);
+        //   throw new Exception('${rawData['code']}: ${rawData['message']}');
+        // }
+
+        return ApiResponse.fromMap(response.data);
+      } catch (ex) {
+        print(ex);
+        throw Exception(ex);
+      }
+    } on DioError catch (ex) {
+      String errorMessage = ex.response.toString();
+      print(ex);
+      throw Exception(errorMessage);
+    }
+  }
 }

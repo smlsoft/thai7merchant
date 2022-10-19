@@ -1,3 +1,6 @@
+import 'dart:developer';
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +8,7 @@ import 'package:flutter_html/html_parser.dart';
 import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:input_history_text_field/input_history_text_field.dart';
+import 'package:thai7merchant/model/language_mode.dart';
 import 'package:thai7merchant/model/unit.dart';
 
 class UnitScreen extends StatefulWidget {
@@ -19,13 +23,14 @@ class UnitScreenState extends State<UnitScreen>
   late TabController tabController;
   FocusNode codeFocusNode = FocusNode();
   ScrollController editScrollController = ScrollController();
-  TextEditingController codeController = TextEditingController();
-  TextEditingController searchController = TextEditingController();
-  List<TextEditingController> nameController = [];
+  final TextEditingController codeController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
+  final List<TextEditingController> nameController = [];
   List<String> fieldName = [];
   List<FocusNode> nameFocusNode = [];
-
+  String guidfixed = "";
   List<UnitModel> _unit = [];
+  List<LanguageMode> _names = [];
   final ScrollController _scrollController = ScrollController();
   int _perPage = 15;
   String _search = "";
@@ -90,6 +95,10 @@ class UnitScreenState extends State<UnitScreen>
             _unit = state.unit;
           }
         }
+        if (state is UnitDeleteSuccess) {
+          context.read<UnitBloc>().add(ListUnitLoad(
+              page: 0, perPage: _perPage, search: _search, nextPage: true));
+        }
       },
       child: Scaffold(
           appBar: AppBar(
@@ -99,6 +108,7 @@ class UnitScreenState extends State<UnitScreen>
                   padding: const EdgeInsets.only(right: 20.0),
                   child: GestureDetector(
                     onTap: () {
+                      log("22222");
                       setState(() {});
                     },
                     child: const Icon(
@@ -149,7 +159,44 @@ class UnitScreenState extends State<UnitScreen>
                                 itemCount: _unit.length,
                                 itemBuilder: (context, index) {
                                   return ListTile(
-                                    title: Text(_unit[index].unitcode),
+                                    title: Text("${_unit[index].unitcode}"),
+                                    onTap: () {
+                                      setState(() {});
+                                      showDialog<String>(
+                                        context: context,
+                                        builder: (BuildContext context) =>
+                                            AlertDialog(
+                                          title:
+                                              const Text('AlertDialog Title'),
+                                          content: const Text(
+                                              'AlertDialog description'),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(
+                                                  context, 'Cancel'),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                context.read<UnitBloc>().add(
+                                                    ListUnitDelete(
+                                                        id: _unit[index]
+                                                            .guidfixed));
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text('OK'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+
+                                      context.read<UnitBloc>().add(ListUnitLoad(
+                                          page: 0,
+                                          perPage: _perPage,
+                                          search: _search,
+                                          nextPage: true));
+                                      log(_unit[index].guidfixed);
+                                    },
                                   );
                                 },
                               )
@@ -168,6 +215,8 @@ class UnitScreenState extends State<UnitScreen>
   }
 
   void saveData() {
+    // context.read<UnitBloc>().add(ListUnitLoad(
+    //     page: 0, perPage: _perPage, search: _search, nextPage: true));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.blue,
         duration: const Duration(seconds: 1),
@@ -181,6 +230,8 @@ class UnitScreenState extends State<UnitScreen>
             Text("บันทึกสำเร็จ")
           ],
         ))));
+    context.read<UnitBloc>().add(ListUnitLoad(
+        page: 0, perPage: _perPage, search: _search, nextPage: true));
   }
 
   Widget editScreen({showBackButton = true}) {
@@ -252,6 +303,26 @@ class UnitScreenState extends State<UnitScreen>
                       width: double.infinity,
                       child: ElevatedButton.icon(
                           onPressed: () {
+                            for (int i = 0;
+                                i < global.config.languages.length;
+                                i++) {
+                              if (global.config.languages[i].use) {
+                                _names.add(LanguageMode(
+                                  code: global.config.languages[i].code,
+                                  name: nameController[i].text,
+                                ));
+                              }
+                            }
+
+                            UnitModel _unitModel = UnitModel(
+                              guidfixed: guidfixed,
+                              unitcode: codeController.text,
+                              names: _names,
+                            );
+                            context
+                                .read<UnitBloc>()
+                                .add(ListUnitSave(unitModel: _unitModel));
+
                             saveData();
                           },
                           icon: const Icon(Icons.save),

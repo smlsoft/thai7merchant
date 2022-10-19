@@ -66,7 +66,8 @@ dependencies:
   invert_colors: ^0.0.4
   icon_decoration: ^1.0.1
   input_history_text_field: ^0.2.0
-    
+  json_serializable: ^6.5.3
+
 flutter_icons:
   #  image_path: "assets/images/icon-128x128.png"
   image_path_android: "assets/images/icon-710x599-android.png"
@@ -92,7 +93,6 @@ flutter_icons:
 
 dev_dependencies:
   build_runner: ^2.2.1
-  json_serializable: ^6.5.0
   flutter_test:
     sdk: flutter
 
@@ -143,4 +143,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-

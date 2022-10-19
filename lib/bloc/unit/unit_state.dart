@@ -41,3 +41,33 @@ class UnitLoadFailed extends UnitState {
   @override
   List<Object> get props => [message];
 }
+
+class UnitSaveInitial extends UnitState {}
+
+class UnitSaveInProgress extends UnitState {}
+
+class UnitSaveSuccess extends UnitState {}
+
+class UnitSaveFailed extends UnitState {
+  final String message;
+  UnitSaveFailed({
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [message];
+}
+
+class UnitdeleteInProgress extends UnitState {}
+
+class UnitDeleteSuccess extends UnitState {}
+
+class UnitDeleteFailure extends UnitState {
+  // final String message;
+  // const UnitDeleteFailure({
+  //   required this.message,
+  // });
+
+  // @override
+  // List<Object> get props => [message];
+}

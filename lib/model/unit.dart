@@ -6,9 +6,11 @@ part 'unit.g.dart';
 @JsonSerializable(explicitToJson: true)
 class UnitModel {
   String unitcode;
+  String guidfixed;
   List<LanguageMode> names = <LanguageMode>[];
 
   UnitModel({
+    required this.guidfixed,
     required this.unitcode,
     List<LanguageMode>? names,
   }) : names = names ?? <LanguageMode>[];

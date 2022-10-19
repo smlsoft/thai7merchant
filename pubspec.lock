@@ -722,12 +722,12 @@ packages:
     source: hosted
     version: "4.7.0"
   json_serializable:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: json_serializable
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.5.2"
+    version: "6.5.3"
   lints:
     dependency: transitive
     description:
