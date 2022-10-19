@@ -83,91 +83,88 @@ class UnitScreenState extends State<UnitScreen>
   }
 
   Widget listScreen() {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('หน่วยนับสินค้า'),
-          actions: <Widget>[
-            Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {});
+    return BlocListener<UnitBloc, UnitState>(
+      listener: (context, state) {
+        if (state is UnitLoadSuccess) {
+          if (state.unit.isNotEmpty) {
+            _unit = state.unit;
+          }
+        }
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            title: const Text('หน่วยนับสินค้า'),
+            actions: <Widget>[
+              Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {});
+                    },
+                    child: const Icon(
+                      Icons.delete,
+                      size: 26.0,
+                    ),
+                  )),
+              Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      tabController.index = 1;
+                      codeFocusNode.requestFocus();
+                    },
+                    child: const Icon(
+                      Icons.add,
+                      size: 26.0,
+                    ),
+                  )),
+            ],
+          ),
+          body: Column(
+            children: [
+              Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: InputHistoryTextField(
+                      textEditingController: searchController,
+                      historyKey: "unit",
+                      listStyle: ListStyle.Badge,
+                      showHistoryIcon: false,
+                      backgroundColor: Colors.lightBlue,
+                      textColor: Colors.white,
+                      deleteIconColor: Colors.white,
+                      decoration: const InputDecoration(
+                        hintText: 'ค้นหา',
+                      ))),
+              Expanded(
+                child: BlocBuilder<UnitBloc, UnitState>(
+                  builder: (context, state) {
+                    return (state is UnitInProgress)
+                        ? Container(
+                            color: Colors.transparent,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(),
+                          )
+                        : (state is UnitLoadSuccess)
+                            ? ListView.builder(
+                                itemCount: _unit.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                    title: Text(_unit[index].unitcode),
+                                  );
+                                },
+                              )
+                            : (state is UnitLoadFailed)
+                                ? const Text(
+                                    'ไม่เจอข้อมูล',
+                                    style: TextStyle(fontSize: 24),
+                                  )
+                                : Container();
                   },
-                  child: const Icon(
-                    Icons.delete,
-                    size: 26.0,
-                  ),
-                )),
-            Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    tabController.index = 1;
-                    codeFocusNode.requestFocus();
-                  },
-                  child: const Icon(
-                    Icons.add,
-                    size: 26.0,
-                  ),
-                )),
-          ],
-        ),
-        body: Column(
-          children: [
-            Padding(
-                padding: const EdgeInsets.all(10),
-                child: InputHistoryTextField(
-                    textEditingController: searchController,
-                    historyKey: "unit",
-                    listStyle: ListStyle.Badge,
-                    showHistoryIcon: false,
-                    backgroundColor: Colors.lightBlue,
-                    textColor: Colors.white,
-                    deleteIconColor: Colors.white,
-                    decoration: const InputDecoration(
-                      hintText: 'ค้นหา',
-                    ))),
-            Expanded(
-              child: BlocBuilder<UnitBloc, UnitState>(
-                builder: (context, state) {
-                  return (state is UnitInProgress)
-                      ? Container(
-                          color: Colors.transparent,
-                          alignment: Alignment.center,
-                          child: const CircularProgressIndicator(),
-                        )
-                      : (state is UnitLoadSuccess)
-                          ? ListView.builder(
-                              controller: _scrollController,
-                              shrinkWrap: true,
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: _unit.length,
-                              itemBuilder: (context, index) {
-                                return Card(
-                                  elevation: 3,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: InkWell(
-                                      onTap: () {},
-                                    ),
-                                  ),
-                                );
-                              },
-                            )
-                          : (state is UnitLoadFailed)
-                              ? const Text(
-                                  'ไม่เจอข้อมูล',
-                                  style: TextStyle(fontSize: 24),
-                                )
-                              : Container();
-                },
+                ),
               ),
-            ),
-          ],
-        ));
+            ],
+          )),
+    );
   }
 
   void saveData() {

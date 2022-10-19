@@ -11,7 +11,7 @@ class UnitModel {
   UnitModel({
     required this.unitcode,
     List<LanguageMode>? names,
-  });
+  }) : names = names ?? <LanguageMode>[];
 
   factory UnitModel.fromJson(Map<String, dynamic> json) =>
       _$UnitModelFromJson(json);

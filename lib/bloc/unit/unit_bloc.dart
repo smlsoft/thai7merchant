@@ -36,7 +36,7 @@ class UnitBloc extends Bloc<UnitEvent, UnitState> {
           List<UnitModel> _unit = (_result.data as List)
               .map((unit) => UnitModel.fromJson(unit))
               .toList();
-          print(_unit);
+
           emit(UnitLoadSuccess(unit: _unit, page: _result.page));
         } else {
           List<UnitModel> _unit = (_result.data as List)
