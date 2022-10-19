@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_html/html_parser.dart';
+import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:input_history_text_field/input_history_text_field.dart';
+import 'package:thai7merchant/model/unit.dart';
 
 class UnitScreen extends StatefulWidget {
   const UnitScreen({Key? key}) : super(key: key);
@@ -22,6 +25,11 @@ class UnitScreenState extends State<UnitScreen>
   List<String> fieldName = [];
   List<FocusNode> nameFocusNode = [];
 
+  List<UnitModel> _unit = [];
+  final ScrollController _scrollController = ScrollController();
+  int _perPage = 15;
+  String _search = "";
+
   @override
   void initState() {
     global.loadConfig();
@@ -31,11 +39,37 @@ class UnitScreenState extends State<UnitScreen>
       nameFocusNode.add(FocusNode());
       fieldName.add("name${i + 1}");
     }
+
+    context.read<UnitBloc>().add(ListUnitLoad(
+        page: 0, perPage: _perPage, search: _search, nextPage: true));
+    _scrollController.addListener(_onScroll);
+
     super.initState();
+  }
+
+  void _onScroll() {
+    if (_scrollController.offset >=
+            _scrollController.position.maxScrollExtent &&
+        !_scrollController.position.outOfRange) {
+      UnitBloc unitBloc = context.read<UnitBloc>();
+      UnitLoadSuccess unitLoadSuccess;
+
+      if (unitBloc.state is UnitLoadSuccess) {
+        unitLoadSuccess = (unitBloc.state as UnitLoadSuccess);
+        if (unitLoadSuccess.page!.page < unitLoadSuccess.page!.totalPage) {
+          unitBloc.add(ListUnitLoad(
+              page: unitLoadSuccess.page!.page + 1,
+              perPage: _perPage,
+              search: _search,
+              nextPage: false));
+        }
+      }
+    }
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     tabController.dispose();
     codeFocusNode.dispose();
     editScrollController.dispose();
@@ -94,14 +128,49 @@ class UnitScreenState extends State<UnitScreen>
                       hintText: 'ค้นหา',
                     ))),
             Expanded(
-              child: Container(),
-            )
+              child: BlocBuilder<UnitBloc, UnitState>(
+                builder: (context, state) {
+                  return (state is UnitInProgress)
+                      ? Container(
+                          color: Colors.transparent,
+                          alignment: Alignment.center,
+                          child: const CircularProgressIndicator(),
+                        )
+                      : (state is UnitLoadSuccess)
+                          ? ListView.builder(
+                              controller: _scrollController,
+                              shrinkWrap: true,
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: _unit.length,
+                              itemBuilder: (context, index) {
+                                return Card(
+                                  elevation: 3,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: InkWell(
+                                      onTap: () {},
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                          : (state is UnitLoadFailed)
+                              ? const Text(
+                                  'ไม่เจอข้อมูล',
+                                  style: TextStyle(fontSize: 24),
+                                )
+                              : Container();
+                },
+              ),
+            ),
           ],
         ));
   }
 
   void saveData() {
-    
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         backgroundColor: Colors.blue,
         duration: const Duration(seconds: 1),

@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:thai7merchant/bloc/image/image_upload_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
+import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
 import 'package:thai7merchant/menu_screen.dart';
 import 'package:thai7merchant/repositories/client.dart';
+import 'package:thai7merchant/repositories/unit_repository.dart';
 import 'package:thai7merchant/screens/Product/product_list.dart';
 import 'package:thai7merchant/usersystem/login_shop.dart';
 import 'package:thai7merchant/usersystem/login_with.dart';
@@ -44,6 +46,7 @@ void main() async {
           .then((_result) async {
         if (_result.success) {
           global.apiConnected = true;
+          global.apiToken = _result.data["token"];
           global.appConfig.write("token", _result.data["token"]);
           print("Login Succerss");
           ApiResponse _selectShop =
@@ -125,6 +128,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<ImageUploadBloc>(
           create: (_) =>
               ImageUploadBloc(imageUploadRepository: ImageUploadRepository()),
+        ),
+        BlocProvider<UnitBloc>(
+          create: (_) => UnitBloc(unitRepository: UnitRepository()),
         ),
       ],
       child: MaterialApp(

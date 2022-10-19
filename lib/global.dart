@@ -9,6 +9,7 @@ import 'package:thai7merchant/model/public_name_model.dart';
 enum LoginType { none, google, facebook, apple }
 
 bool apiConnected = false;
+String apiToken = "";
 String apiUserName = "tester";
 String apiUserPassword = "tester";
 String apiShopCode =
