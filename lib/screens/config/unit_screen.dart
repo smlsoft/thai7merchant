@@ -34,7 +34,8 @@ class UnitScreenState extends State<UnitScreen>
   final ScrollController _scrollController = ScrollController();
   int _perPage = 15;
   String _search = "";
-
+  String selectedIndex = "";
+  String guid = "";
   @override
   void initState() {
     global.loadConfig();
@@ -95,6 +96,10 @@ class UnitScreenState extends State<UnitScreen>
             _unit = state.unit;
           }
         }
+        if (state is UnitSaveSuccess) {
+          context.read<UnitBloc>().add(ListUnitLoad(
+              page: 0, perPage: _perPage, search: _search, nextPage: true));
+        }
         if (state is UnitDeleteSuccess) {
           context.read<UnitBloc>().add(ListUnitLoad(
               page: 0, perPage: _perPage, search: _search, nextPage: true));
@@ -106,15 +111,42 @@ class UnitScreenState extends State<UnitScreen>
             actions: <Widget>[
               Padding(
                   padding: const EdgeInsets.only(right: 20.0),
-                  child: GestureDetector(
-                    onTap: () {
-                      log("22222");
-                      setState(() {});
+                  child: BlocBuilder<UnitBloc, UnitState>(
+                    builder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          showDialog<String>(
+                            context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              title: const Text('คุณต้องการลบ'),
+                              content: const Text('ใช่หรือไม่?'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, 'Cancel'),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    context
+                                        .read<UnitBloc>()
+                                        .add(ListUnitDelete(id: selectedIndex));
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                          log("22222");
+                          setState(() {});
+                        },
+                        child: const Icon(
+                          Icons.delete,
+                          size: 26.0,
+                        ),
+                      );
                     },
-                    child: const Icon(
-                      Icons.delete,
-                      size: 26.0,
-                    ),
                   )),
               Padding(
                   padding: const EdgeInsets.only(right: 20.0),
@@ -160,35 +192,13 @@ class UnitScreenState extends State<UnitScreen>
                                 itemBuilder: (context, index) {
                                   return ListTile(
                                     title: Text("${_unit[index].unitcode}"),
+                                    tileColor: selectedIndex ==
+                                            _unit[index].guidfixed
+                                        ? Color.fromARGB(255, 117, 117, 117)
+                                        : Color.fromARGB(255, 255, 255, 255),
                                     onTap: () {
+                                      selectedIndex = _unit[index].guidfixed;
                                       setState(() {});
-                                      showDialog<String>(
-                                        context: context,
-                                        builder: (BuildContext context) =>
-                                            AlertDialog(
-                                          title:
-                                              const Text('AlertDialog Title'),
-                                          content: const Text(
-                                              'AlertDialog description'),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(
-                                                  context, 'Cancel'),
-                                              child: const Text('Cancel'),
-                                            ),
-                                            TextButton(
-                                              onPressed: () {
-                                                context.read<UnitBloc>().add(
-                                                    ListUnitDelete(
-                                                        id: _unit[index]
-                                                            .guidfixed));
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: const Text('OK'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
 
                                       context.read<UnitBloc>().add(ListUnitLoad(
                                           page: 0,
