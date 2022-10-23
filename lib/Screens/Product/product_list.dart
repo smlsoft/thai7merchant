@@ -27,7 +27,6 @@ class _ProductScreenState extends State<ProductScreen> {
             }),
         widgets: const <Widget>[],
       ),
-      body: const Body(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushReplacement(
