@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thai7merchant/Screens/product/product_add.dart';
+import 'package:thai7merchant/Screens/Product/product_add.dart';
 import 'package:thai7merchant/bloc/inventory/inventory_bloc.dart';
 import 'package:thai7merchant/components/background_main.dart';
 import 'package:thai7merchant/components/textfield_search.dart';
