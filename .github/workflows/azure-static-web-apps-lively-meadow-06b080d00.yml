@@ -17,6 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          ref: 'develop'
           submodules: true
       - uses: subosito/flutter-action@v2
         with:
