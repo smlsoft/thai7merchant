@@ -5,7 +5,7 @@ import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
 import 'package:thai7merchant/menu_screen.dart';
 import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/repositories/unit_repository.dart';
-import 'package:thai7merchant/screens/Product/product_list.dart';
+import 'package:thai7merchant/Screens/Product/product_list.dart';
 import 'package:thai7merchant/usersystem/login_shop.dart';
 import 'package:thai7merchant/usersystem/login_with.dart';
 import 'package:thai7merchant/repositories/image_upload_repository.dart';
