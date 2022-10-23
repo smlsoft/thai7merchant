@@ -24,7 +24,7 @@ jobs:
           channel: 'stable'
       - run: flutter --version
       - name: Install packages
-        - run: |
+        run: |
           flutter config --enable-web
           flutter pub get
           flutter build web --release
