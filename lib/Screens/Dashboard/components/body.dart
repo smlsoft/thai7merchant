@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/screens/Dashboard/components/menu_landscape.dart';
-import 'package:thai7merchant/screens/Dashboard/components/menu_portrait.dart';
+import 'package:thai7merchant/Screens/Dashboard/components/menu_landscape.dart';
+import 'package:thai7merchant/Screens/Dashboard/components/menu_portrait.dart';
 import 'package:thai7merchant/components/background_dashboard.dart';
 import 'package:thai7merchant/util.dart';
 import 'package:thai7merchant/components/background_dashboard.dart';

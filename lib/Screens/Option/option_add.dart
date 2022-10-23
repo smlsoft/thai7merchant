@@ -1,5 +1,5 @@
-import 'package:thai7merchant/screens/Option/option_detail.dart';
-import 'package:thai7merchant/screens/Option/option_list.dart';
+import 'package:thai7merchant/Screens/Option/option_detail.dart';
+import 'package:thai7merchant/Screens/Option/option_list.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
 import 'package:thai7merchant/model/choices.dart';
 import 'package:thai7merchant/model/option.dart';

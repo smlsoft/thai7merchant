@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/screens/Member/member_add.dart';
+import 'package:thai7merchant/Screens/Member/member_add.dart';
 import 'package:thai7merchant/bloc/member/member_bloc.dart';
 import 'package:thai7merchant/components/background_main.dart';
 import 'package:thai7merchant/components/textfield_search.dart';

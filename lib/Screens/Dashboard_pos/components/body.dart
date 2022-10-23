@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/screens/dashboard_pos/components/menu_landscape.dart';
+import 'package:thai7merchant/Screens/dashboard_pos/components/menu_landscape.dart';
 import 'package:thai7merchant/components/background_dashboard.dart';
 
 class Body extends StatelessWidget {

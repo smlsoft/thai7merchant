@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/screens/config/category_screen.dart';
-import 'package:thai7merchant/screens/config/color_screen.dart';
-import 'package:thai7merchant/screens/config/pattern_screen.dart';
-import 'package:thai7merchant/screens/config/unit_screen.dart';
+import 'package:thai7merchant/Screens/config/category_screen.dart';
+import 'package:thai7merchant/Screens/config/color_screen.dart';
+import 'package:thai7merchant/Screens/config/pattern_screen.dart';
+import 'package:thai7merchant/Screens/config/unit_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({Key? key}) : super(key: key);

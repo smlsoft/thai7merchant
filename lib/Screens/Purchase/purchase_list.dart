@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/screens/purchase/components/body.dart';
-import 'package:thai7merchant/screens/purchase/purchase_add.dart';
+import 'package:thai7merchant/Screens/purchase/components/body.dart';
+import 'package:thai7merchant/Screens/purchase/purchase_add.dart';
 import 'package:thai7merchant/components/appbar.dart';
 
 class PurchaseScreen extends StatelessWidget {

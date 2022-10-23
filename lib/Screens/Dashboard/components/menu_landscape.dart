@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
-import 'package:thai7merchant/screens/Dashboard_pos/components/body.dart';
-import 'package:thai7merchant/screens/Member/member_list.dart';
-import 'package:thai7merchant/screens/Product/product_list.dart';
-import 'package:thai7merchant/screens/Purchase/purchase_list.dart';
+import 'package:thai7merchant/Screens/Dashboard_pos/components/body.dart';
+import 'package:thai7merchant/Screens/Member/member_list.dart';
+import 'package:thai7merchant/Screens/Product/product_list.dart';
+import 'package:thai7merchant/Screens/Purchase/purchase_list.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 
 class MenuListLandscape extends StatefulWidget {

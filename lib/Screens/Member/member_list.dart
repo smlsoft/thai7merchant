@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/screens/dashboard/dashboard_screen.dart';
-import 'package:thai7merchant/screens/Member/components/body.dart';
-import 'package:thai7merchant/screens/Member/member_add.dart';
+import 'package:thai7merchant/Screens/dashboard/dashboard_screen.dart';
+import 'package:thai7merchant/Screens/Member/components/body.dart';
+import 'package:thai7merchant/Screens/Member/member_add.dart';
 import 'package:thai7merchant/components/appbar.dart';
 
 class MemberScreen extends StatelessWidget {

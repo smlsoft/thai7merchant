@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:thai7merchant/screens/Option/option_add.dart';
+import 'package:thai7merchant/Screens/Option/option_add.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
 import 'package:thai7merchant/model/option.dart';
 import 'package:flutter/material.dart';
