@@ -25,7 +25,6 @@ jobs:
       - run: flutter --version
       - name: Install packages
         run: |
-          flutter config --enable-web
           flutter pub get
           flutter build web --release
       - name: Build And Deploy
