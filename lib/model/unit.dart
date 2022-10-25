@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:thai7merchant/model/language_mode.dart';
+import 'package:thai7merchant/model/language_model.dart';
 
 part 'unit.g.dart';
 
@@ -7,13 +7,13 @@ part 'unit.g.dart';
 class UnitModel {
   String unitcode;
   String guidfixed;
-  List<LanguageMode> names = <LanguageMode>[];
+  List<LanguageDataModel> names = <LanguageDataModel>[];
 
   UnitModel({
     required this.guidfixed,
     required this.unitcode,
-    List<LanguageMode>? names,
-  }) : names = names ?? <LanguageMode>[];
+    List<LanguageDataModel>? names,
+  }) : names = names ?? <LanguageDataModel>[];
 
   factory UnitModel.fromJson(Map<String, dynamic> json) =>
       _$UnitModelFromJson(json);

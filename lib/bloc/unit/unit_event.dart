@@ -7,55 +7,69 @@ abstract class UnitEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class ListUnitLoad extends UnitEvent {
-  int page;
-  int perPage;
-  String search;
-  bool nextPage;
+class UnitGet extends UnitEvent {
+  final String guid;
 
-  ListUnitLoad(
-      {required this.page,
-      required this.perPage,
-      required this.search,
-      required this.nextPage});
+  const UnitGet({required this.guid});
+
+  @override
+  List<Object> get props => [guid];
+}
+
+class UnitLoadList extends UnitEvent {
+  final int limit;
+  final int offset;
+  final String search;
+
+  const UnitLoadList(
+      {required this.offset, required this.limit, required this.search});
 
   @override
   List<Object> get props => [];
 }
 
-class ListUnitDelete extends UnitEvent {
-  final String id;
+class UnitDelete extends UnitEvent {
+  final String guid;
 
-  const ListUnitDelete({
-    required this.id,
+  const UnitDelete({
+    required this.guid,
   });
 
   @override
-  List<Object> get props => [id];
+  List<Object> get props => [guid];
 }
 
-class ListUnitSave extends UnitEvent {
+class UnitDeleteMany extends UnitEvent {
+  final List<String> guid;
+
+  const UnitDeleteMany({
+    required this.guid,
+  });
+
+  @override
+  List<Object> get props => [guid];
+}
+
+class UnitSave extends UnitEvent {
   final UnitModel unitModel;
 
-  const ListUnitSave({
+  const UnitSave({
     required this.unitModel,
   });
 
   @override
   List<Object> get props => [unitModel];
 }
-// class ListUnitSave extends UnitEvent {
-//   int page;
-//   int perPage;
-//   String search;
-//   bool nextPage;
 
-//   ListUnitSave(
-//       {required this.page,
-//       required this.perPage,
-//       required this.search,
-//       required this.nextPage});
+class UnitUpdate extends UnitEvent {
+  final String guid;
+  final UnitModel unitModel;
 
-//   @override
-//   List<Object> get props => [];
-// }
+  const UnitUpdate({
+    required this.guid,
+    required this.unitModel,
+  });
+
+  @override
+  List<Object> get props => [unitModel];
+}
