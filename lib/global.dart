@@ -1,8 +1,9 @@
 import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/config_model.dart';
-import 'package:thai7merchant/model/language_mode.dart';
+import 'package:thai7merchant/model/language_model.dart';
 import 'package:thai7merchant/model/public_color_model.dart';
 import 'package:thai7merchant/model/public_name_model.dart';
 
@@ -16,7 +17,6 @@ String apiShopCode =
     "27dcEdktOoaSBYFmnN6G6ett4Jb"; // "27dcEdktOoaSBYFmnN6G6ett4Jb";
 bool isLoginProcess = false;
 GetStorage appConfig = GetStorage('AppConfig');
-
 String systemLanguage = "th";
 String loginName = "";
 String loginEmail = "";
@@ -27,16 +27,16 @@ ConfigModel config = ConfigModel();
 
 void loadConfig() {
   config.languages = [
-    LanguageMode(code: "th", name: "ไทย", use: true),
-    LanguageMode(code: "en", name: "อังกฤษ", use: true),
-    LanguageMode(code: "cn", name: "จีน"),
-    LanguageMode(code: "jp", name: "ญี่ปุ่น"),
-    LanguageMode(code: "kr", name: "เกาหลี"),
-    LanguageMode(code: "lo", name: "ลาว"),
-    LanguageMode(code: "mr", name: "เมียนม่า"),
-    LanguageMode(code: "my", name: "มาเลเซีย"),
-    LanguageMode(code: "vi", name: "เวียดนาม"),
-    LanguageMode(code: "km", name: "เขมร"),
+    LanguageModel(code: "th", name: "ไทย", use: true),
+    LanguageModel(code: "en", name: "อังกฤษ", use: true),
+    LanguageModel(code: "cn", name: "จีน", use: true),
+    LanguageModel(code: "jp", name: "ญี่ปุ่น", use: false),
+    LanguageModel(code: "kr", name: "เกาหลี", use: false),
+    LanguageModel(code: "lo", name: "ลาว", use: true),
+    LanguageModel(code: "mr", name: "เมียนม่า", use: false),
+    LanguageModel(code: "my", name: "มาเลเซีย", use: false),
+    LanguageModel(code: "vi", name: "เวียดนาม", use: false),
+    LanguageModel(code: "km", name: "เขมร", use: false),
   ];
   publicColors = [
     PublicColorModel()
@@ -220,4 +220,18 @@ void loadConfig() {
 Color colorFromHex(String hexColor) {
   final hexCode = hexColor.replaceAll('#', '');
   return Color(int.parse('FF$hexCode', radix: 16));
+}
+
+void showSnackBar(
+    BuildContext context, Icon icon, String message, Color color) {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: color,
+      duration: const Duration(seconds: 1),
+      content: (Row(
+        children: [
+          icon,
+          const SizedBox(width: 10),
+          Flexible(child: Text(message, overflow: TextOverflow.ellipsis)),
+        ],
+      ))));
 }

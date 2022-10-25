@@ -36,7 +36,6 @@ bool shouldUseFirebaseEmulator = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   if (global.apiConnected == false) {
     if (!global.isLoginProcess) {
       global.isLoginProcess = true;

@@ -5,9 +5,9 @@ import 'package:bloc/bloc.dart';
 /// observes all state changes.
 /// {@endtemplate}
 class AppObserver extends BlocObserver {
-  @override
+  /*@override
   void onChange(BlocBase bloc, Change change) {
     super.onChange(bloc, change);
-    print('${bloc.runtimeType} $change');
-  }
+    //print('${bloc.runtimeType} $change');
+  }*/
 }

@@ -7,34 +7,28 @@ abstract class UnitState extends Equatable {
   List<Object> get props => [];
 }
 
-//Load
-
 class UnitInitial extends UnitState {}
 
 class UnitInProgress extends UnitState {}
 
 class UnitLoadSuccess extends UnitState {
-  List<UnitModel> unit;
-  final Page? page;
+  final List<UnitModel> units;
 
-  UnitLoadSuccess({required this.unit, required this.page});
+  const UnitLoadSuccess({required this.units});
 
   UnitLoadSuccess copyWith({
-    List<UnitModel>? unit,
-    final Page? page,
+    List<UnitModel>? units,
   }) =>
-      UnitLoadSuccess(
-        unit: unit ?? this.unit,
-        page: page ?? this.page,
-      );
+      UnitLoadSuccess(units: units ?? this.units);
 
   @override
-  List<Object> get props => [unit];
+  List<Object> get props => [units];
 }
 
 class UnitLoadFailed extends UnitState {
   final String message;
-  UnitLoadFailed({
+
+  const UnitLoadFailed({
     required this.message,
   });
 
@@ -50,7 +44,8 @@ class UnitSaveSuccess extends UnitState {}
 
 class UnitSaveFailed extends UnitState {
   final String message;
-  UnitSaveFailed({
+
+  const UnitSaveFailed({
     required this.message,
   });
 
@@ -58,16 +53,58 @@ class UnitSaveFailed extends UnitState {
   List<Object> get props => [message];
 }
 
-class UnitdeleteInProgress extends UnitState {}
+class UnitDeleteInProgress extends UnitState {}
 
 class UnitDeleteSuccess extends UnitState {}
 
-class UnitDeleteFailure extends UnitState {
-  // final String message;
-  // const UnitDeleteFailure({
-  //   required this.message,
-  // });
+class UnitDeleteFailed extends UnitState {}
 
-  // @override
-  // List<Object> get props => [message];
+class UnitDeleteManyInProgress extends UnitState {}
+
+class UnitDeleteManySuccess extends UnitState {}
+
+class UnitDeleteManyFailed extends UnitState {}
+
+class UnitGetInProgress extends UnitState {}
+
+class UnitGetSuccess extends UnitState {
+  final UnitModel unit;
+
+  const UnitGetSuccess({required this.unit});
+
+  UnitGetSuccess copyWith({
+    UnitModel? unit,
+  }) =>
+      UnitGetSuccess(unit: unit ?? this.unit);
+
+  @override
+  List<Object> get props => [unit];
+}
+
+class UnitGetFailed extends UnitState {
+  final String message;
+
+  const UnitGetFailed({
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [message];
+}
+
+class UnitUpdateInitial extends UnitState {}
+
+class UnitUpdateInProgress extends UnitState {}
+
+class UnitUpdateSuccess extends UnitState {}
+
+class UnitUpdateFailed extends UnitState {
+  final String message;
+
+  const UnitUpdateFailed({
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [message];
 }

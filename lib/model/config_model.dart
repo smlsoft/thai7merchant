@@ -1,7 +1,7 @@
-import 'package:thai7merchant/model/language_mode.dart';
+import 'package:thai7merchant/model/language_model.dart';
 
 class ConfigModel {
-  late List<LanguageMode> languages;
+  late List<LanguageModel> languages;
 
   int indexLanguage(String code) {
     int index = 0;
