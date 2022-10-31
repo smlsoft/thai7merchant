@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:remove_background/crop_widget.dart';
 import 'package:split_view/split_view.dart';
 import 'package:thai7merchant/bloc/category/category_bloc.dart';
 import 'package:thai7merchant/model/category_list_model.dart';
@@ -50,6 +51,7 @@ class CategoryScreenState extends State<CategoryScreen>
   bool isSaveAllow = false;
   bool isDeleteAllow = false;
   String headerEdit = "";
+  String selectImageUri = "";
 
   String packName(List<LanguageDataModel> names) {
     String result = "";
@@ -145,9 +147,17 @@ class CategoryScreenState extends State<CategoryScreen>
         childcount: 0,
         names: packLanguage(),
       );
-      context
-          .read<CategoryBloc>()
-          .add(CategorySave(categoryModel: categoryModel));
+      if (imageFile.path.isNotEmpty) {
+        context.read<CategoryBloc>().add(CategoryWithImageSave(
+              categoryModel: categoryModel,
+              imageFile: imageFile,
+              imageWeb: imageWeb,
+            ));
+      } else {
+        context
+            .read<CategoryBloc>()
+            .add(CategorySave(categoryModel: categoryModel));
+      }
     } else {
       updateData(selectGuid);
     }
@@ -158,13 +168,22 @@ class CategoryScreenState extends State<CategoryScreen>
       guidfixed: guid,
       parentguid: selectParentGuid,
       parentguidall: selectParentGuidAll(rootCategorys, selectParentGuid),
-      imageuri: "",
+      imageuri: selectImageUri,
       childcount: 0,
       names: packLanguage(),
     );
-    context
-        .read<CategoryBloc>()
-        .add(CategoryUpdate(guid: guid, categoryModel: categoryModel));
+    if (imageWeb != null) {
+      context.read<CategoryBloc>().add(CategoryWithImageUpdate(
+            guid: guid,
+            categoryModel: categoryModel,
+            imageFile: imageFile,
+            imageWeb: imageWeb!,
+          ));
+    } else {
+      context
+          .read<CategoryBloc>()
+          .add(CategoryUpdate(guid: guid, categoryModel: categoryModel));
+    }
   }
 
   void buildColumnWidget() {
@@ -262,6 +281,7 @@ class CategoryScreenState extends State<CategoryScreen>
                 selectDragTargetGuid = "";
                 selectGuid = categorys[index].detail.guidfixed;
                 selectParentName = categorys[index].detail.names[0].name;
+                selectImageUri = categorys[index].detail.imageuri;
                 headerEdit = global.language("show");
                 isDeleteAllow = categorys[index].childCategorys.isEmpty;
                 context.read<CategoryBloc>().add(CategoryGet(guid: selectGuid));
@@ -657,6 +677,8 @@ class CategoryScreenState extends State<CategoryScreen>
                           setState(() {
                             if (kIsWeb) {
                               imageWeb = null;
+                              selectImageUri = "";
+                              imageFile = File('');
                             } else {}
                           });
                         },
@@ -678,6 +700,7 @@ class CategoryScreenState extends State<CategoryScreen>
                                   var f = await image.readAsBytes();
                                   setState(() {
                                     imageWeb = f;
+                                    imageFile = File(image.path);
                                   });
                                 }
                               }
@@ -686,7 +709,9 @@ class CategoryScreenState extends State<CategoryScreen>
                                   final XFile? photo = await _picker.pickImage(
                                       source: ImageSource.gallery);
                                   if (photo != null) {
+                                    var f = await photo.readAsBytes();
                                     setState(() {
+                                      imageWeb = f;
                                       imageFile = File(photo.path);
                                     });
                                   }
@@ -706,7 +731,9 @@ class CategoryScreenState extends State<CategoryScreen>
                             final XFile? photo = await _picker.pickImage(
                                 source: ImageSource.camera);
                             if (photo != null) {
+                              var f = await photo.readAsBytes();
                               setState(() {
+                                imageWeb = f;
                                 imageFile = File(photo.path);
                               });
                             }
@@ -759,9 +786,14 @@ class CategoryScreenState extends State<CategoryScreen>
                                 ? DecorationImage(
                                     image: MemoryImage(imageWeb!),
                                     fit: BoxFit.fill)
-                                : const DecorationImage(
-                                    image: AssetImage('assets/img/noimg.png'),
-                                    fit: BoxFit.fill),
+                                : (selectImageUri != '')
+                                    ? DecorationImage(
+                                        image: NetworkImage(selectImageUri),
+                                        fit: BoxFit.fill)
+                                    : const DecorationImage(
+                                        image:
+                                            AssetImage('assets/img/noimg.png'),
+                                        fit: BoxFit.fill),
                           ),
                           child: const SizedBox(
                             width: 500,
@@ -770,8 +802,8 @@ class CategoryScreenState extends State<CategoryScreen>
                         )),
                       ]))
                 else
-                  (imageFile.path.isNotEmpty)
-                      ? Image.file(imageFile, fit: BoxFit.cover)
+                  (selectImageUri != '')
+                      ? Image.network(selectImageUri, fit: BoxFit.cover)
                       : Image.asset('assets/img/noimg.png', fit: BoxFit.cover),
                 const SizedBox(height: 10),
                 if (isEditMode)
@@ -796,12 +828,20 @@ class CategoryScreenState extends State<CategoryScreen>
     isChange = false;
     focusNodeIndex = 0;
     fieldFocusNodes[focusNodeIndex].requestFocus();
+    setState(() {
+      imageFile = File('');
+      imageWeb = null;
+      selectImageUri = "";
+    });
   }
 
   void getDataToEditScreen(CategoryModel category) {
     isChange = false;
     selectGuid = category.guidfixed;
     selectParentGuid = category.parentguid;
+    selectImageUri = category.imageuri;
+    imageWeb = null;
+    imageFile = File('');
     for (int i = 0; i < languageList.length; i++) {
       fieldTextController[i].text = "";
     }
@@ -901,9 +941,13 @@ class CategoryScreenState extends State<CategoryScreen>
                     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                       tabController.animateTo(0);
                     });
+                    // context
+                    //     .read<CategoryBloc>()
+                    //     .add(CategoryGet(guid: selectGuid));
                     loadDataList("");
                     isSaveAllow = false;
                     isEditMode = false;
+
                     selectDragTargetGuid = "";
                   });
                 }

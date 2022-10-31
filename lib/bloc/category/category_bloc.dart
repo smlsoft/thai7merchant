@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:thai7merchant/model/upload_image_model.dart';
 import 'package:thai7merchant/repositories/category_repository.dart';
 import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/model/category_model.dart';
@@ -15,7 +19,9 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         super(CategoryInitial()) {
     on<CategoryLoadList>(onCategoryLoad);
     on<CategorySave>(onCategorySave);
+    on<CategoryWithImageSave>(onCategoryWithImageSave);
     on<CategoryUpdate>(onCategoryUpdate);
+    on<CategoryWithImageUpdate>(onCategoryWithImageUpdate);
     on<CategoryDelete>(categoryDelete);
     on<CategoryDeleteMany>(categoryDeleteMany);
     on<CategoryGet>(onCategoryGet);
@@ -65,6 +71,32 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     }
   }
 
+  void onCategoryWithImageSave(
+      CategoryWithImageSave event, Emitter<CategoryState> emit) async {
+    emit(CategorySaveInProgress());
+    try {
+      ApiResponse _result = await _categoryRepository.uploadImage(
+          event.imageFile, event.imageWeb!);
+      if (_result.success) {
+        UploadImageModel uploadImage = UploadImageModel.fromJson(_result.data);
+        CategoryModel categoryModel = CategoryModel(
+          guidfixed: "",
+          parentguid: event.categoryModel.parentguid,
+          parentguidall: event.categoryModel.parentguidall,
+          imageuri: uploadImage.uri,
+          childcount: event.categoryModel.childcount,
+          names: event.categoryModel.names,
+        );
+        await _categoryRepository.saveCategory(categoryModel);
+        emit(CategorySaveSuccess());
+      } else {
+        emit(CategorySaveFailed(message: _result.message));
+      }
+    } catch (e) {
+      emit(CategorySaveFailed(message: e.toString()));
+    }
+  }
+
   void onCategorySave(CategorySave event, Emitter<CategoryState> emit) async {
     emit(CategorySaveInProgress());
     try {
@@ -81,6 +113,32 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     try {
       await _categoryRepository.updateCategory(event.guid, event.categoryModel);
       emit(CategoryUpdateSuccess());
+    } catch (e) {
+      emit(CategoryUpdateFailed(message: e.toString()));
+    }
+  }
+
+  void onCategoryWithImageUpdate(
+      CategoryWithImageUpdate event, Emitter<CategoryState> emit) async {
+    emit(CategoryUpdateInProgress());
+    try {
+      ApiResponse _result = await _categoryRepository.uploadImage(
+          event.imageFile, event.imageWeb);
+      if (_result.success) {
+        UploadImageModel uploadImage = UploadImageModel.fromJson(_result.data);
+        CategoryModel categoryModel = CategoryModel(
+          guidfixed: event.categoryModel.guidfixed,
+          parentguid: event.categoryModel.parentguid,
+          parentguidall: event.categoryModel.parentguidall,
+          imageuri: uploadImage.uri,
+          childcount: event.categoryModel.childcount,
+          names: event.categoryModel.names,
+        );
+        await _categoryRepository.updateCategory(event.guid, categoryModel);
+        emit(CategoryUpdateSuccess());
+      } else {
+        emit(CategoryUpdateFailed(message: _result.message));
+      }
     } catch (e) {
       emit(CategoryUpdateFailed(message: e.toString()));
     }
