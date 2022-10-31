@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:thai7merchant/model/product_barcode_struct.dart';
 import 'package:thai7merchant/screens/config/category_screen.dart';
 import 'package:thai7merchant/screens/config/color_screen.dart';
 import 'package:thai7merchant/screens/config/pattern_screen.dart';
+import 'package:thai7merchant/screens/config/product_barcode_screen.dart';
 import 'package:thai7merchant/screens/config/unit_screen.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:thai7merchant/global.dart' as global;
+import 'package:thai7merchant/select_language_screen.dart';
 
 class MenuScreen extends StatefulWidget {
   const MenuScreen({Key? key}) : super(key: key);
@@ -27,7 +30,7 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
   void buildMenu() {
     setupCustomerMenuList = [
       menu(
-          title: "กลุ่มลูกค้า",
+          title: global.language("customer_group"),
           description:
               "เพื่อใช้ในการแยกกลุ่มลูกค้าเพื่อใช้ในการกำหนดส่วนลด และข้อมูลอื่นๆ",
           callback: () {
@@ -37,7 +40,7 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             );
           }),
       menu(
-          title: "ลูกค้า",
+          title: global.language("customer"),
           description: "รายละเอียดลูกค้ารายตัว",
           callback: () {
             Navigator.push(
@@ -49,7 +52,7 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
 
     setupProductMenuList = [
       menu(
-          title: "หน่วยนับสินค้า",
+          title: global.language("product_unit"),
           description:
               "กำหนดหน่วยนับสินค้าเป็นรหัส เพิ่มความสะดวกในการเรียกใช้ และแยกหลายภาษา โดยใช้รหัสเดียว เช่น ชิ้น, กิโลกรัม, ลิตร, แพ็ค, แผ่น, ชุด, ชิ้น,​โหล ,ขวด, กล่อง24, หีบ, เมตร",
           callback: () {
@@ -59,7 +62,7 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             );
           }),
       menu(
-          title: "กลุ่มสินค้า",
+          title: global.language("product_group"),
           description:
               "ช่วยในการจัดเรียงสินค้าตามกลุ่ม หรือหมวดหมู่สินค้า ใช้สำหรับค้นหาสินค้าด้วยกลุ่ม หรือหมวดหมู่สินค้า และใช้สำหรับรายงานสินค้าตามกลุ่ม หรือหมวดหมู่สินค้า รวมไปจนถึงใช้กับระบบสั่งสินค้าออนไลน์ สามารถแยกได้หลายภาษา เพื่อใช้สั่งสินค้าออนไลน์ เช่น ภาษาไทย, ภาษาอังกฤษ,​ ภาษาจีน",
           callback: () {
@@ -69,13 +72,23 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             );
           }),
       menu(
-          title: "สี",
+          title: global.language("color"),
           description:
               "กำหนดสีที่มีในธุรกิจ เช่น ธุรกิจเสื้อผ้าที่มีหลายเฉดสี สามารถแยกได้หลายภาษา เพื่อใช้ในการพิมพ์เอกสารให้ลูกค้านักท่องเที่ยว",
           callback: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ColorScreen()),
+            );
+          }),
+      menu(
+          title: "Barcode",
+          description: "Barcode สินค้า",
+          callback: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const ProductBarcodeScreen()),
             );
           }),
       menu(
@@ -122,13 +135,13 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
     setState(() {
       switch (mainTabCurrentIndex) {
         case 0:
-          headTitle = "หน้าหลัก";
+          headTitle = global.language("หน้าหลัก");
           break;
         case 1:
-          headTitle = "สินค้า";
+          headTitle = global.language("สินค้า");
           break;
         case 2:
-          headTitle = "การตั้งค่า";
+          headTitle = global.language("การตั้งค่า");
           break;
       }
     });
@@ -191,12 +204,36 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
                     padding: EdgeInsets.only(
                         top: MediaQuery.of(context).padding.top),
                     width: double.infinity,
-                    child: Center(
-                        child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Text(headTitle,
-                                style: const TextStyle(
-                                    fontSize: 30, color: Colors.white))))),
+                    child: Stack(
+                      children: [
+                        Center(
+                            child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Text(headTitle,
+                                    style: const TextStyle(
+                                        fontSize: 30, color: Colors.white)))),
+                        Positioned(
+                            top: 10.0,
+                            right: 10.0,
+                            child: IconButton(
+                              icon: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Colors.green, width: 2),
+                                  ),
+                                  child: Image.asset(
+                                      'assets/flags/${global.userLanguage}.png')),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SelectLanguageScreen()),
+                                );
+                              },
+                            ))
+                      ],
+                    )),
                 Expanded(
                     child: Container(
                         width: double.infinity,

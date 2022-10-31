@@ -1,18 +1,22 @@
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:thai7merchant/bloc/color/color_bloc.dart';
 import 'package:thai7merchant/bloc/image/image_upload_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
+import 'package:thai7merchant/bloc/product_barcode/product_barcode_bloc.dart';
 import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
 import 'package:thai7merchant/menu_screen.dart';
+import 'package:thai7merchant/model/global_struct.dart';
 import 'package:thai7merchant/repositories/client.dart';
+import 'package:thai7merchant/repositories/color_repository.dart';
 import 'package:thai7merchant/repositories/unit_repository.dart';
-import 'package:thai7merchant/screens/Product/product_list.dart';
-import 'package:thai7merchant/usersystem/login_shop.dart';
-import 'package:thai7merchant/usersystem/login_with.dart';
+import 'package:thai7merchant/select_language_screen.dart';
 import 'package:thai7merchant/repositories/image_upload_repository.dart';
 import 'package:thai7merchant/repositories/option_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:loader_overlay/loader_overlay.dart';
 import 'package:thai7merchant/app_observer.dart';
 import 'package:thai7merchant/bloc/category/category_bloc.dart';
 import 'package:thai7merchant/bloc/member/member_bloc.dart';
@@ -24,23 +28,21 @@ import 'package:thai7merchant/bloc/shop_select/shop_select_bloc.dart';
 import 'package:thai7merchant/repositories/inventory_repository.dart';
 import 'package:thai7merchant/repositories/member_repository.dart';
 import 'package:thai7merchant/repositories/user_repository.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'auth.dart';
-import 'profile.dart';
-import 'package:flash/flash.dart';
-import 'package:device_preview/device_preview.dart';
+import 'package:thai7merchant/repositories/product_barcode_repository.dart';
+import 'package:thai7merchant/usersystem/login_shop.dart';
 import 'global.dart' as global;
 
 bool shouldUseFirebaseEmulator = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init("thai7merchant");
+
   if (global.apiConnected == false) {
     if (!global.isLoginProcess) {
       global.isLoginProcess = true;
-      UserRepository _userRepository = UserRepository();
-      await _userRepository
+      UserRepository userRepository = UserRepository();
+      await userRepository
           .authenUser(global.apiUserName, global.apiUserPassword)
           .then((_result) async {
         if (_result.success) {
@@ -48,9 +50,9 @@ void main() async {
           global.apiToken = _result.data["token"];
           global.appConfig.write("token", _result.data["token"]);
           print("Login Succerss");
-          ApiResponse _selectShop =
-              await _userRepository.selectShop(global.apiShopCode);
-          if (_selectShop.success) {
+          ApiResponse selectShop =
+              await userRepository.selectShop(global.apiShopCode);
+          if (selectShop.success) {
             print("Select Shop Sucess");
           }
         }
@@ -88,11 +90,27 @@ void main() async {
   if (shouldUseFirebaseEmulator) {
     await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
   }*/
-  BlocOverrides.runZoned(
-    () => runApp(
-        DevicePreview(enabled: false, builder: (context) => const MyApp())),
+  try {
+    global.languageSystemCode =
+        (json.decode(await rootBundle.loadString('assets/language.json'))
+                as List)
+            .map((i) => LanguageSystemCodeModel.fromJson(i))
+            .toList();
+    global.languageSystemCode.sort((a, b) {
+      return a.code.compareTo(b.code);
+    });
+  } catch (_) {}
+
+  global.userLanguage = "th";
+  /*try {
+    global.userLanguage = GetStorage().read("language");
+  } catch (_) {}*/
+
+  /*BlocOverrides.runZoned(
+    () => runApp(const MyApp()),
     blocObserver: AppObserver(),
-  );
+  );*/
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -131,6 +149,13 @@ class MyApp extends StatelessWidget {
         BlocProvider<UnitBloc>(
           create: (_) => UnitBloc(unitRepository: UnitRepository()),
         ),
+        BlocProvider<ColorBloc>(
+          create: (_) => ColorBloc(colorRepository: ColorRepository()),
+        ),
+        BlocProvider<ProductBarcodeBloc>(
+          create: (_) => ProductBarcodeBloc(
+              productBarcodeRepository: ProductBarcodeRepository()),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -138,11 +163,12 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const LoaderOverlay(
-          overlayColor: Colors.black,
-          overlayOpacity: 0.8,
-          child: MenuScreen(),
-        ),
+        home: const MenuScreen(),
+        routes: <String, WidgetBuilder>{
+          '/menu': (BuildContext context) => const MenuScreen(),
+          '/selectlanguage': (BuildContext context) =>
+              const SelectLanguageScreen(),
+        },
       ),
     );
   }

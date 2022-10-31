@@ -4,10 +4,15 @@ part 'language_model.g.dart';
 
 class LanguageModel {
   String code;
+  String codeTranslator;
   String name;
   bool use;
-  
-  LanguageModel({required this.code, required this.name, required this.use});
+
+  LanguageModel(
+      {required this.code,
+      required this.codeTranslator,
+      required this.name,
+      required this.use});
 }
 
 @JsonSerializable(explicitToJson: true)

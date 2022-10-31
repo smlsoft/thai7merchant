@@ -1,8 +1,14 @@
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:split_view/split_view.dart';
+import 'package:thai7merchant/bloc/category/category_bloc.dart';
 import 'package:thai7merchant/model/category_list_model.dart';
 import 'package:thai7merchant/model/category_model.dart';
+import 'package:thai7merchant/model/language_model.dart';
+import 'package:translator/translator.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,73 +24,151 @@ class CategoryScreen extends StatefulWidget {
 
 class CategoryScreenState extends State<CategoryScreen>
     with SingleTickerProviderStateMixin {
+  final translator = GoogleTranslator();
   late DropzoneViewController dropZoneController;
   final ImagePicker _picker = ImagePicker();
   File imageFile = File('');
   List<CategoryListModel> rootCategorys = [];
-  List<Widget> columns = [];
+  List<Widget> listColumns = [];
   ScrollController listScrollController = ScrollController();
   ScrollController editScrollController = ScrollController();
   bool needScroll = false;
-  String activeSelectedGuid = "";
-  String activeDragTargetGuid = "";
+  String selectGuid = "";
+  String selectParentGuid = "";
+  String selectParentName = "";
+  String selectDragTargetGuid = "";
   late TabController tabController;
-  List<TextEditingController> nameController = [];
   List<String> fieldName = [];
-  List<FocusNode> nameFocusNode = [];
   Uint8List? imageWeb;
+  List<LanguageModel> languageList = <LanguageModel>[];
+  List<TextEditingController> fieldTextController = [];
+  List<FocusNode> fieldFocusNodes = [];
+  int focusNodeIndex = 0;
+  late CategoryState blocCategoryState;
+  bool isEditMode = false;
+  bool isChange = false;
+  bool isSaveAllow = false;
+  bool isDeleteAllow = false;
+  String headerEdit = "";
 
-  CategoryListModel findByGuid(List<CategoryListModel> categorys, String guid) {
-    CategoryListModel result = CategoryListModel(
-        detail: CategoryModel(guidfixed: "", name1: "", parentGuid: ""),
-        childCategorys: []);
-    for (int findIndex = 0; findIndex < categorys.length; findIndex++) {
-      if (guid == categorys[findIndex].detail.guidfixed) {
-        result = categorys[findIndex];
-        break;
-      }
-      if (result.detail.guidfixed == "") {
-        result = findByGuid(categorys[findIndex].childCategorys, guid);
+  String packName(List<LanguageDataModel> names) {
+    String result = "";
+    for (int i = 0; i < names.length; i++) {
+      result += names[i].name;
+      if (i < names.length - 1) {
+        result += ",";
       }
     }
     return result;
   }
 
-  void removeByGuid(List<CategoryListModel> categorys, String guid) {
+  List<LanguageDataModel> packLanguage() {
+    List<LanguageDataModel> names = [];
+    for (int i = 0; i < languageList.length; i++) {
+      if (languageList[i].code.trim().isNotEmpty &&
+          fieldTextController[i].text.trim().isNotEmpty) {
+        names.add(LanguageDataModel(
+          code: languageList[i].code,
+          name: fieldTextController[i].text,
+          isauto: false,
+        ));
+      }
+    }
+    return names;
+  }
+
+  void loadDataList(String search) {
+    context
+        .read<CategoryBloc>()
+        .add(CategoryLoadList(offset: 0, limit: 100000, search: search));
+  }
+
+  CategoryListModel? findByGuid(
+      List<CategoryListModel> categorys, String guid) {
     for (int findIndex = 0; findIndex < categorys.length; findIndex++) {
       if (guid == categorys[findIndex].detail.guidfixed) {
-        categorys.removeAt(findIndex);
-        break;
+        return categorys[findIndex];
       }
-      removeByGuid(categorys[findIndex].childCategorys, guid);
+      if (categorys[findIndex].childCategorys.isNotEmpty) {
+        CategoryListModel? find =
+            findByGuid(categorys[findIndex].childCategorys, guid);
+        if (find != null) {
+          return find;
+        }
+      }
+    }
+    return null;
+  }
+
+  String categoryFullName(List<CategoryListModel> categorys, String guid,
+      {String result = ""}) {
+    for (int findIndex = 0; findIndex < categorys.length; findIndex++) {
+      if (guid == categorys[findIndex].detail.guidfixed) {
+        return result + categorys[findIndex].detail.names[0].name;
+      }
+      if (categorys[findIndex].childCategorys.isNotEmpty) {
+        String find = categoryFullName(
+            categorys[findIndex].childCategorys, guid,
+            result: result);
+        if (find.isNotEmpty) {
+          return "$result${categorys[findIndex].detail.names[0].name},$find";
+        }
+      }
+    }
+    return result;
+  }
+
+  String selectParentGuidAll(List<CategoryListModel> categorys, String guid) {
+    String result = "";
+    for (int findIndex = 0; findIndex < categorys.length; findIndex++) {
+      if (guid == categorys[findIndex].detail.guidfixed) {
+        return result + categorys[findIndex].detail.guidfixed;
+      }
+      if (categorys[findIndex].childCategorys.isNotEmpty) {
+        String find =
+            selectParentGuidAll(categorys[findIndex].childCategorys, guid);
+        if (find.isNotEmpty) {
+          return "$result${categorys[findIndex].detail.guidfixed},$find";
+        }
+      }
+    }
+    return result;
+  }
+
+  void saveOrUpdateData() {
+    if (selectGuid.trim().isEmpty) {
+      CategoryModel categoryModel = CategoryModel(
+        guidfixed: "",
+        parentguid: selectParentGuid,
+        parentguidall: selectParentGuidAll(rootCategorys, selectParentGuid),
+        imageuri: "",
+        childcount: 0,
+        names: packLanguage(),
+      );
+      context
+          .read<CategoryBloc>()
+          .add(CategorySave(categoryModel: categoryModel));
+    } else {
+      updateData(selectGuid);
     }
   }
 
-  void insertByGuid(List<CategoryListModel> categorys, String guid,
-      CategoryListModel newCategory) {
-    for (int findIndex = 0; findIndex < categorys.length; findIndex++) {
-      if (guid == categorys[findIndex].detail.guidfixed) {
-        categorys.insert(findIndex, newCategory);
-        break;
-      }
-      insertByGuid(categorys[findIndex].childCategorys, guid, newCategory);
-    }
-  }
-
-  void updateParentGuid(
-      List<CategoryListModel> categorys, String parentGuid, String guid) {
-    for (int findIndex = 0; findIndex < categorys.length; findIndex++) {
-      categorys[findIndex].detail.parentGuid = guid;
-      categorys[findIndex].detail.parentGuidAll = "$parentGuid,$guid";
-      updateParentGuid(
-          categorys[findIndex].childCategorys,
-          categorys[findIndex].detail.parentGuidAll,
-          categorys[findIndex].detail.guidfixed);
-    }
+  void updateData(String guid) {
+    CategoryModel categoryModel = CategoryModel(
+      guidfixed: guid,
+      parentguid: selectParentGuid,
+      parentguidall: selectParentGuidAll(rootCategorys, selectParentGuid),
+      imageuri: "",
+      childcount: 0,
+      names: packLanguage(),
+    );
+    context
+        .read<CategoryBloc>()
+        .add(CategoryUpdate(guid: guid, categoryModel: categoryModel));
   }
 
   void buildColumnWidget() {
-    columns.clear();
+    listColumns.clear();
     categoryList(0, rootCategorys);
   }
 
@@ -98,38 +182,36 @@ class CategoryScreenState extends State<CategoryScreen>
   Widget categoryDetail(int level, CategoryListModel category) {
     return DragTarget(onWillAccept: (data) {
       setState(() {
-        activeDragTargetGuid = category.detail.guidfixed;
+        selectDragTargetGuid = category.detail.guidfixed;
         buildColumnWidget();
       });
-      return !category.detail.parentGuidAll.contains(activeSelectedGuid);
+      return !category.detail.parentguidall.contains(selectGuid);
       //return (activeSelectedGuid != category.detail.parentGuid);
     }, onAccept: (data) {
       setState(() {
-        if (activeSelectedGuid != activeDragTargetGuid) {
-          var findCategory = findByGuid(rootCategorys, activeSelectedGuid);
-          removeByGuid(rootCategorys, activeSelectedGuid);
-          insertByGuid(rootCategorys, activeDragTargetGuid, findCategory);
-          updateParentGuid(rootCategorys, "", "");
-          activeDragTargetGuid = "";
-          activeSelectedGuid = category.detail.guidfixed;
-          buildColumnWidget();
+        if (selectGuid != selectDragTargetGuid) {
+          var findCategory = findByGuid(rootCategorys, selectGuid);
+          if (findCategory != null) {
+            selectParentGuid = selectDragTargetGuid;
+            updateData(selectGuid);
+          }
         }
       });
     }, onLeave: (data) {
       setState(() {
-        activeDragTargetGuid = "";
-        buildColumnWidget();
+        //selectDragTargetGuid = "";
+        //buildColumnWidget();
       });
     }, builder: (context, candidateData, rejectedData) {
       Color color = Colors.white;
-      if (activeDragTargetGuid == category.detail.guidfixed) {
+      if (selectDragTargetGuid == category.detail.guidfixed) {
         color = Colors.green;
       }
-      if (activeSelectedGuid == category.detail.guidfixed) {
+      if (selectGuid == category.detail.guidfixed) {
         color = Colors.blue;
       }
-      if (activeDragTargetGuid.isNotEmpty &&
-          category.detail.parentGuidAll.contains(activeSelectedGuid)) {
+      if (selectDragTargetGuid.isNotEmpty &&
+          category.detail.parentguidall.contains(selectGuid)) {
         color = Colors.red;
       }
 
@@ -140,20 +222,23 @@ class CategoryScreenState extends State<CategoryScreen>
           child: Row(
             children: <Widget>[
               SizedBox(
-                width: level * 10,
+                width: level * 20,
               ),
               Expanded(
-                child: Text(category.detail.name1,
+                child: Text(global.packName(category.detail.names),
                     style: const TextStyle(fontSize: 18)),
               ),
               if (category.childCategorys.isNotEmpty)
                 IconButton(
+                  padding: EdgeInsets.zero,
+                  color: Colors.green,
+                  focusNode: FocusNode(skipTraversal: true),
                   icon: Icon((category.isExpand)
                       ? Icons.expand_less
                       : Icons.expand_more),
                   onPressed: () {
                     setState(() {
-                      activeDragTargetGuid = "";
+                      selectDragTargetGuid = "";
                       category.isExpand = !category.isExpand;
                       buildColumnWidget();
                     });
@@ -167,23 +252,47 @@ class CategoryScreenState extends State<CategoryScreen>
   Widget categoryList(int level, List<CategoryListModel> categorys) {
     for (var index = 0; index < categorys.length; index++) {
       Widget detail = categoryDetail(level, categorys[index]);
-      columns.add(GestureDetector(
+      listColumns.add(GestureDetector(
           onTap: () {
-            setState(() {
-              activeDragTargetGuid = "";
-              if (activeSelectedGuid == categorys[index].detail.guidfixed) {
-                activeSelectedGuid = "";
-              } else {
-                activeSelectedGuid = categorys[index].detail.guidfixed;
-              }
-              buildColumnWidget();
+            discardData(callBack: () {
+              setState(() {
+                developer.log("onTab");
+                isSaveAllow = false;
+                isEditMode = false;
+                selectDragTargetGuid = "";
+                selectGuid = categorys[index].detail.guidfixed;
+                selectParentName = categorys[index].detail.names[0].name;
+                headerEdit = global.language("show");
+                isDeleteAllow = categorys[index].childCategorys.isEmpty;
+                context.read<CategoryBloc>().add(CategoryGet(guid: selectGuid));
+                buildColumnWidget();
+              });
+            });
+          },
+          onDoubleTap: () {
+            discardData(callBack: () {
+              setState(() {
+                isSaveAllow = true;
+                isEditMode = true;
+                selectDragTargetGuid = "";
+                selectGuid = categorys[index].detail.guidfixed;
+                selectParentName = categorys[index].detail.names[0].name;
+                headerEdit = global.language("edit");
+                isDeleteAllow = categorys[index].childCategorys.isEmpty;
+                switchToEdit(selectGuid);
+                buildColumnWidget();
+                fieldFocusNodes[0].requestFocus();
+              });
             });
           },
           child: LongPressDraggable<Widget>(
               data: detail,
               onDragStarted: () {
                 setState(() {
-                  activeSelectedGuid = categorys[index].detail.guidfixed;
+                  selectGuid = categorys[index].detail.guidfixed;
+                  context
+                      .read<CategoryBloc>()
+                      .add(CategoryGet(guid: selectGuid));
                   buildColumnWidget();
                 });
               },
@@ -192,7 +301,7 @@ class CategoryScreenState extends State<CategoryScreen>
               feedback: SizedBox(
                   width: 100,
                   height: 100,
-                  child: Text(categorys[index].detail.name1,
+                  child: Text(global.packName(categorys[index].detail.names),
                       style: const TextStyle(fontSize: 18))),
               child: detail)));
       if (categorys[index].childCategorys.isNotEmpty &&
@@ -201,168 +310,197 @@ class CategoryScreenState extends State<CategoryScreen>
       }
     }
 
-    return Column(children: columns);
+    return Column(children: listColumns);
   }
 
   @override
   void initState() {
     global.loadConfig();
-    for (int i = 0; i < global.config.languages.length; i++) {
-      nameController.add(TextEditingController());
-      nameFocusNode.add(FocusNode());
-      fieldName.add("name${i + 1}");
-    }
     tabController = TabController(vsync: this, length: 2);
+    for (int i = 0; i < global.config.languages.length; i++) {
+      if (global.config.languages[i].use) {
+        languageList.add(global.config.languages[i]);
+      }
+    }
+    // เรียงลำดับ Focus
+    fieldTextController.add(TextEditingController());
+    for (int i = 0; i < languageList.length; i++) {
+      fieldTextController.add(TextEditingController());
+      FocusNode focusNode = FocusNode();
+      focusNode.addListener(() {
+        focusNodeIndex = i;
+      });
+      fieldFocusNodes.add(focusNode);
+    }
+    //listScrollController.addListener(onScrollList);
+    loadDataList("");
     super.initState();
   }
 
   @override
   void dispose() {
     listScrollController.dispose();
-    editScrollController.dispose();
-    for (int i = 0; i < nameController.length; i++) {
-      nameController[i].dispose();
-      nameFocusNode[i].dispose();
-    }
     tabController.dispose();
+    editScrollController.dispose();
+    for (int i = 0; i < fieldTextController.length; i++) {
+      fieldTextController[i].dispose();
+    }
+    for (int i = 0; i < fieldFocusNodes.length; i++) {
+      fieldFocusNodes[i].dispose();
+    }
     super.dispose();
   }
 
-  void insertNewCategory() {
-    setState(() {
-      String newGuid = const Uuid().v4();
-      CategoryListModel newCategory = CategoryListModel(
-        detail: CategoryModel(
-            guidfixed: newGuid,
-            parentGuid: '',
-            name1: newGuid,
-            name2: '',
-            name3: '',
-            name4: '',
-            name5: '',
-            image: ''),
-        childCategorys: [],
-      );
-      int addr = rootCategorys.length;
-      List<CategoryListModel> currentCategorys = [];
-      CategoryListModel findCategory =
-          findByGuid(rootCategorys, activeSelectedGuid);
-      if (findCategory.detail.parentGuid.isEmpty) {
-        currentCategorys = rootCategorys;
-        needScroll = true;
-      } else {
-        CategoryListModel findParentCatagory =
-            findByGuid(rootCategorys, findCategory.detail.parentGuid);
-        currentCategorys = findParentCatagory.childCategorys;
-      }
-      addr = currentCategorys.length;
-      if (activeSelectedGuid.isNotEmpty) {
-        for (int findAddr = 0; findAddr < currentCategorys.length; findAddr++) {
-          if (currentCategorys[findAddr].detail.guidfixed ==
-              activeSelectedGuid) {
-            addr = findAddr + 1;
-            break;
-          }
-        }
-      }
-      currentCategorys.insert(addr, newCategory);
-      updateParentGuid(rootCategorys, "", "");
-      buildColumnWidget();
-    });
+  void deleteDialog() {
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(global.language('delete_confirm')),
+        actions: <Widget>[
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.pop(context),
+              child: Text(global.language('no'))),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              onPressed: () {
+                Navigator.pop(context);
+                context
+                    .read<CategoryBloc>()
+                    .add(CategoryDelete(guid: selectGuid));
+              },
+              child: Text(global.language('confirm'))),
+        ],
+      ),
+    );
   }
 
-  Widget categoryListScreen() {
+  Widget listScreen({required bool mobileScreen}) {
     if (needScroll) {
       categoryListScrollToEnd();
       needScroll = false;
     }
     return Scaffold(
         appBar: AppBar(
-          title: const Text('กลุ่มสินค้า'),
+          automaticallyImplyLeading: false,
+          title: Text(global.language('product_group')),
+          leading: IconButton(
+            focusNode: FocusNode(skipTraversal: true),
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              discardData(callBack: () {
+                Navigator.pop(context);
+                isEditMode = false;
+              });
+            },
+          ),
           actions: <Widget>[
             Padding(
                 padding: const EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      activeDragTargetGuid = "";
-                      removeByGuid(rootCategorys, activeSelectedGuid);
-                      buildColumnWidget();
+                child: IconButton(
+                  focusNode: FocusNode(skipTraversal: true),
+                  onPressed: () {
+                    discardData(callBack: () {
+                      setState(() {
+                        selectParentGuid = "";
+                        isEditMode = true;
+                        isChange = false;
+                        isSaveAllow = true;
+                        selectGuid = "";
+                        headerEdit = global.language('append');
+                        clearEditData();
+                        if (mobileScreen && selectDragTargetGuid.isEmpty) {
+                          WidgetsBinding.instance
+                              .addPostFrameCallback((timeStamp) {
+                            tabController.animateTo(1);
+                          });
+                        }
+                        fieldFocusNodes[0].requestFocus();
+                      });
                     });
                   },
-                  child: const Icon(
-                    Icons.delete,
-                    size: 26.0,
-                  ),
-                )),
-            Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    tabController.index = 1;
-                    nameFocusNode[0].requestFocus();
-                    //insertNewCategory();
-                  },
-                  child: const Icon(
+                  icon: const Icon(
                     Icons.add,
-                    size: 26.0,
-                  ),
-                )),
-            Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    var guid = const Uuid().v4();
-                    setState(() {
-                      CategoryListModel category =
-                          findByGuid(rootCategorys, activeSelectedGuid);
-                      category.childCategorys.add(CategoryListModel(
-                          detail: CategoryModel(
-                              guidfixed: guid,
-                              parentGuid: category.detail.guidfixed,
-                              name1: guid,
-                              name2: '',
-                              name3: '',
-                              name4: '',
-                              name5: '',
-                              image: ''),
-                          childCategorys: []));
-                      activeDragTargetGuid = "";
-                      updateParentGuid(rootCategorys, "", "");
-                      buildColumnWidget();
-                    });
-                  },
-                  child: const Icon(
-                    Icons.add_link,
                     size: 26.0,
                   ),
                 )),
           ],
         ),
-        body: SingleChildScrollView(
-          controller: listScrollController,
-          child: Column(children: columns),
-        ));
+        body: Column(children: [
+          if (selectDragTargetGuid.isNotEmpty)
+            DragTarget(builder: (context, candidateData, rejectedData) {
+              return Container(
+                  width: double.infinity,
+                  height: 40,
+                  color: Colors.green,
+                  child: const Icon(
+                    Icons.home,
+                    color: Colors.white,
+                    size: 26.0,
+                  ));
+            }, onWillAccept: (data) {
+              return true;
+            }, onAccept: (data) {
+              setState(() {
+                selectParentGuid = "";
+                updateData(selectGuid);
+              });
+            }),
+          Expanded(
+              child: SingleChildScrollView(
+            controller: listScrollController,
+            child: Column(children: listColumns),
+          ))
+        ]));
   }
 
-  Widget categoryEditParent() {
-    CategoryListModel category = findByGuid(rootCategorys, activeSelectedGuid);
-    print(category.detail.parentGuidAll);
-    if (category.detail.parentGuid.isEmpty) {
-      return const Text("กลุ่มหลัก (กดเพื่อเลือกกลุ่มอื่น)");
+  void discardData({required Function callBack}) {
+    if (isEditMode && isChange) {
+      showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+                title: const Text('มีการแก้ไขข้อมูล'),
+                content: const Text('ต้องการออกจากหน้าจอนี้ ใช่หรือไม่'),
+                actions: <Widget>[
+                  ElevatedButton(
+                      style:
+                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('ไม่')),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        callBack();
+                      },
+                      child: const Text('ใช่')),
+                ],
+              ));
     } else {
-      return Wrap(
-        children: [],
-      );
+      callBack();
     }
   }
 
-  Widget categoryEditScreen({showBackButton = true}) {
+  void switchToEdit(String guid) {
+    setState(() {
+      selectGuid = guid;
+      context.read<CategoryBloc>().add(CategoryGet(guid: selectGuid));
+      headerEdit = global.language("edit");
+      isSaveAllow = true;
+      isEditMode = true;
+    });
+  }
+
+  Widget editScreen({mobileScreen = true}) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('รายละเอียดกลุ่มสินค้า'),
-          leading: showBackButton
+          automaticallyImplyLeading: false,
+          title: Text(headerEdit + global.language('product_group')),
+          backgroundColor: (isEditMode) ? Colors.green : Colors.blue,
+          leading: mobileScreen
               ? IconButton(
+                  focusNode: FocusNode(skipTraversal: true),
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () {
                     tabController.index = 0;
@@ -370,17 +508,87 @@ class CategoryScreenState extends State<CategoryScreen>
                 )
               : null,
           actions: <Widget>[
-            Padding(
-                padding: const EdgeInsets.only(right: 20.0),
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {});
-                  },
-                  child: const Icon(
-                    Icons.save,
-                    size: 26.0,
-                  ),
-                )),
+            if (isDeleteAllow && selectGuid.isNotEmpty)
+              Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: IconButton(
+                    focusNode: FocusNode(skipTraversal: true),
+                    onPressed: () {
+                      deleteDialog();
+                      setState(() {});
+                    },
+                    icon: const Icon(
+                      Icons.delete,
+                    ),
+                  )),
+            if (global.systemLanguage.length > 1 && isSaveAllow)
+              Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: IconButton(
+                    focusNode: FocusNode(skipTraversal: true),
+                    onPressed: () async {
+                      for (int i = 1; i <= languageList.length; i++) {
+                        try {
+                          var translation = await translator.translate(
+                              fieldTextController[0].text,
+                              to: languageList[i].codeTranslator);
+                          fieldTextController[i].text = translation.text;
+                        } catch (_) {}
+                      }
+                      setState(() {});
+                    },
+                    icon: const Icon(
+                      Icons.translate,
+                    ),
+                  )),
+            if (isSaveAllow == false && selectGuid.trim().isNotEmpty)
+              Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: IconButton(
+                    focusNode: FocusNode(skipTraversal: true),
+                    onPressed: () {
+                      switchToEdit(selectGuid);
+                    },
+                    icon: const Icon(
+                      Icons.edit,
+                    ),
+                  )),
+            if (isSaveAllow)
+              Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: IconButton(
+                    focusNode: FocusNode(skipTraversal: true),
+                    onPressed: () => saveOrUpdateData(),
+                    icon: const Icon(
+                      Icons.save,
+                      size: 26.0,
+                    ),
+                  )),
+            if (selectGuid.isNotEmpty)
+              Padding(
+                  padding: const EdgeInsets.only(right: 20.0),
+                  child: IconButton(
+                    focusNode: FocusNode(skipTraversal: true),
+                    onPressed: () {
+                      discardData(callBack: () {
+                        setState(() {
+                          selectParentGuid = selectGuid;
+                          selectGuid = "";
+                          isSaveAllow = true;
+                          isEditMode = true;
+                          isChange = false;
+                          headerEdit = global.language('append');
+                          tabController.index = 1;
+                          clearEditData();
+                          fieldFocusNodes[0].requestFocus();
+                        });
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.add_link,
+                      size: 26.0,
+                    ),
+                  )),
           ],
         ),
         body: SingleChildScrollView(
@@ -389,102 +597,127 @@ class CategoryScreenState extends State<CategoryScreen>
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               child: Column(children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.grey,
-                        backgroundColor: Colors.white,
-                      ),
-                      onPressed: () {
-                        setState(() {});
-                      },
-                      child: categoryEditParent()),
-                ),
-                const SizedBox(height: 10),
-                for (int i = 0; i < global.config.languages.length; i++)
-                  if (global.config.languages[i].use)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: TextField(
-                        focusNode: nameFocusNode[i],
-                        textAlign: TextAlign.left,
-                        controller: nameController[i],
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          labelText:
-                              "ชื่อกลุ่มสินค้า (${global.config.languages[i].name})",
+                if (selectParentGuid.isNotEmpty)
+                  SizedBox(
+                    width: double.infinity,
+                    child: Container(
+                        margin: const EdgeInsets.only(bottom: 5),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                         ),
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(global.language("select_group")),
+                              const SizedBox(width: 5),
+                              Text(categoryFullName(
+                                  rootCategorys, selectParentGuid))
+                            ])),
+                  ),
+                const SizedBox(height: 10),
+                for (int i = 0; i < languageList.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: TextFormField(
+                      onChanged: (value) {
+                        isChange = true;
+                      },
+                      onFieldSubmitted: (value) {
+                        findFocusNext(focusNodeIndex);
+                      },
+                      textInputAction: TextInputAction.next,
+                      focusNode: fieldFocusNodes[i],
+                      textAlign: TextAlign.left,
+                      controller: fieldTextController[i],
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText:
+                            "${global.language("product_group_name")} (${languageList[i].name})",
                       ),
                     ),
-                Row(
-                  children: [
-                    Expanded(
-                        child: ElevatedButton.icon(
-                      onPressed: () async {
-                        setState(() {
-                          if (kIsWeb) {
-                            imageWeb = null;
-                          } else {}
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.delete,
-                      ),
-                      label: const Text('ลบ'),
-                    )),
-                    const SizedBox(width: 5),
-                    Expanded(
-                        child: ElevatedButton.icon(
-                      onPressed: (kIsWeb)
-                          ? () async {
-                              final ImagePicker picker = ImagePicker();
-                              XFile? image = await picker.pickImage(
-                                  source: ImageSource.gallery);
-                              if (image != null) {
-                                var f = await image.readAsBytes();
-                                setState(() {
-                                  imageWeb = f;
-                                });
-                              }
-                            }
-                          : () {
-                              setState(() async {
-                                final XFile? photo = await _picker.pickImage(
+                  ),
+                if (isEditMode)
+                  Row(
+                    children: [
+                      Expanded(
+                          child: ElevatedButton.icon(
+                        focusNode: FocusNode(skipTraversal: true),
+                        onPressed: () async {
+                          setState(() {
+                            if (kIsWeb) {
+                              imageWeb = null;
+                            } else {}
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.delete,
+                        ),
+                        label: Text(global.language('delete_picture')),
+                      )),
+                      const SizedBox(width: 5),
+                      Expanded(
+                          child: ElevatedButton.icon(
+                        focusNode: FocusNode(skipTraversal: true),
+                        onPressed: (kIsWeb)
+                            ? () async {
+                                final ImagePicker picker = ImagePicker();
+                                XFile? image = await picker.pickImage(
                                     source: ImageSource.gallery);
-                                if (photo != null) {
+                                if (image != null) {
+                                  var f = await image.readAsBytes();
                                   setState(() {
-                                    imageFile = File(photo.path);
+                                    imageWeb = f;
                                   });
                                 }
-                              });
-                            },
-                      icon: const Icon(
-                        Icons.folder,
-                      ),
-                      label: const Text('เลือก'),
-                    )),
-                    const SizedBox(width: 5),
-                    Expanded(
-                        child: ElevatedButton.icon(
-                      onPressed: (kIsWeb)
-                          ? null
-                          : () async {
-                              final XFile? photo = await _picker.pickImage(
-                                  source: ImageSource.camera);
-                              if (photo != null) {
-                                setState(() {
-                                  imageFile = File(photo.path);
-                                });
                               }
-                            },
-                      icon: const Icon(
-                        Icons.camera_alt,
-                      ),
-                      label: const Text('ถ่าย'),
-                    )),
-                  ],
-                ),
+                            : () {
+                                setState(() async {
+                                  final XFile? photo = await _picker.pickImage(
+                                      source: ImageSource.gallery);
+                                  if (photo != null) {
+                                    setState(() {
+                                      imageFile = File(photo.path);
+                                    });
+                                  }
+                                });
+                              },
+                        icon: const Icon(
+                          Icons.folder,
+                        ),
+                        label: Text(global.language("select_picture")),
+                      )),
+                      const SizedBox(width: 5),
+                      if (kIsWeb == false)
+                        Expanded(
+                            child: ElevatedButton.icon(
+                          focusNode: FocusNode(skipTraversal: true),
+                          onPressed: () async {
+                            final XFile? photo = await _picker.pickImage(
+                                source: ImageSource.camera);
+                            if (photo != null) {
+                              setState(() {
+                                imageFile = File(photo.path);
+                              });
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.camera_alt,
+                          ),
+                          label: Text(global.language('take_photo')),
+                        )),
+                    ],
+                  ),
                 const SizedBox(height: 10),
                 if (kIsWeb)
                   SizedBox(
@@ -540,27 +773,227 @@ class CategoryScreenState extends State<CategoryScreen>
                   (imageFile.path.isNotEmpty)
                       ? Image.file(imageFile, fit: BoxFit.cover)
                       : Image.asset('assets/img/noimg.png', fit: BoxFit.cover),
+                const SizedBox(height: 10),
+                if (isEditMode)
+                  SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                          focusNode: FocusNode(skipTraversal: true),
+                          onPressed: () {
+                            saveOrUpdateData();
+                          },
+                          icon: const Icon(Icons.save),
+                          label: Text(global.language("save") +
+                              ((kIsWeb) ? " (F10)" : ""))))
               ]),
             )));
   }
 
+  void clearEditData() {
+    for (int i = 0; i < fieldTextController.length; i++) {
+      fieldTextController[i].clear();
+    }
+    isChange = false;
+    focusNodeIndex = 0;
+    fieldFocusNodes[focusNodeIndex].requestFocus();
+  }
+
+  void getDataToEditScreen(CategoryModel category) {
+    isChange = false;
+    selectGuid = category.guidfixed;
+    selectParentGuid = category.parentguid;
+    for (int i = 0; i < languageList.length; i++) {
+      fieldTextController[i].text = "";
+    }
+    for (int i = 0; i < languageList.length; i++) {
+      for (int j = 0; j < category.names.length; j++) {
+        if (languageList[i].code == category.names[j].code) {
+          fieldTextController[i].text = category.names[j].name;
+        }
+      }
+    }
+  }
+
+  void findFocusNext(int index) {
+    focusNodeIndex = index + 1;
+    if (focusNodeIndex > fieldFocusNodes.length - 1) {
+      focusNodeIndex = 0;
+    }
+    fieldFocusNodes[focusNodeIndex].requestFocus();
+    fieldTextController[focusNodeIndex].selection = TextSelection.fromPosition(
+        TextPosition(offset: fieldTextController[focusNodeIndex].text.length));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Scaffold(
-          body: (constraints.maxWidth > 800)
-              ? Row(
-                  children: [
-                    Expanded(child: categoryListScreen()),
-                    Container(width: 1.5, color: Colors.black),
-                    Expanded(child: categoryEditScreen(showBackButton: false)),
-                  ],
-                )
-              : TabBarView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  controller: tabController,
-                  children: [categoryListScreen(), categoryEditScreen()],
-                ));
-    });
+    return Scaffold(
+        resizeToAvoidBottomInset: true,
+        body: LayoutBuilder(builder: (context, constraints) {
+          bool mobileScreen = (constraints.maxWidth < 800.0);
+          return BlocListener<CategoryBloc, CategoryState>(
+              listener: (context, state) {
+                blocCategoryState = state;
+                // Load
+                if (state is CategoryLoadSuccess) {
+                  setState(() {
+                    rootCategorys.clear();
+                    for (var item in state.categorys) {
+                      rootCategorys.add(
+                          CategoryListModel(detail: item, childCategorys: []));
+                    }
+                    int index = 0;
+                    while (index < rootCategorys.length) {
+                      if (rootCategorys[index].detail.parentguid.isNotEmpty) {
+                        CategoryListModel? findCategory = findByGuid(
+                            rootCategorys,
+                            rootCategorys[index].detail.parentguid);
+                        if (findCategory != null) {
+                          findCategory.childCategorys.add(rootCategorys[index]);
+                          rootCategorys.removeAt(index);
+                        } else {
+                          index++;
+                        }
+                      } else {
+                        index++;
+                      }
+                    }
+                    buildColumnWidget();
+                  });
+                }
+                // Save
+                if (state is CategorySaveSuccess) {
+                  setState(() {
+                    global.showSnackBar(
+                        context,
+                        const Icon(
+                          Icons.save,
+                          color: Colors.white,
+                        ),
+                        "บันทึกสำเร็จ",
+                        Colors.blue);
+                    clearEditData();
+                    loadDataList("");
+                  });
+                }
+                if (state is CategorySaveFailed) {
+                  setState(() {
+                    global.showSnackBar(
+                        context,
+                        const Icon(
+                          Icons.save,
+                          color: Colors.white,
+                        ),
+                        "บันทึกไม่สำเร็จ : ${state.message}",
+                        Colors.red);
+                  });
+                }
+                // Update
+                if (state is CategoryUpdateSuccess) {
+                  setState(() {
+                    global.showSnackBar(
+                        context,
+                        const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                        ),
+                        "แก้ไขสำเร็จ",
+                        Colors.blue);
+                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                      tabController.animateTo(0);
+                    });
+                    loadDataList("");
+                    isSaveAllow = false;
+                    isEditMode = false;
+                    selectDragTargetGuid = "";
+                  });
+                }
+                if (state is CategoryUpdateFailed) {
+                  setState(() {
+                    global.showSnackBar(
+                        context,
+                        const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                        ),
+                        "แก้ไขไม่สำเร็จ : ${state.message}",
+                        Colors.red);
+                  });
+                }
+                // Delete
+                if (state is CategoryDeleteSuccess) {
+                  setState(() {
+                    global.showSnackBar(
+                        context,
+                        const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                        "ลบสำเร็จ",
+                        Colors.blue);
+                    selectGuid = "";
+                    isSaveAllow = false;
+                    isEditMode = false;
+                    clearEditData();
+                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                      tabController.animateTo(0);
+                    });
+                    loadDataList("");
+                  });
+                }
+                // Delete Many
+                if (state is CategoryDeleteManySuccess) {
+                  setState(() {
+                    global.showSnackBar(
+                        context,
+                        const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                        "ลบสำเร็จ",
+                        Colors.blue);
+                    //unitListDatas.clear();
+                    //clearEditData();
+                    //loadDataList(searchText);
+                    //showCheckBox = false;
+                  });
+                }
+                // Get
+                if (state is CategoryGetSuccess) {
+                  setState(() {
+                    getDataToEditScreen(state.category);
+                    if (mobileScreen && selectDragTargetGuid.isEmpty) {
+                      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                        tabController.animateTo(1);
+                      });
+                    }
+                  });
+                }
+              },
+              child: (mobileScreen == false)
+                  ? SplitView(
+                      gripSize: 8,
+                      gripColor: Colors.blue.shade400,
+                      gripColorActive: Colors.blue,
+                      viewMode: SplitViewMode.Horizontal,
+                      indicator: const SplitIndicator(
+                          viewMode: SplitViewMode.Horizontal),
+                      activeIndicator: const SplitIndicator(
+                        viewMode: SplitViewMode.Horizontal,
+                        isActive: true,
+                      ),
+                      children: [
+                        listScreen(mobileScreen: false),
+                        editScreen(mobileScreen: false),
+                      ],
+                    )
+                  : TabBarView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      controller: tabController,
+                      children: [
+                        listScreen(mobileScreen: true),
+                        editScreen(mobileScreen: true)
+                      ],
+                    ));
+        }));
   }
 }

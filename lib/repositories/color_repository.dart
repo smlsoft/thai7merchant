@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:thai7merchant/model/category_model.dart';
+import 'package:thai7merchant/model/color.dart';
 
 import 'client.dart';
 import 'package:dio/dio.dart';
 
-class CategoryRepository {
-  Future<ApiResponse> getCategoryList({
+class ColorRepository {
+  Future<ApiResponse> getColorList({
     int limit = 0,
     int offset = 0,
     String search = "",
@@ -14,8 +14,7 @@ class CategoryRepository {
     Dio client = Client().init();
 
     try {
-      String query =
-          "/product/category/list?offset=$offset&limit=$limit&q=$search";
+      String query = "/color/list?offset=$offset&limit=$limit&q=$search";
       final response = await client.get(query);
       try {
         final rawData = json.decode(response.toString());
@@ -32,10 +31,10 @@ class CategoryRepository {
     }
   }
 
-  Future<ApiResponse> deleteCategory(String guid) async {
+  Future<ApiResponse> deleteColor(String guid) async {
     Dio client = Client().init();
     try {
-      final response = await client.delete('/product/category/$guid');
+      final response = await client.delete('/color/$guid');
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -48,10 +47,10 @@ class CategoryRepository {
   }
 
   /// ลบที่ละหลาย GUID
-  Future<ApiResponse> deleteCategoryMany(List<String> guids) async {
+  Future<ApiResponse> deleteColorMany(List<String> guids) async {
     Dio client = Client().init();
     try {
-      final response = await client.delete('/product/category', data: guids);
+      final response = await client.delete('/color', data: guids);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -63,10 +62,10 @@ class CategoryRepository {
     }
   }
 
-  Future<ApiResponse> getCategory(String guid) async {
+  Future<ApiResponse> getColor(String guid) async {
     Dio client = Client().init();
     try {
-      final response = await client.get('/product/category/$guid');
+      final response = await client.get('/color/$guid');
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -78,11 +77,11 @@ class CategoryRepository {
     }
   }
 
-  Future<ApiResponse> saveCategory(CategoryModel categoryModel) async {
+  Future<ApiResponse> saveColor(ColorModel colorModel) async {
     Dio client = Client().init();
-    final data = categoryModel.toJson();
+    final data = colorModel.toJson();
     try {
-      final response = await client.post('/product/category', data: data);
+      final response = await client.post('/color', data: data);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -94,12 +93,11 @@ class CategoryRepository {
     }
   }
 
-  Future<ApiResponse> updateCategory(
-      String guid, CategoryModel categoryModel) async {
+  Future<ApiResponse> updateColor(String guid, ColorModel colorModel) async {
     Dio client = Client().init();
-    final data = categoryModel.toJson();
+    final data = colorModel.toJson();
     try {
-      final response = await client.put('/product/category/$guid', data: data);
+      final response = await client.put('/color/$guid', data: data);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {

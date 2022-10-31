@@ -18,10 +18,10 @@ class LoginShop extends StatefulWidget {
   const LoginShop({Key? key}) : super(key: key);
 
   @override
-  State<LoginShop> createState() => _LoginShopState();
+  State<LoginShop> createState() => LoginShopState();
 }
 
-class _LoginShopState extends State<LoginShop> {
+class LoginShopState extends State<LoginShop> {
   bool _isLoaderVisible = false;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _userControl = TextEditingController();

@@ -13,124 +13,91 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   CategoryBloc({required CategoryRepository categoryRepository})
       : _categoryRepository = categoryRepository,
         super(CategoryInitial()) {
-    on<ListCategoryLoadDropDown>(_onCategoryLoadDropDown);
-    on<ListCategoryLoad>(_onCategoryLoad);
-    on<ListCategoryLoadById>(_onGetCategoryId);
-    on<CategorySaved>(_onCategorySaved);
-    on<CategoryUpdate>(_onCategoryUpdate);
-    on<CategoryDelete>(_onCategoryDelete);
+    on<CategoryLoadList>(onCategoryLoad);
+    on<CategorySave>(onCategorySave);
+    on<CategoryUpdate>(onCategoryUpdate);
+    on<CategoryDelete>(categoryDelete);
+    on<CategoryDeleteMany>(categoryDeleteMany);
+    on<CategoryGet>(onCategoryGet);
   }
 
-  void _onCategoryLoadDropDown(
-      ListCategoryLoadDropDown event, Emitter<CategoryState> emit) async {
-    emit(CategoryLoadDropDownInProgress());
-    try {
-      final _result = await _categoryRepository.getCategoryList();
-
-      List<CategoryModel> _category = (_result.data as List)
-          .map((category) => CategoryModel.fromJson(category))
-          .toList();
-      emit(CategoryLoadDropDownSuccess(_category));
-    } catch (e) {
-      emit(CategoryLoadDropDownFailure(message: e.toString()));
-    }
-  }
-
-  void _onCategoryLoad(
-      ListCategoryLoad event, Emitter<CategoryState> emit) async {
-    CategoryLoadSuccess categoryLoadSuccess;
-    List<CategoryModel> _previousCategory = [];
-    if (state is CategoryLoadSuccess) {
-      categoryLoadSuccess = (state as CategoryLoadSuccess).copyWith();
-      _previousCategory = categoryLoadSuccess.category;
-    }
+  void onCategoryLoad(
+      CategoryLoadList event, Emitter<CategoryState> emit) async {
     emit(CategoryInProgress());
 
     try {
-      final _result = await _categoryRepository.getCategoryList(
-          perPage: event.perPage, page: event.page, search: event.search);
+      final results = await _categoryRepository.getCategoryList(
+          offset: event.offset, limit: event.limit, search: event.search);
 
-      if (_result.success) {
-        if (event.nextPage) {
-          List<CategoryModel> _category = (_result.data as List)
-              .map((category) => CategoryModel.fromJson(category))
-              .toList();
-          // print(_category);
-          emit(CategoryLoadSuccess(category: _category, page: _result.page));
-        } else {
-          List<CategoryModel> _category = (_result.data as List)
-              .map((category) => CategoryModel.fromJson(category))
-              .toList();
-          // print(_category);
-          _previousCategory.addAll(_category);
-          emit(CategoryLoadSuccess(
-              category: _previousCategory, page: _result.page));
-        }
+      if (results.success) {
+        List<CategoryModel> categorys = (results.data as List)
+            .map((category) => CategoryModel.fromJson(category))
+            .toList();
+        emit(CategoryLoadSuccess(categorys: categorys));
       } else {
-        emit(CategoryLoadFailed(message: 'Category Not Found'));
+        emit(const CategoryLoadFailed(message: 'Category Not Found'));
       }
     } catch (e) {
       emit(CategoryLoadFailed(message: e.toString()));
     }
   }
 
-  void _onGetCategoryId(
-      ListCategoryLoadById event, Emitter<CategoryState> emit) async {
-    emit(CategoryLoadByIdInProgress());
-    try {
-      final _result = await _categoryRepository.getCategoryId(event.id);
-
-      if (_result.success) {
-        CategoryModel _category = CategoryModel.fromJson(_result.data);
-        // print(_category);
-        emit(CategoryLoadByIdLoadSuccess(category: _category));
-      } else {
-        emit(CategoryLoadByIdLoadFailed(message: 'Category Not Found'));
-      }
-    } catch (e) {
-      emit(CategoryLoadByIdLoadFailed(message: e.toString()));
-    }
-  }
-
-  void _onCategorySaved(
-      CategorySaved event, Emitter<CategoryState> emit) async {
-    emit(CategoryFormSaveInProgress());
-    try {
-      // print(event.inventory.toString());
-
-      await _categoryRepository.saveCategory(event.category);
-      // print('Success');
-      emit(CategoryFormSaveSuccess());
-    } catch (e) {
-      emit(CategoryFormSaveFailure(message: e.toString()));
-    }
-  }
-
-  void _onCategoryUpdate(
-      CategoryUpdate event, Emitter<CategoryState> emit) async {
-    emit(CategoryUpdateInProgress());
-    try {
-      // print(event.inventory.toString());
-
-      await _categoryRepository.updateCategory(event.category);
-
-      emit(CategoryUpdateSuccess());
-    } catch (e) {
-      emit(CategoryUpdateFailure(message: e.toString()));
-    }
-  }
-
-  void _onCategoryDelete(
-      CategoryDelete event, Emitter<CategoryState> emit) async {
+  void categoryDelete(CategoryDelete event, Emitter<CategoryState> emit) async {
     emit(CategoryDeleteInProgress());
     try {
-      // print(event.inventory.toString());
-
-      await _categoryRepository.deleteCategory(event.id);
+      await _categoryRepository.deleteCategory(event.guid);
 
       emit(CategoryDeleteSuccess());
     } catch (e) {
-      emit(CategoryDeleteFailure(message: e.toString()));
+      // emit(CategoryDeleteFailure(message: e.toString()));
+    }
+  }
+
+  void categoryDeleteMany(
+      CategoryDeleteMany event, Emitter<CategoryState> emit) async {
+    emit(CategoryDeleteManyInProgress());
+    try {
+      await _categoryRepository.deleteCategoryMany(event.guid);
+
+      emit(CategoryDeleteManySuccess());
+    } catch (e) {
+      // emit(CategoryDeleteFailure(message: e.toString()));
+    }
+  }
+
+  void onCategorySave(CategorySave event, Emitter<CategoryState> emit) async {
+    emit(CategorySaveInProgress());
+    try {
+      await _categoryRepository.saveCategory(event.categoryModel);
+      emit(CategorySaveSuccess());
+    } catch (e) {
+      emit(CategorySaveFailed(message: e.toString()));
+    }
+  }
+
+  void onCategoryUpdate(
+      CategoryUpdate event, Emitter<CategoryState> emit) async {
+    emit(CategoryUpdateInProgress());
+    try {
+      await _categoryRepository.updateCategory(event.guid, event.categoryModel);
+      emit(CategoryUpdateSuccess());
+    } catch (e) {
+      emit(CategoryUpdateFailed(message: e.toString()));
+    }
+  }
+
+  void onCategoryGet(CategoryGet event, Emitter<CategoryState> emit) async {
+    emit(CategoryGetInProgress());
+    try {
+      final result = await _categoryRepository.getCategory(event.guid);
+      if (result.success) {
+        CategoryModel category = CategoryModel.fromJson(result.data);
+        emit(CategoryGetSuccess(category: category));
+      } else {
+        emit(const CategoryGetFailed(message: 'Category Not Found'));
+      }
+    } catch (e) {
+      // emit(CategoryDeleteFailure(message: e.toString()));
     }
   }
 }

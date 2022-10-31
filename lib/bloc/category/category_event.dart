@@ -7,66 +7,69 @@ abstract class CategoryEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class ListCategoryLoadDropDown extends CategoryEvent {
-  const ListCategoryLoadDropDown();
+class CategoryGet extends CategoryEvent {
+  final String guid;
+
+  const CategoryGet({required this.guid});
+
+  @override
+  List<Object> get props => [guid];
+}
+
+class CategoryLoadList extends CategoryEvent {
+  final int limit;
+  final int offset;
+  final String search;
+
+  const CategoryLoadList(
+      {required this.offset, required this.limit, required this.search});
 
   @override
   List<Object> get props => [];
-}
-
-class ListCategoryLoad extends CategoryEvent {
-  int page;
-  int perPage;
-  String search;
-  bool nextPage;
-
-  ListCategoryLoad(
-      {required this.page,
-      required this.perPage,
-      required this.search,
-      required this.nextPage});
-
-  @override
-  List<Object> get props => [];
-}
-
-class ListCategoryLoadById extends CategoryEvent {
-  String id;
-  ListCategoryLoadById({required this.id});
-
-  @override
-  List<Object> get props => [];
-}
-
-class CategorySaved extends CategoryEvent {
-  final CategoryModel category;
-
-  const CategorySaved({
-    required this.category,
-  });
-
-  @override
-  List<Object> get props => [category];
-}
-
-class CategoryUpdate extends CategoryEvent {
-  final CategoryModel category;
-
-  const CategoryUpdate({
-    required this.category,
-  });
-
-  @override
-  List<Object> get props => [category];
 }
 
 class CategoryDelete extends CategoryEvent {
-  final String id;
+  final String guid;
 
   const CategoryDelete({
-    required this.id,
+    required this.guid,
   });
 
   @override
-  List<Object> get props => [id];
+  List<Object> get props => [guid];
+}
+
+class CategoryDeleteMany extends CategoryEvent {
+  final List<String> guid;
+
+  const CategoryDeleteMany({
+    required this.guid,
+  });
+
+  @override
+  List<Object> get props => [guid];
+}
+
+class CategorySave extends CategoryEvent {
+  final CategoryModel categoryModel;
+
+  const CategorySave({
+    required this.categoryModel,
+  });
+
+  @override
+  List<Object> get props => [categoryModel];
+}
+
+class CategoryUpdate extends CategoryEvent {
+  final String guid;
+  final CategoryModel categoryModel;
+
+  const CategoryUpdate({
+    required this.guid,
+    required this.categoryModel,
+  });
+
+  @override
+  List<Object> get props => [categoryModel];
 }

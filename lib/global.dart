@@ -1,14 +1,15 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/config_model.dart';
+import 'package:thai7merchant/model/global_struct.dart';
 import 'package:thai7merchant/model/language_model.dart';
 import 'package:thai7merchant/model/public_color_model.dart';
 import 'package:thai7merchant/model/public_name_model.dart';
 
 enum LoginType { none, google, facebook, apple }
 
+String userLanguage = "";
 bool apiConnected = false;
 String apiToken = "";
 String apiUserName = "tester";
@@ -22,21 +23,37 @@ String loginName = "";
 String loginEmail = "";
 String loginPhotoUrl = "";
 List<PublicColorModel> publicColors = [];
+late List<LanguageSystemCodeModel> languageSystemCode;
 
 ConfigModel config = ConfigModel();
 
+String packName(List<LanguageDataModel> names) {
+  String result = "";
+  for (int i = 0; i < names.length; i++) {
+    result += names[i].name;
+    if (i < names.length - 1) {
+      result += ",";
+    }
+  }
+  return result;
+}
+
 void loadConfig() {
   config.languages = [
-    LanguageModel(code: "th", name: "ไทย", use: true),
-    LanguageModel(code: "en", name: "อังกฤษ", use: true),
-    LanguageModel(code: "cn", name: "จีน", use: true),
-    LanguageModel(code: "jp", name: "ญี่ปุ่น", use: false),
-    LanguageModel(code: "kr", name: "เกาหลี", use: false),
-    LanguageModel(code: "lo", name: "ลาว", use: true),
-    LanguageModel(code: "mr", name: "เมียนม่า", use: false),
-    LanguageModel(code: "my", name: "มาเลเซีย", use: false),
-    LanguageModel(code: "vi", name: "เวียดนาม", use: false),
-    LanguageModel(code: "km", name: "เขมร", use: false),
+    LanguageModel(code: "th", codeTranslator: "th", name: "ไทย", use: true),
+    LanguageModel(code: "en", codeTranslator: "en", name: "อังกฤษ", use: true),
+    LanguageModel(code: "cn", codeTranslator: "zh-cn", name: "จีน", use: true),
+    LanguageModel(
+        code: "jp", codeTranslator: "th", name: "ญี่ปุ่น", use: false),
+    LanguageModel(code: "kr", codeTranslator: "th", name: "เกาหลี", use: false),
+    LanguageModel(code: "lo", codeTranslator: "lo", name: "ลาว", use: true),
+    LanguageModel(
+        code: "mr", codeTranslator: "th", name: "เมียนม่า", use: false),
+    LanguageModel(
+        code: "my", codeTranslator: "th", name: "มาเลเซีย", use: false),
+    LanguageModel(
+        code: "vi", codeTranslator: "th", name: "เวียดนาม", use: false),
+    LanguageModel(code: "km", codeTranslator: "th", name: "เขมร", use: false),
   ];
   publicColors = [
     PublicColorModel()
@@ -234,4 +251,20 @@ void showSnackBar(
           Flexible(child: Text(message, overflow: TextOverflow.ellipsis)),
         ],
       ))));
+}
+
+String language(String code) {
+  String result = code;
+  for (int i = 0; i < languageSystemCode.length; i++) {
+    if (languageSystemCode[i].code == code) {
+      for (int j = 0; j < languageSystemCode[i].langs.length; j++) {
+        if (languageSystemCode[i].langs[j].code == userLanguage) {
+          result = languageSystemCode[i].langs[j].text;
+          break;
+        }
+      }
+      break;
+    }
+  }
+  return (result.trim().isEmpty) ? code : result;
 }

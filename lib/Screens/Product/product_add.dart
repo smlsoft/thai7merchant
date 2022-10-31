@@ -50,8 +50,11 @@ class _ProductAddState extends State<ProductAdd> {
 
   CategoryModel selectCate = CategoryModel(
     guidfixed: "",
-    parentGuid: "",
-    name1: 'กรุณาเลือกหมวดหมู่',
+    parentguid: "",
+    parentguidall: "",
+    imageuri: "",
+    childcount: 0,
+    names: [],
   );
 
   final _barcode = TextEditingController();
@@ -118,7 +121,7 @@ class _ProductAddState extends State<ProductAdd> {
           .add(ListInventoryById(id: widget.guidfixed.toString()));
     }
     //load  category
-    context.read<CategoryBloc>().add(ListCategoryLoadDropDown());
+    //context.read<CategoryBloc>().add(ListCategoryLoadDropDown());
 
     //load  Option
     context.read<OptionBloc>().add(ListOptionLoadSelect());
@@ -196,7 +199,7 @@ class _ProductAddState extends State<ProductAdd> {
         ),
         BlocListener<CategoryBloc, CategoryState>(
           listener: (context, state) {
-            if (state is CategoryLoadDropDownSuccess) {
+            /*if (state is CategoryLoadDropDownSuccess) {
               List<CategoryModel> _cat = state.category;
 
               CategoryModel result = _cat.firstWhere(
@@ -209,7 +212,7 @@ class _ProductAddState extends State<ProductAdd> {
                   name1: result.name1,
                 );
               });
-            }
+            }*/
           },
         ),
         BlocListener<OptionBloc, OptionState>(

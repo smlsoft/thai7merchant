@@ -2,21 +2,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
+import 'package:thai7merchant/bloc/product_barcode/product_barcode_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/language_model.dart';
-import 'package:thai7merchant/model/unit.dart';
+import 'package:thai7merchant/model/product_barcode_struct.dart';
 import 'package:split_view/split_view.dart';
 import 'package:translator/translator.dart';
 
-class UnitScreen extends StatefulWidget {
-  const UnitScreen({Key? key}) : super(key: key);
+class ProductBarcodeScreen extends StatefulWidget {
+  const ProductBarcodeScreen({Key? key}) : super(key: key);
 
   @override
-  State<UnitScreen> createState() => UnitScreenState();
+  State<ProductBarcodeScreen> createState() => ProductBarcodeScreenState();
 }
 
-class UnitScreenState extends State<UnitScreen>
+class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     with SingleTickerProviderStateMixin {
   final translator = GoogleTranslator();
   late TabController tabController;
@@ -27,8 +27,8 @@ class UnitScreenState extends State<UnitScreen>
   List<TextEditingController> fieldTextController = [];
   List<FocusNode> fieldFocusNodes = [];
   int focusNodeIndex = 0;
-  List<UnitModel> unitListDatas = [];
-  List<String> unitGuidListChecked = [];
+  List<ProductBarcodeModel> listDatas = [];
+  List<String> guidListChecked = [];
   List<LanguageDataModel> names = [];
   ScrollController listScrollController = ScrollController();
   List<GlobalKey> listKeys = [];
@@ -37,7 +37,7 @@ class UnitScreenState extends State<UnitScreen>
   String selectGuid = "";
   bool isChange = false;
   bool isSaveAllow = false;
-  late UnitState blocUnitState;
+  late ProductBarcodeState blocCurrentState;
   String headerEdit = "";
   late MediaQueryData queryData;
   int currentListIndex = -1;
@@ -81,8 +81,8 @@ class UnitScreenState extends State<UnitScreen>
   }
 
   void loadDataList(String search) {
-    context.read<UnitBloc>().add(UnitLoadList(
-        offset: (unitListDatas.isEmpty) ? 0 : unitListDatas.length,
+    context.read<ProductBarcodeBloc>().add(ProductBarcodeLoadList(
+        offset: (listDatas.isEmpty) ? 0 : listDatas.length,
         limit: loaDataPerPage,
         search: search));
   }
@@ -151,7 +151,7 @@ class UnitScreenState extends State<UnitScreen>
   void getData(String guid) {
     headerEdit = global.language("show");
     isEditMode = false;
-    context.read<UnitBloc>().add(UnitGet(guid: guid));
+    context.read<ProductBarcodeBloc>().add(ProductBarcodeGet(guid: guid));
   }
 
   Widget listScreen({bool mobileScreen = false}) {
@@ -159,7 +159,7 @@ class UnitScreenState extends State<UnitScreen>
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(global.language('product_unit')),
+        title: Text(global.language('product_barcode')),
         leading: IconButton(
           focusNode: FocusNode(skipTraversal: true),
           icon: const Icon(Icons.arrow_back),
@@ -180,7 +180,7 @@ class UnitScreenState extends State<UnitScreen>
                     setState(() {
                       if (showCheckBox) {
                         showCheckBox = false;
-                        unitGuidListChecked.clear();
+                        guidListChecked.clear();
                       } else {
                         showCheckBox = true;
                         global.showSnackBar(
@@ -197,7 +197,7 @@ class UnitScreenState extends State<UnitScreen>
                 },
                 icon: const Icon(Icons.check_box),
               )),
-          if (unitGuidListChecked.isNotEmpty)
+          if (guidListChecked.isNotEmpty)
             Padding(
                 padding: const EdgeInsets.only(right: 20.0),
                 child: IconButton(
@@ -218,8 +218,9 @@ class UnitScreenState extends State<UnitScreen>
                                   backgroundColor: Colors.blue),
                               onPressed: () {
                                 Navigator.pop(context);
-                                context.read<UnitBloc>().add(
-                                    UnitDeleteMany(guid: unitGuidListChecked));
+                                context.read<ProductBarcodeBloc>().add(
+                                    ProductBarcodeDeleteMany(
+                                        guid: guidListChecked));
                               },
                               child: Text(global.language('delete'))),
                         ],
@@ -265,10 +266,10 @@ class UnitScreenState extends State<UnitScreen>
               if (event is RawKeyDownEvent) {
                 if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
                   isKeyDown = false;
-                  int index = unitListDatas.indexOf(unitListDatas.firstWhere(
+                  int index = listDatas.indexOf(listDatas.firstWhere(
                       (element) => element.guidfixed == selectGuid));
                   if (index > 0) {
-                    selectGuid = unitListDatas[index - 1].guidfixed;
+                    selectGuid = listDatas[index - 1].guidfixed;
                     currentListIndex = index + 1;
                     isKeyUp = true;
                     getData(selectGuid);
@@ -276,9 +277,9 @@ class UnitScreenState extends State<UnitScreen>
                 }
                 if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
                   isKeyUp = false;
-                  int index = unitListDatas.indexOf(unitListDatas.firstWhere(
+                  int index = listDatas.indexOf(listDatas.firstWhere(
                       (element) => element.guidfixed == selectGuid));
-                  selectGuid = unitListDatas[index + 1].guidfixed;
+                  selectGuid = listDatas[index + 1].guidfixed;
                   currentListIndex = index + 1;
                   isKeyDown = true;
                   getData(selectGuid);
@@ -336,14 +337,14 @@ class UnitScreenState extends State<UnitScreen>
                   child: Row(children: [
                     Expanded(
                         flex: 5,
-                        child: Text(global.language("unit_code"),
+                        child: Text(global.language("product_barcode"),
                             style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold))),
                     Expanded(
                         flex: 10,
                         child: Text(
-                          global.language("unit_name"),
+                          global.language("product_name"),
                           style: const TextStyle(
                               color: Colors.black, fontWeight: FontWeight.bold),
                           maxLines: 2,
@@ -359,7 +360,7 @@ class UnitScreenState extends State<UnitScreen>
                   child: SingleChildScrollView(
                       controller: listScrollController,
                       child: Column(
-                          children: unitListDatas
+                          children: listDatas
                               .map((value) => listObject(value, showCheckBox))
                               .toList())))
             ],
@@ -367,7 +368,7 @@ class UnitScreenState extends State<UnitScreen>
     );
   }
 
-  void switchToEdit(UnitModel value) {
+  void switchToEdit(ProductBarcodeModel value) {
     setState(() {
       selectGuid = value.guidfixed;
       getData(selectGuid);
@@ -377,10 +378,10 @@ class UnitScreenState extends State<UnitScreen>
     });
   }
 
-  Widget listObject(UnitModel value, bool showCheckBox) {
+  Widget listObject(ProductBarcodeModel value, bool showCheckBox) {
     bool isCheck = false;
-    for (int i = 0; i < unitGuidListChecked.length; i++) {
-      if (unitGuidListChecked[i] == value.guidfixed) {
+    for (int i = 0; i < guidListChecked.length; i++) {
+      if (guidListChecked[i] == value.guidfixed) {
         isCheck = true;
         break;
       }
@@ -392,9 +393,9 @@ class UnitScreenState extends State<UnitScreen>
             setState(() {
               selectGuid = value.guidfixed;
               if (isCheck == true) {
-                unitGuidListChecked.remove(value.guidfixed);
+                guidListChecked.remove(value.guidfixed);
               } else {
-                unitGuidListChecked.add(value.guidfixed);
+                guidListChecked.add(value.guidfixed);
               }
               global.showSnackBar(
                   context,
@@ -402,7 +403,7 @@ class UnitScreenState extends State<UnitScreen>
                     Icons.check,
                     color: Colors.white,
                   ),
-                  "${global.language("chosen")} ${unitGuidListChecked.length} ${global.language("list")}",
+                  "${global.language("chosen")} ${guidListChecked.length} ${global.language("list")}",
                   Colors.blue);
             });
           } else {
@@ -440,7 +441,7 @@ class UnitScreenState extends State<UnitScreen>
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Expanded(
                   flex: 5,
-                  child: Text(value.unitcode,
+                  child: Text(value.barcode,
                       maxLines: 2, overflow: TextOverflow.ellipsis)),
               Expanded(
                   flex: 10,
@@ -476,12 +477,21 @@ class UnitScreenState extends State<UnitScreen>
   void saveOrUpdateData() {
     showCheckBox = false;
     if (selectGuid.trim().isEmpty) {
-      UnitModel unitModel = UnitModel(
-        guidfixed: "",
-        unitcode: fieldTextController[0].text,
+      ProductBarcodeModel productBarcodeModel = ProductBarcodeModel(
+        barcode: fieldTextController[0].text,
         names: packLanguage(),
+        guidfixed: "",
+        categoryguid: "",
+        itemcode: "",
+        itemunitcode: "",
+        price: [],
+        imageuri: "",
+        itemunitnames: [],
+        options: [],
       );
-      context.read<UnitBloc>().add(UnitSave(unitModel: unitModel));
+      context
+          .read<ProductBarcodeBloc>()
+          .add(ProductBarcodeSave(productBarcodeModel: productBarcodeModel));
     } else {
       updateData(selectGuid);
     }
@@ -490,25 +500,33 @@ class UnitScreenState extends State<UnitScreen>
   void updateData(String guid) {
     var names = packLanguage();
     showCheckBox = false;
-    UnitModel unitModel = UnitModel(
-      guidfixed: guid,
-      unitcode: fieldTextController[0].text,
-      names: names,
+    ProductBarcodeModel productBarcodeModel = ProductBarcodeModel(
+      barcode: fieldTextController[0].text,
+      names: packLanguage(),
+      guidfixed: "",
+      categoryguid: "",
+      itemcode: "",
+      itemunitcode: "",
+      price: [],
+      imageuri: "",
+      itemunitnames: [],
+      options: [],
     );
-    context.read<UnitBloc>().add(UnitUpdate(guid: guid, unitModel: unitModel));
+    context.read<ProductBarcodeBloc>().add(ProductBarcodeUpdate(
+        guid: guid, productBarcodeModel: productBarcodeModel));
   }
 
-  void getDataToEditScreen(UnitModel unit) {
+  void getDataToEditScreen(ProductBarcodeModel productBarcode) {
     isChange = false;
-    selectGuid = unit.guidfixed;
-    fieldTextController[0].text = unit.unitcode;
+    selectGuid = productBarcode.guidfixed;
+    fieldTextController[0].text = productBarcode.barcode;
     for (int i = 0; i < languageList.length; i++) {
       fieldTextController[i + 1].text = "";
     }
     for (int i = 0; i < languageList.length; i++) {
-      for (int j = 0; j < unit.names.length; j++) {
-        if (languageList[i].code == unit.names[j].code) {
-          fieldTextController[i + 1].text = unit.names[j].name;
+      for (int j = 0; j < productBarcode.names.length; j++) {
+        if (languageList[i].code == productBarcode.names[j].code) {
+          fieldTextController[i + 1].text = productBarcode.names[j].name;
         }
       }
     }
@@ -545,7 +563,7 @@ class UnitScreenState extends State<UnitScreen>
                       });
                     })
                 : null,
-            title: Text(headerEdit + global.language("product_unit")),
+            title: Text(headerEdit + global.language("product_barcode")),
             actions: <Widget>[
               if (selectGuid.isNotEmpty)
                 Padding(
@@ -569,9 +587,8 @@ class UnitScreenState extends State<UnitScreen>
                                       backgroundColor: Colors.blue),
                                   onPressed: () {
                                     Navigator.pop(context);
-                                    context
-                                        .read<UnitBloc>()
-                                        .add(UnitDelete(guid: selectGuid));
+                                    context.read<ProductBarcodeBloc>().add(
+                                        ProductBarcodeDelete(guid: selectGuid));
                                   },
                                   child: Text(global.language('confirm'))),
                             ],
@@ -610,8 +627,8 @@ class UnitScreenState extends State<UnitScreen>
                       focusNode: FocusNode(skipTraversal: true),
                       onPressed: () {
                         showCheckBox = false;
-                        switchToEdit(unitListDatas[unitListDatas.indexOf(
-                            unitListDatas.firstWhere((element) =>
+                        switchToEdit(listDatas[listDatas.indexOf(
+                            listDatas.firstWhere((element) =>
                                 element.guidfixed == selectGuid))]);
                       },
                       icon: const Icon(
@@ -719,24 +736,24 @@ class UnitScreenState extends State<UnitScreen>
     queryData = MediaQuery.of(context);
     listKeys.clear();
     if (showCheckBox == false) {
-      unitGuidListChecked.clear();
+      guidListChecked.clear();
     }
     return Scaffold(
         resizeToAvoidBottomInset: true,
         body: LayoutBuilder(builder: (context, constraints) {
-          return BlocListener<UnitBloc, UnitState>(
+          return BlocListener<ProductBarcodeBloc, ProductBarcodeState>(
               listener: (context, state) {
-                blocUnitState = state;
+                blocCurrentState = state;
                 // Load
-                if (state is UnitLoadSuccess) {
+                if (state is ProductBarcodeLoadSuccess) {
                   setState(() {
-                    if (state.units.isNotEmpty) {
-                      unitListDatas.addAll(state.units);
+                    if (state.productbarcodes.isNotEmpty) {
+                      listDatas.addAll(state.productbarcodes);
                     }
                   });
                 }
                 // Save
-                if (state is UnitSaveSuccess) {
+                if (state is ProductBarcodeSaveSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -747,11 +764,11 @@ class UnitScreenState extends State<UnitScreen>
                         global.language("save_success"),
                         Colors.blue);
                     clearEditData();
-                    unitListDatas.clear();
+                    listDatas.clear();
                     loadDataList(searchText);
                   });
                 }
-                if (state is UnitSaveFailed) {
+                if (state is ProductBarcodeSaveFailed) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -764,7 +781,7 @@ class UnitScreenState extends State<UnitScreen>
                   });
                 }
                 // Update
-                if (state is UnitUpdateSuccess) {
+                if (state is ProductBarcodeUpdateSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -775,7 +792,7 @@ class UnitScreenState extends State<UnitScreen>
                         global.language("edit_success"),
                         Colors.blue);
                     clearEditData();
-                    unitListDatas.clear();
+                    listDatas.clear();
                     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                       tabController.animateTo(0);
                     });
@@ -784,7 +801,7 @@ class UnitScreenState extends State<UnitScreen>
                     getData(selectGuid);
                   });
                 }
-                if (state is UnitUpdateFailed) {
+                if (state is ProductBarcodeUpdateFailed) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -797,7 +814,7 @@ class UnitScreenState extends State<UnitScreen>
                   });
                 }
                 // Delete
-                if (state is UnitDeleteSuccess) {
+                if (state is ProductBarcodeDeleteSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -807,7 +824,7 @@ class UnitScreenState extends State<UnitScreen>
                         ),
                         global.language("delete_success"),
                         Colors.blue);
-                    unitListDatas.clear();
+                    listDatas.clear();
                     clearEditData();
                     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                       tabController.animateTo(0);
@@ -816,7 +833,7 @@ class UnitScreenState extends State<UnitScreen>
                   });
                 }
                 // Delete Many
-                if (state is UnitDeleteManySuccess) {
+                if (state is ProductBarcodeDeleteManySuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -826,16 +843,16 @@ class UnitScreenState extends State<UnitScreen>
                         ),
                         global.language("not_delete_success"),
                         Colors.blue);
-                    unitListDatas.clear();
+                    listDatas.clear();
                     clearEditData();
                     loadDataList(searchText);
                     showCheckBox = false;
                   });
                 }
                 // Get
-                if (state is UnitGetSuccess) {
+                if (state is ProductBarcodeGetSuccess) {
                   setState(() {
-                    getDataToEditScreen(state.unit);
+                    getDataToEditScreen(state.productbarcode);
                     if (isEditMode) {
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                         tabController.animateTo(1);
