@@ -7,6 +7,7 @@ import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/language_model.dart';
 import 'package:thai7merchant/model/product_barcode_struct.dart';
 import 'package:split_view/split_view.dart';
+import 'package:thai7merchant/model/product_option_struct.dart';
 import 'package:translator/translator.dart';
 
 class ProductBarcodeScreen extends StatefulWidget {
@@ -46,6 +47,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   bool isKeyDown = false;
   bool showCheckBox = false;
   bool isEditMode = false;
+  List<ProductOptionModel> productOptions = [];
 
   @override
   void initState() {
@@ -60,20 +62,9 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
       }
     }
     // เรียงลำดับ Focus
-    // Focus รหัส
-    FocusNode focusNode = FocusNode();
-    focusNode.addListener(() {
-      focusNodeIndex = 0;
-    });
-    fieldFocusNodes.add(focusNode);
-    fieldTextController.add(TextEditingController());
-    for (int i = 0; i < languageList.length; i++) {
+    for (int i = 0; i < 100; i++) {
+      fieldFocusNodes.add(FocusNode());
       fieldTextController.add(TextEditingController());
-      FocusNode focusNode = FocusNode();
-      focusNode.addListener(() {
-        focusNodeIndex = i;
-      });
-      fieldFocusNodes.add(focusNode);
     }
     listScrollController.addListener(onScrollList);
     loadDataList("");
@@ -101,10 +92,8 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     tabController.dispose();
     editScrollController.dispose();
     searchController.dispose();
-    for (int i = 0; i < fieldTextController.length; i++) {
+    for (int i = 0; i < 100; i++) {
       fieldTextController[i].dispose();
-    }
-    for (int i = 0; i < fieldFocusNodes.length; i++) {
       fieldFocusNodes[i].dispose();
     }
 
@@ -543,6 +532,197 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   }
 
   Widget editScreen({mobileScreen}) {
+    int nodeIndex = 0;
+    List<Widget> formWidgets = [];
+    formWidgets.add(Container(
+        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        width: double.infinity,
+        child: ElevatedButton(
+            onPressed: () {}, child: Text(global.language("product_group")))));
+    formWidgets.add(Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        child: TextFormField(
+            readOnly: !isEditMode,
+            onFieldSubmitted: (value) {
+              findFocusNext(0);
+            },
+            textInputAction: TextInputAction.next,
+            focusNode: fieldFocusNodes[nodeIndex],
+            textAlign: TextAlign.left,
+            controller: fieldTextController[nodeIndex],
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9]'))
+            ],
+            onChanged: (value) {
+              isChange = true;
+              fieldTextController[0].value = TextEditingValue(
+                  text: value.toUpperCase(),
+                  selection: fieldTextController[0].selection);
+            },
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: global.language("barcode"),
+            ))));
+    for (int i = 0; i < languageList.length; i++) {
+      nodeIndex++;
+      formWidgets.add(Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        child: TextFormField(
+          readOnly: !isEditMode,
+          onChanged: (value) {
+            isChange = true;
+          },
+          onFieldSubmitted: (value) {
+            findFocusNext(nodeIndex);
+          },
+          textInputAction: TextInputAction.next,
+          focusNode: fieldFocusNodes[nodeIndex],
+          textAlign: TextAlign.left,
+          controller: fieldTextController[nodeIndex],
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            labelText:
+                "${global.language("product_name")} (${languageList[i].name})",
+          ),
+        ),
+      ));
+    }
+    nodeIndex++;
+    formWidgets.add(Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        child: TextFormField(
+            readOnly: !isEditMode,
+            onFieldSubmitted: (value) {
+              findFocusNext(nodeIndex);
+            },
+            textInputAction: TextInputAction.next,
+            focusNode: fieldFocusNodes[nodeIndex],
+            textAlign: TextAlign.left,
+            controller: fieldTextController[nodeIndex],
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9]'))
+            ],
+            onChanged: (value) {
+              isChange = true;
+              fieldTextController[0].value = TextEditingValue(
+                  text: value.toUpperCase(),
+                  selection: fieldTextController[nodeIndex].selection);
+            },
+            decoration: InputDecoration(
+              suffixIcon: IconButton(
+                focusNode: FocusNode(skipTraversal: true),
+                icon: const Icon(Icons.search),
+                onPressed: () async {},
+              ),
+              border: const OutlineInputBorder(),
+              labelText: global.language("unit_code"),
+            ))));
+    for (int i = 0; i < languageList.length; i++) {
+      nodeIndex++;
+      formWidgets.add(Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        child: TextFormField(
+          readOnly: !isEditMode,
+          onChanged: (value) {
+            isChange = true;
+          },
+          onFieldSubmitted: (value) {
+            findFocusNext(nodeIndex);
+          },
+          textInputAction: TextInputAction.next,
+          focusNode: fieldFocusNodes[nodeIndex],
+          textAlign: TextAlign.left,
+          controller: fieldTextController[nodeIndex],
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            labelText:
+                "${global.language("unit_name")} (${languageList[i].name})",
+          ),
+        ),
+      ));
+    }
+    if (productOptions.isNotEmpty) {
+      for (int i = 0; i < productOptions.length; i++) {
+        List<Widget> list = [];
+        for (int i = 0; i < languageList.length; i++) {
+          nodeIndex++;
+          list.add(Padding(
+            padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
+            child: TextFormField(
+              readOnly: !isEditMode,
+              onChanged: (value) {
+                isChange = true;
+              },
+              onFieldSubmitted: (value) {
+                findFocusNext(nodeIndex);
+              },
+              textInputAction: TextInputAction.next,
+              focusNode: fieldFocusNodes[nodeIndex],
+              textAlign: TextAlign.left,
+              controller: fieldTextController[nodeIndex],
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                labelText:
+                    "${global.language("option_name")} (${languageList[i].name})",
+              ),
+            ),
+          ));
+        }
+        formWidgets.add(Container(
+            padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
+            width: double.infinity,
+            child: Stack(children: [
+              Positioned(
+                  left: 1,
+                  top: 1,
+                  child: Container(
+                      width: 100,
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          color: Colors.cyan,
+                          borderRadius: BorderRadius.circular(5)),
+                      child: Text(global.language('option')))),
+              Container(
+                  padding: const EdgeInsets.only(top: 50),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(5)),
+                  width: double.infinity,
+                  child: Column(
+                    children: list,
+                  )),
+            ])));
+      }
+    }
+    formWidgets.add(Container(
+        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        width: double.infinity,
+        child: ElevatedButton(
+            onPressed: () {
+              setState(() {
+                productOptions.add(ProductOptionModel(
+                    maxselect: 0, names: [], isrequired: false, choices: []));
+              });
+            },
+            child: Text(global.language("add_option")))));
+
+    if (isSaveAllow) {
+      formWidgets.add(Container(
+          width: double.infinity,
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+          child: ElevatedButton.icon(
+              focusNode: FocusNode(skipTraversal: true),
+              onPressed: () {
+                saveOrUpdateData();
+              },
+              icon: const Icon(Icons.save),
+              label:
+                  Text(global.language("save") + ((kIsWeb) ? " (F10)" : "")))));
+    }
+
     return Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
@@ -664,71 +844,10 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
             child: SingleChildScrollView(
                 controller: editScrollController,
                 child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(10),
-                    child: Column(children: [
-                      Form(
-                          child: TextFormField(
-                              readOnly: !isEditMode,
-                              onFieldSubmitted: (value) {
-                                findFocusNext(0);
-                              },
-                              textInputAction: TextInputAction.next,
-                              focusNode: fieldFocusNodes[0],
-                              textAlign: TextAlign.left,
-                              controller: fieldTextController[0],
-                              textCapitalization: TextCapitalization.characters,
-                              inputFormatters: <TextInputFormatter>[
-                                FilteringTextInputFormatter.allow(
-                                    RegExp('[a-z A-Z 0-9]'))
-                              ],
-                              onChanged: (value) {
-                                isChange = true;
-                                fieldTextController[0].value = TextEditingValue(
-                                    text: value.toUpperCase(),
-                                    selection:
-                                        fieldTextController[0].selection);
-                              },
-                              decoration: InputDecoration(
-                                border: const OutlineInputBorder(),
-                                labelText: global.language("unit_code"),
-                              ))),
-                      const SizedBox(height: 10),
-                      for (int i = 0; i < languageList.length; i++)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: TextFormField(
-                            readOnly: !isEditMode,
-                            onChanged: (value) {
-                              isChange = true;
-                            },
-                            onFieldSubmitted: (value) {
-                              findFocusNext(focusNodeIndex + 1);
-                            },
-                            textInputAction: TextInputAction.next,
-                            focusNode: fieldFocusNodes[i + 1],
-                            textAlign: TextAlign.left,
-                            controller: fieldTextController[i + 1],
-                            decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
-                              labelText:
-                                  "${global.language("unit_name")} (${languageList[i].name})",
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 10),
-                      if (isSaveAllow)
-                        SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                                focusNode: FocusNode(skipTraversal: true),
-                                onPressed: () {
-                                  saveOrUpdateData();
-                                },
-                                icon: const Icon(Icons.save),
-                                label: Text(global.language("save") +
-                                    ((kIsWeb) ? " (F10)" : ""))))
-                    ])))));
+                  width: double.infinity,
+                  padding: const EdgeInsets.only(top: 10, bottom: 10),
+                  child: Form(child: Column(children: formWidgets)),
+                ))));
   }
 
   @override

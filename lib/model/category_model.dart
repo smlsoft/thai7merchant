@@ -1,4 +1,3 @@
-import 'package:thai7merchant/model/image_upload.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:thai7merchant/model/language_model.dart';
 
