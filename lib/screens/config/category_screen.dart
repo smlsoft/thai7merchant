@@ -675,11 +675,9 @@ class CategoryScreenState extends State<CategoryScreen>
                         focusNode: FocusNode(skipTraversal: true),
                         onPressed: () async {
                           setState(() {
-                            if (kIsWeb) {
-                              imageWeb = null;
-                              selectImageUri = "";
-                              imageFile = File('');
-                            } else {}
+                            imageWeb = null;
+                            selectImageUri = "";
+                            imageFile = File('');
                           });
                         },
                         icon: const Icon(
@@ -693,9 +691,11 @@ class CategoryScreenState extends State<CategoryScreen>
                         focusNode: FocusNode(skipTraversal: true),
                         onPressed: (kIsWeb)
                             ? () async {
-                                final ImagePicker picker = ImagePicker();
-                                XFile? image = await picker.pickImage(
-                                    source: ImageSource.gallery);
+                                XFile? image = await _picker.pickImage(
+                                    source: ImageSource.gallery,
+                                    maxHeight: 480,
+                                    maxWidth: 640,
+                                    imageQuality: 60);
                                 if (image != null) {
                                   var f = await image.readAsBytes();
                                   setState(() {
@@ -707,7 +707,10 @@ class CategoryScreenState extends State<CategoryScreen>
                             : () {
                                 setState(() async {
                                   final XFile? photo = await _picker.pickImage(
-                                      source: ImageSource.gallery);
+                                      source: ImageSource.gallery,
+                                      maxHeight: 480,
+                                      maxWidth: 640,
+                                      imageQuality: 60);
                                   if (photo != null) {
                                     var f = await photo.readAsBytes();
                                     setState(() {
@@ -729,7 +732,10 @@ class CategoryScreenState extends State<CategoryScreen>
                           focusNode: FocusNode(skipTraversal: true),
                           onPressed: () async {
                             final XFile? photo = await _picker.pickImage(
-                                source: ImageSource.camera);
+                                source: ImageSource.camera,
+                                maxHeight: 480,
+                                maxWidth: 640,
+                                imageQuality: 60);
                             if (photo != null) {
                               var f = await photo.readAsBytes();
                               setState(() {
@@ -746,65 +752,64 @@ class CategoryScreenState extends State<CategoryScreen>
                     ],
                   ),
                 const SizedBox(height: 10),
-                if (kIsWeb)
-                  SizedBox(
-                      width: 500,
-                      height: 500,
-                      child: Stack(children: [
-                        DropzoneView(
-                          operation: DragOperation.copy,
-                          cursor: CursorType.grab,
-                          onCreated: (ctrl) => dropZoneController = ctrl,
-                          onLoaded: () {},
-                          onError: (ev) {},
-                          onHover: () {},
-                          onLeave: () {},
-                          onDrop: (ev) async {
-                            final bytes =
-                                await dropZoneController.getFileData(ev);
-                            setState(() {
-                              imageWeb = bytes;
-                            });
-                          },
-                          onDropMultiple: (ev) async {},
+                //  if (kIsWeb)
+                SizedBox(
+                    width: 500,
+                    height: 500,
+                    child: Stack(children: [
+                      DropzoneView(
+                        operation: DragOperation.copy,
+                        cursor: CursorType.grab,
+                        onCreated: (ctrl) => dropZoneController = ctrl,
+                        onLoaded: () {},
+                        onError: (ev) {},
+                        onHover: () {},
+                        onLeave: () {},
+                        onDrop: (ev) async {
+                          final bytes =
+                              await dropZoneController.getFileData(ev);
+                          setState(() {
+                            imageWeb = bytes;
+                          });
+                        },
+                        onDropMultiple: (ev) async {},
+                      ),
+                      Center(
+                          child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.black),
+                          borderRadius: BorderRadius.circular(5),
+                          boxShadow: const [
+                            BoxShadow(
+                                offset: Offset(0, 4),
+                                color: Colors.cyan, //edited
+                                spreadRadius: 4,
+                                blurRadius: 10 //edited
+                                )
+                          ],
+                          image: (imageWeb != null)
+                              ? DecorationImage(
+                                  image: MemoryImage(imageWeb!),
+                                  fit: BoxFit.fill)
+                              : (selectImageUri != '')
+                                  ? DecorationImage(
+                                      image: NetworkImage(selectImageUri),
+                                      fit: BoxFit.fill)
+                                  : const DecorationImage(
+                                      image: AssetImage('assets/img/noimg.png'),
+                                      fit: BoxFit.fill),
                         ),
-                        Center(
-                            child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.black),
-                            borderRadius: BorderRadius.circular(5),
-                            boxShadow: const [
-                              BoxShadow(
-                                  offset: Offset(0, 4),
-                                  color: Colors.cyan, //edited
-                                  spreadRadius: 4,
-                                  blurRadius: 10 //edited
-                                  )
-                            ],
-                            image: (imageWeb != null)
-                                ? DecorationImage(
-                                    image: MemoryImage(imageWeb!),
-                                    fit: BoxFit.fill)
-                                : (selectImageUri != '')
-                                    ? DecorationImage(
-                                        image: NetworkImage(selectImageUri),
-                                        fit: BoxFit.fill)
-                                    : const DecorationImage(
-                                        image:
-                                            AssetImage('assets/img/noimg.png'),
-                                        fit: BoxFit.fill),
-                          ),
-                          child: const SizedBox(
-                            width: 500,
-                            height: 500,
-                          ),
-                        )),
-                      ]))
-                else
-                  (selectImageUri != '')
-                      ? Image.network(selectImageUri, fit: BoxFit.cover)
-                      : Image.asset('assets/img/noimg.png', fit: BoxFit.cover),
+                        child: const SizedBox(
+                          width: 500,
+                          height: 500,
+                        ),
+                      )),
+                    ])),
+                // else
+                //   (selectImageUri != '')
+                //       ? Image.network(selectImageUri, fit: BoxFit.cover)
+                //       : Image.asset('assets/img/noimg.png', fit: BoxFit.cover),
                 const SizedBox(height: 10),
                 if (isEditMode)
                   SizedBox(
