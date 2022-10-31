@@ -61,6 +61,20 @@ class CategorySave extends CategoryEvent {
   List<Object> get props => [categoryModel];
 }
 
+class CategoryWithImageSave extends CategoryEvent {
+  final File imageFile;
+  final CategoryModel categoryModel;
+  final Uint8List? imageWeb;
+  const CategoryWithImageSave({
+    required this.imageWeb,
+    required this.imageFile,
+    required this.categoryModel,
+  });
+
+  @override
+  List<Object> get props => [categoryModel, imageFile];
+}
+
 class CategoryUpdate extends CategoryEvent {
   final String guid;
   final CategoryModel categoryModel;
@@ -72,4 +86,20 @@ class CategoryUpdate extends CategoryEvent {
 
   @override
   List<Object> get props => [categoryModel];
+}
+
+class CategoryWithImageUpdate extends CategoryEvent {
+  final String guid;
+  final CategoryModel categoryModel;
+  final File imageFile;
+  final Uint8List imageWeb;
+  const CategoryWithImageUpdate({
+    required this.guid,
+    required this.imageFile,
+    required this.imageWeb,
+    required this.categoryModel,
+  });
+
+  @override
+  List<Object> get props => [categoryModel, imageWeb, categoryModel];
 }
