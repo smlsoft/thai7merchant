@@ -1,7 +1,12 @@
 import 'dart:convert';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:thai7merchant/Screens/authen/login.dart';
 import 'package:thai7merchant/bloc/color/color_bloc.dart';
 import 'package:thai7merchant/bloc/image/image_upload_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
@@ -30,7 +35,9 @@ import 'package:thai7merchant/repositories/member_repository.dart';
 import 'package:thai7merchant/repositories/user_repository.dart';
 import 'package:thai7merchant/repositories/product_barcode_repository.dart';
 import 'package:thai7merchant/usersystem/login_shop.dart';
+import 'firebase_options.dart';
 import 'global.dart' as global;
+import 'package:flutter_line_liff/flutter_line_liff.dart';
 
 bool shouldUseFirebaseEmulator = false;
 
@@ -69,27 +76,27 @@ void main() async {
   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   // await SystemChrome.setPreferredOrientations(
   //     [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
-
-  /*if (!kIsWeb) {
-    await Firebase.initializeApp();
+  if (kIsWeb) {
+    // FlutterLineLiff().init(
+    //   config: Config(liffId: '1657550806-b54G4eR4'),
+    //   successCallback: () {
+    //     print('LIFF init success.');
+    //   },
+    //   errorCallback: (error) {
+    //     print(
+    //         'LIFF init error: ${error.name}, ${error.message}, ${error.stack}');
+    //   },
+    // );
   } else {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: 'AIzaSyDo0RJaTxZqpSVsMhEhIJx8j3l_x5FJBV8',
-        appId: '1:665016454480:ios:f10c2a16255b82c7333055',
-        messagingSenderId: '665016454480',
-        projectId: 'react-native-firebase-testing',
-        authDomain: 'react-native-firebase-testing.firebaseapp.com',
-        databaseURL: 'https://react-native-firebase-testing.firebaseio.com',
-        storageBucket: 'react-native-firebase-testing.appspot.com',
-        measurementId: 'G-F79DJ0VFGS',
-      ),
-    );
+    LineSDK.instance.setup("1657550806").then((_) {
+      print("LineSDK Prepared");
+    });
   }
 
-  if (shouldUseFirebaseEmulator) {
-    await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-  }*/
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   try {
     global.languageSystemCode =
         (json.decode(await rootBundle.loadString('assets/language.json'))
@@ -163,7 +170,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const MenuScreen(),
+        home: const Login(),
         routes: <String, WidgetBuilder>{
           '/menu': (BuildContext context) => const MenuScreen(),
           '/selectlanguage': (BuildContext context) =>
