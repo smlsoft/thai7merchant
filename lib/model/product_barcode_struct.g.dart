@@ -19,8 +19,8 @@ ProductBarcodeModel _$ProductBarcodeModelFromJson(Map<String, dynamic> json) =>
       itemunitnames: (json['itemunitnames'] as List<dynamic>)
           .map((e) => LanguageDataModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      price: (json['price'] as List<dynamic>)
-          .map((e) => (e as num).toDouble())
+      prices: (json['prices'] as List<dynamic>)
+          .map((e) => PriceDataModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       imageuri: json['imageuri'] as String,
       options: (json['options'] as List<dynamic>)
@@ -35,10 +35,10 @@ Map<String, dynamic> _$ProductBarcodeModelToJson(
       'itemcode': instance.itemcode,
       'categoryguid': instance.categoryguid,
       'barcode': instance.barcode,
-      'names': instance.names,
+      'names': instance.names.map((e) => e.toJson()).toList(),
       'itemunitcode': instance.itemunitcode,
-      'itemunitnames': instance.itemunitnames,
-      'price': instance.price,
+      'itemunitnames': instance.itemunitnames.map((e) => e.toJson()).toList(),
+      'prices': instance.prices.map((e) => e.toJson()).toList(),
       'imageuri': instance.imageuri,
-      'options': instance.options,
+      'options': instance.options.map((e) => e.toJson()).toList(),
     };

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:thai7merchant/model/product_barcode_struct.dart';
 import 'package:thai7merchant/screens/config/category_screen.dart';
 import 'package:thai7merchant/screens/config/color_screen.dart';
+import 'package:thai7merchant/screens/config/customer_group_screen.dart';
+import 'package:thai7merchant/screens/config/customer_screen.dart';
 import 'package:thai7merchant/screens/config/pattern_screen.dart';
 import 'package:thai7merchant/screens/config/product_barcode_screen.dart';
 import 'package:thai7merchant/screens/config/unit_screen.dart';
@@ -36,7 +37,8 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
           callback: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const UnitScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const CustomerGroupScreen()),
             );
           }),
       menu(
@@ -45,7 +47,7 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
           callback: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const UnitScreen()),
+              MaterialPageRoute(builder: (context) => const CustomerScreen()),
             );
           })
     ];

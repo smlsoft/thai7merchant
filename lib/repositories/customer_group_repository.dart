@@ -1,12 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/services.dart';
-import 'package:thai7merchant/model/product_barcode_struct.dart';
+
+import 'package:thai7merchant/model/customer_group.dart';
+
 import 'client.dart';
 import 'package:dio/dio.dart';
 
-class ProductBarcodeRepository {
-  Future<ApiResponse> getProductBarcodeList({
+class CustomerGroupRepository {
+  Future<ApiResponse> getCustomerGroupList({
     int limit = 0,
     int offset = 0,
     String search = "",
@@ -14,8 +14,7 @@ class ProductBarcodeRepository {
     Dio client = Client().init();
 
     try {
-      String query =
-          "/product/barcode/list?offset=$offset&limit=$limit&q=$search";
+      String query = "/unit/list?offset=$offset&limit=$limit&q=$search";
       final response = await client.get(query);
       try {
         final rawData = json.decode(response.toString());
@@ -32,10 +31,10 @@ class ProductBarcodeRepository {
     }
   }
 
-  Future<ApiResponse> deleteProductBarcode(String guid) async {
+  Future<ApiResponse> deleteCustomerGroup(String guid) async {
     Dio client = Client().init();
     try {
-      final response = await client.delete('/product/barcode/$guid');
+      final response = await client.delete('/unit/$guid');
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -48,10 +47,10 @@ class ProductBarcodeRepository {
   }
 
   /// ลบที่ละหลาย GUID
-  Future<ApiResponse> deleteProductBarcodeMany(List<String> guids) async {
+  Future<ApiResponse> deleteCustomerGroupMany(List<String> guids) async {
     Dio client = Client().init();
     try {
-      final response = await client.delete('/product/barcode', data: guids);
+      final response = await client.delete('/unit', data: guids);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -63,10 +62,10 @@ class ProductBarcodeRepository {
     }
   }
 
-  Future<ApiResponse> getProductBarcode(String guid) async {
+  Future<ApiResponse> getCustomerGroup(String guid) async {
     Dio client = Client().init();
     try {
-      final response = await client.get('/product/barcode/$guid');
+      final response = await client.get('/unit/$guid');
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -78,12 +77,11 @@ class ProductBarcodeRepository {
     }
   }
 
-  Future<ApiResponse> saveProductBarcode(
-      ProductBarcodeModel productBarcode) async {
+  Future<ApiResponse> saveCustomerGroup(CustomerGroupModel customerGroupModel) async {
     Dio client = Client().init();
-    final data = productBarcode.toJson();
+    final data = customerGroupModel.toJson();
     try {
-      final response = await client.post('/product/barcode', data: data);
+      final response = await client.post('/unit', data: data);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -95,12 +93,11 @@ class ProductBarcodeRepository {
     }
   }
 
-  Future<ApiResponse> updateProductBarcode(
-      String guid, ProductBarcodeModel productBarcode) async {
+  Future<ApiResponse> updateCustomerGroup(String guid, CustomerGroupModel customerGroupModel) async {
     Dio client = Client().init();
-    final data = productBarcode.toJson();
+    final data = customerGroupModel.toJson();
     try {
-      final response = await client.put('/product/barcode/$guid', data: data);
+      final response = await client.put('/unit/$guid', data: data);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -108,28 +105,6 @@ class ProductBarcodeRepository {
       }
     } on DioError catch (ex) {
       String errorMessage = ex.response.toString();
-      throw Exception(errorMessage);
-    }
-  }
-
-  Future<ApiResponse> uploadImage(File file, Uint8List image) async {
-    Dio client = Client().init();
-    String fileName = file.path.split('/').last;
-    FormData formData = FormData.fromMap({
-      "file": MultipartFile.fromBytes(image, filename: '$fileName.png'),
-    });
-    try {
-      final response = await client.post('/upload/images', data: formData);
-      try {
-        print(response.data);
-        return ApiResponse.fromMap(response.data);
-      } catch (ex) {
-        print(ex);
-        throw Exception(ex);
-      }
-    } on DioError catch (ex) {
-      String errorMessage = ex.response.toString();
-      print(ex);
       throw Exception(errorMessage);
     }
   }

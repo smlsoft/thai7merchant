@@ -1,16 +1,19 @@
 import 'dart:convert';
-
 import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:thai7merchant/bloc/color/color_bloc.dart';
+import 'package:thai7merchant/bloc/customer/customer_bloc.dart';
+import 'package:thai7merchant/bloc/customer_group/customer_group_bloc.dart';
 import 'package:thai7merchant/bloc/image/image_upload_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
 import 'package:thai7merchant/bloc/product_barcode/product_barcode_bloc.dart';
 import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
 import 'package:thai7merchant/menu_screen.dart';
-import 'package:thai7merchant/model/global_struct.dart';
+import 'package:thai7merchant/model/language_model.dart';
 import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/repositories/color_repository.dart';
+import 'package:thai7merchant/repositories/customer_group_repository.dart';
+import 'package:thai7merchant/repositories/customer_repository.dart';
 import 'package:thai7merchant/repositories/unit_repository.dart';
 import 'package:thai7merchant/select_language_screen.dart';
 import 'package:thai7merchant/repositories/image_upload_repository.dart';
@@ -31,8 +34,6 @@ import 'package:thai7merchant/repositories/user_repository.dart';
 import 'package:thai7merchant/repositories/product_barcode_repository.dart';
 import 'package:thai7merchant/usersystem/login_shop.dart';
 import 'global.dart' as global;
-
-bool shouldUseFirebaseEmulator = false;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -96,12 +97,10 @@ void main() async {
                 as List)
             .map((i) => LanguageSystemCodeModel.fromJson(i))
             .toList();
-    global.languageSystemCode.sort((a, b) {
-      return a.code.compareTo(b.code);
-    });
   } catch (_) {}
 
   global.userLanguage = "th";
+  global.languageSelect(global.userLanguage);
   /*try {
     global.userLanguage = GetStorage().read("language");
   } catch (_) {}*/
@@ -138,6 +137,13 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<MemberBloc>(
           create: (_) => MemberBloc(memberRepository: MemberRepository()),
+        ),
+        BlocProvider<CustomerBloc>(
+          create: (_) => CustomerBloc(customerRepository: CustomerRepository()),
+        ),
+        BlocProvider<CustomerGroupBloc>(
+          create: (_) => CustomerGroupBloc(
+              customerGroupRepository: CustomerGroupRepository()),
         ),
         BlocProvider<OptionBloc>(
           create: (_) => OptionBloc(optionRepository: OptionRepository()),

@@ -464,10 +464,7 @@ class UnitScreenState extends State<UnitScreen>
       if (languageList[i].code.trim().isNotEmpty &&
           fieldTextController[i + 1].text.trim().isNotEmpty) {
         names.add(LanguageDataModel(
-          code: languageList[i].code,
-          name: fieldTextController[i + 1].text,
-          isauto: false,
-        ));
+            code: languageList[i].code, name: fieldTextController[i + 1].text));
       }
     }
     return names;

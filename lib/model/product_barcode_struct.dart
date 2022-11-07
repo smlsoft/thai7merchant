@@ -1,10 +1,11 @@
 import 'package:thai7merchant/model/language_model.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:thai7merchant/model/price_model.dart';
 import 'package:thai7merchant/model/product_option_struct.dart';
 
 part 'product_barcode_struct.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class ProductBarcodeModel {
   /// guid ฐานข้อมูล
   String guidfixed;
@@ -27,8 +28,8 @@ class ProductBarcodeModel {
   /// ชื่อหน่วยนับ
   List<LanguageDataModel> itemunitnames;
 
-  /// ราคาขาย (10 แถว)
-  List<double> price;
+  /// ราคาขาย
+  List<PriceDataModel> prices;
 
   /// uri รูปภาพ
   String imageuri;
@@ -44,7 +45,7 @@ class ProductBarcodeModel {
     required this.itemcode,
     required this.itemunitcode,
     required this.itemunitnames,
-    required this.price,
+    required this.prices,
     required this.imageuri,
     required this.options,
   });

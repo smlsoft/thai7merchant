@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/language_model.dart';
 
 part 'category_model.g.dart';
@@ -11,6 +12,8 @@ class CategoryModel {
   List<LanguageDataModel> names = <LanguageDataModel>[];
   int childcount;
   String imageuri;
+  List<SortDataModel>? xsort;
+  List<SortDataModel>? barcodes;
 
   CategoryModel({
     required this.guidfixed,
@@ -19,6 +22,8 @@ class CategoryModel {
     required this.names,
     required this.imageuri,
     required this.childcount,
+    required this.xsort,
+    required this.barcodes,
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) =>

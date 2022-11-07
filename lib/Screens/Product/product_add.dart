@@ -55,6 +55,8 @@ class _ProductAddState extends State<ProductAdd> {
     imageuri: "",
     childcount: 0,
     names: [],
+    xsort: [],
+    barcodes: []
   );
 
   final _barcode = TextEditingController();

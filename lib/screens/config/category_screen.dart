@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -8,6 +9,7 @@ import 'package:split_view/split_view.dart';
 import 'package:thai7merchant/bloc/category/category_bloc.dart';
 import 'package:thai7merchant/model/category_list_model.dart';
 import 'package:thai7merchant/model/category_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/language_model.dart';
 import 'package:translator/translator.dart';
 import 'package:uuid/uuid.dart';
@@ -52,6 +54,26 @@ class CategoryScreenState extends State<CategoryScreen>
   bool isDeleteAllow = false;
   String headerEdit = "";
   String selectImageUri = "";
+  int xorder = 0;
+  List<String> xorderUpdateList = [];
+  late Timer timerForUpdateXOrder;
+
+  void updateXOrder() {
+    print("-------------------------");
+    List<String> distinctXOrder = xorderUpdateList.toSet().toList();
+    for (int index = 0; index < distinctXOrder.length; index++) {
+      String guid = xorderUpdateList[index];
+      CategoryListModel? getCategory = findByGuid(rootCategorys, guid);
+      if (getCategory != null) {
+        print(getCategory.detail.guidfixed +
+            " " +
+            getCategory.detail.names[0].name +
+            " " +
+            getCategory.detail.xsort![0].xorder.toString());
+      }
+    }
+    xorderUpdateList.clear();
+  }
 
   String packName(List<LanguageDataModel> names) {
     String result = "";
@@ -72,7 +94,6 @@ class CategoryScreenState extends State<CategoryScreen>
         names.add(LanguageDataModel(
           code: languageList[i].code,
           name: fieldTextController[i].text,
-          isauto: false,
         ));
       }
     }
@@ -139,24 +160,26 @@ class CategoryScreenState extends State<CategoryScreen>
 
   void saveOrUpdateData() {
     if (selectGuid.trim().isEmpty) {
-      CategoryModel categoryModel = CategoryModel(
+      CategoryModel categoryData = CategoryModel(
         guidfixed: "",
         parentguid: selectParentGuid,
         parentguidall: selectParentGuidAll(rootCategorys, selectParentGuid),
         imageuri: "",
         childcount: 0,
         names: packLanguage(),
+        xsort: [SortDataModel(code: "", xorder: xorder)],
+        barcodes: [],
       );
       if (imageFile.path.isNotEmpty) {
         context.read<CategoryBloc>().add(CategoryWithImageSave(
-              categoryModel: categoryModel,
+              categoryModel: categoryData,
               imageFile: imageFile,
               imageWeb: imageWeb,
             ));
       } else {
         context
             .read<CategoryBloc>()
-            .add(CategorySave(categoryModel: categoryModel));
+            .add(CategorySave(categoryModel: categoryData));
       }
     } else {
       updateData(selectGuid);
@@ -171,6 +194,8 @@ class CategoryScreenState extends State<CategoryScreen>
       imageuri: selectImageUri,
       childcount: 0,
       names: packLanguage(),
+      xsort: [SortDataModel(code: "x", xorder: xorder)],
+      barcodes: [],
     );
     if (imageWeb != null) {
       context.read<CategoryBloc>().add(CategoryWithImageUpdate(
@@ -198,7 +223,9 @@ class CategoryScreenState extends State<CategoryScreen>
         curve: Curves.easeOut);
   }
 
-  Widget categoryDetail(int level, CategoryListModel category) {
+  Widget categoryDetail(
+      int level, CategoryListModel category, int index, int count,
+      {required Function moveUpCallBack, required Function moveDownCallBack}) {
     return DragTarget(onWillAccept: (data) {
       setState(() {
         selectDragTargetGuid = category.detail.guidfixed;
@@ -234,6 +261,9 @@ class CategoryScreenState extends State<CategoryScreen>
         color = Colors.red;
       }
 
+      category.detail.xsort ??= [SortDataModel(code: "", xorder: index + 1)];
+      category.detail.xsort![0].xorder = index + 1;
+
       return Container(
           color: color,
           padding: const EdgeInsets.all(4),
@@ -244,7 +274,8 @@ class CategoryScreenState extends State<CategoryScreen>
                 width: level * 20,
               ),
               Expanded(
-                child: Text(global.packName(category.detail.names),
+                child: Text(
+                    "${category.detail.xsort![0].xorder} ${global.packName(category.detail.names)}",
                     style: const TextStyle(fontSize: 18)),
               ),
               if (category.childCategorys.isNotEmpty)
@@ -263,6 +294,36 @@ class CategoryScreenState extends State<CategoryScreen>
                     });
                   },
                 ),
+              if (index > 0)
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  color: (selectGuid == category.detail.guidfixed)
+                      ? Colors.black
+                      : Colors.blue,
+                  focusNode: FocusNode(skipTraversal: true),
+                  icon: const Icon(Icons.move_up),
+                  onPressed: () {
+                    setState(() {
+                      moveUpCallBack();
+                      buildColumnWidget();
+                    });
+                  },
+                ),
+              if (index >= 0 && index < count - 1)
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  color: (selectGuid == category.detail.guidfixed)
+                      ? Colors.black
+                      : Colors.red,
+                  focusNode: FocusNode(skipTraversal: true),
+                  icon: const Icon(Icons.move_down),
+                  onPressed: () {
+                    setState(() {
+                      moveDownCallBack();
+                      buildColumnWidget();
+                    });
+                  },
+                ),
             ],
           ));
     });
@@ -270,7 +331,18 @@ class CategoryScreenState extends State<CategoryScreen>
 
   Widget categoryList(int level, List<CategoryListModel> categorys) {
     for (var index = 0; index < categorys.length; index++) {
-      Widget detail = categoryDetail(level, categorys[index]);
+      Widget detail = categoryDetail(
+          level, categorys[index], index, categorys.length, moveUpCallBack: () {
+        xorderUpdateList.add(categorys[index].detail.guidfixed);
+        xorderUpdateList.add(categorys[index - 1].detail.guidfixed);
+        categorys.insert(index, categorys.removeAt(index - 1));
+        buildColumnWidget();
+      }, moveDownCallBack: () {
+        xorderUpdateList.add(categorys[index].detail.guidfixed);
+        xorderUpdateList.add(categorys[index + 1].detail.guidfixed);
+        categorys.insert(index, categorys.removeAt(index + 1));
+        buildColumnWidget();
+      });
       listColumns.add(GestureDetector(
           onTap: () {
             discardData(callBack: () {
@@ -354,6 +426,8 @@ class CategoryScreenState extends State<CategoryScreen>
     }
     //listScrollController.addListener(onScrollList);
     loadDataList("");
+    timerForUpdateXOrder =
+        Timer.periodic(const Duration(seconds: 1), (Timer t) => updateXOrder());
     super.initState();
   }
 
@@ -368,6 +442,7 @@ class CategoryScreenState extends State<CategoryScreen>
     for (int i = 0; i < fieldFocusNodes.length; i++) {
       fieldFocusNodes[i].dispose();
     }
+    timerForUpdateXOrder.cancel();
     super.dispose();
   }
 
@@ -422,7 +497,6 @@ class CategoryScreenState extends State<CategoryScreen>
                   onPressed: () {
                     discardData(callBack: () {
                       setState(() {
-                        selectParentGuid = "";
                         isEditMode = true;
                         isChange = false;
                         isSaveAllow = true;
@@ -880,45 +954,43 @@ class CategoryScreenState extends State<CategoryScreen>
                 blocCategoryState = state;
                 // Load
                 if (state is CategoryLoadSuccess) {
-                  setState(() {
-                    rootCategorys.clear();
-                    for (var item in state.categorys) {
-                      rootCategorys.add(
-                          CategoryListModel(detail: item, childCategorys: []));
-                    }
-                    int index = 0;
-                    while (index < rootCategorys.length) {
-                      if (rootCategorys[index].detail.parentguid.isNotEmpty) {
-                        CategoryListModel? findCategory = findByGuid(
-                            rootCategorys,
-                            rootCategorys[index].detail.parentguid);
-                        if (findCategory != null) {
-                          findCategory.childCategorys.add(rootCategorys[index]);
-                          rootCategorys.removeAt(index);
-                        } else {
-                          index++;
-                        }
+                  rootCategorys.clear();
+                  for (var item in state.categorys) {
+                    rootCategorys.add(
+                        CategoryListModel(detail: item, childCategorys: []));
+                  }
+                  int index = 0;
+                  while (index < rootCategorys.length) {
+                    if (rootCategorys[index].detail.parentguid.isNotEmpty) {
+                      CategoryListModel? findCategory = findByGuid(
+                          rootCategorys,
+                          rootCategorys[index].detail.parentguid);
+                      if (findCategory != null) {
+                        findCategory.childCategorys.add(rootCategorys[index]);
+                        rootCategorys.removeAt(index);
                       } else {
                         index++;
                       }
+                    } else {
+                      index++;
                     }
-                    buildColumnWidget();
-                  });
+                  }
+                  buildColumnWidget();
+                  setState(() {});
                 }
                 // Save
                 if (state is CategorySaveSuccess) {
-                  setState(() {
-                    global.showSnackBar(
-                        context,
-                        const Icon(
-                          Icons.save,
-                          color: Colors.white,
-                        ),
-                        "บันทึกสำเร็จ",
-                        Colors.blue);
-                    clearEditData();
-                    loadDataList("");
-                  });
+                  global.showSnackBar(
+                      context,
+                      const Icon(
+                        Icons.save,
+                        color: Colors.white,
+                      ),
+                      "บันทึกสำเร็จ",
+                      Colors.blue);
+                  clearEditData();
+                  loadDataList("");
+                  setState(() {});
                 }
                 if (state is CategorySaveFailed) {
                   setState(() {

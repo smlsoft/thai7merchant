@@ -76,22 +76,16 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       CategoryWithImageSave event, Emitter<CategoryState> emit) async {
     emit(CategorySaveInProgress());
     try {
-      ApiResponse _result = await _categoryRepository.uploadImage(
+      ApiResponse result = await _categoryRepository.uploadImage(
           event.imageFile, event.imageWeb!);
-      if (_result.success) {
-        UploadImageModel uploadImage = UploadImageModel.fromJson(_result.data);
-        CategoryModel categoryModel = CategoryModel(
-          guidfixed: "",
-          parentguid: event.categoryModel.parentguid,
-          parentguidall: event.categoryModel.parentguidall,
-          imageuri: uploadImage.uri,
-          childcount: event.categoryModel.childcount,
-          names: event.categoryModel.names,
-        );
+      if (result.success) {
+        UploadImageModel uploadImage = UploadImageModel.fromJson(result.data);
+        CategoryModel categoryModel = event.categoryModel;
+        categoryModel.imageuri = uploadImage.uri;
         await _categoryRepository.saveCategory(categoryModel);
         emit(CategorySaveSuccess());
       } else {
-        emit(CategorySaveFailed(message: _result.message));
+        emit(CategorySaveFailed(message: result.message));
       }
     } catch (e) {
       emit(CategorySaveFailed(message: e.toString()));
@@ -123,10 +117,10 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       CategoryWithImageUpdate event, Emitter<CategoryState> emit) async {
     emit(CategoryUpdateInProgress());
     try {
-      ApiResponse _result = await _categoryRepository.uploadImage(
+      ApiResponse result = await _categoryRepository.uploadImage(
           event.imageFile, event.imageWeb);
-      if (_result.success) {
-        UploadImageModel uploadImage = UploadImageModel.fromJson(_result.data);
+      if (result.success) {
+        UploadImageModel uploadImage = UploadImageModel.fromJson(result.data);
         CategoryModel categoryModel = CategoryModel(
           guidfixed: event.categoryModel.guidfixed,
           parentguid: event.categoryModel.parentguid,
@@ -134,11 +128,13 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
           imageuri: uploadImage.uri,
           childcount: event.categoryModel.childcount,
           names: event.categoryModel.names,
+          xsort: event.categoryModel.xsort,
+          barcodes: event.categoryModel.barcodes,
         );
         await _categoryRepository.updateCategory(event.guid, categoryModel);
         emit(CategoryUpdateSuccess());
       } else {
-        emit(CategoryUpdateFailed(message: _result.message));
+        emit(CategoryUpdateFailed(message: result.message));
       }
     } catch (e) {
       emit(CategoryUpdateFailed(message: e.toString()));

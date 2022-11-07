@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/config_model.dart';
-import 'package:thai7merchant/model/global_struct.dart';
 import 'package:thai7merchant/model/language_model.dart';
+import 'package:thai7merchant/model/price_model.dart';
 import 'package:thai7merchant/model/public_color_model.dart';
 import 'package:thai7merchant/model/public_name_model.dart';
 
@@ -23,6 +23,7 @@ String loginName = "";
 String loginEmail = "";
 String loginPhotoUrl = "";
 List<PublicColorModel> publicColors = [];
+late List<LanguageSystemModel> languageSystemData;
 late List<LanguageSystemCodeModel> languageSystemCode;
 
 ConfigModel config = ConfigModel();
@@ -39,14 +40,40 @@ String packName(List<LanguageDataModel> names) {
 }
 
 void loadConfig() {
+  config.prices = [
+    PriceModel(
+      keynumber: 1,
+      isuse: true,
+      names: [
+        LanguageModel(
+            code: "th", codeTranslator: "th", name: "ราคาขายปลีก", use: true)
+      ],
+    ),
+    PriceModel(
+      keynumber: 2,
+      isuse: true,
+      names: [
+        LanguageModel(
+            code: "th", codeTranslator: "th", name: "ราคาขายสมาชิก", use: true)
+      ],
+    ),
+    PriceModel(
+      keynumber: 3,
+      isuse: true,
+      names: [
+        LanguageModel(
+            code: "th", codeTranslator: "th", name: "ราคาขาย ลู่ 1", use: true)
+      ],
+    )
+  ];
   config.languages = [
     LanguageModel(code: "th", codeTranslator: "th", name: "ไทย", use: true),
     LanguageModel(code: "en", codeTranslator: "en", name: "อังกฤษ", use: true),
-    LanguageModel(code: "cn", codeTranslator: "zh-cn", name: "จีน", use: true),
+    LanguageModel(code: "cn", codeTranslator: "zh-cn", name: "จีน", use: false),
     LanguageModel(
         code: "jp", codeTranslator: "th", name: "ญี่ปุ่น", use: false),
     LanguageModel(code: "kr", codeTranslator: "th", name: "เกาหลี", use: false),
-    LanguageModel(code: "lo", codeTranslator: "lo", name: "ลาว", use: true),
+    LanguageModel(code: "lo", codeTranslator: "lo", name: "ลาว", use: false),
     LanguageModel(
         code: "mr", codeTranslator: "th", name: "เมียนม่า", use: false),
     LanguageModel(
@@ -254,17 +281,28 @@ void showSnackBar(
 }
 
 String language(String code) {
-  String result = code;
-  for (int i = 0; i < languageSystemCode.length; i++) {
-    if (languageSystemCode[i].code == code) {
-      for (int j = 0; j < languageSystemCode[i].langs.length; j++) {
-        if (languageSystemCode[i].langs[j].code == userLanguage) {
-          result = languageSystemCode[i].langs[j].text;
-          break;
-        }
-      }
+  String result = code.trim();
+  for (int i = 0; i < languageSystemData.length; i++) {
+    if (languageSystemData[i].code == code) {
+      result = languageSystemData[i].text;
       break;
     }
   }
   return (result.trim().isEmpty) ? code : result;
+}
+
+void languageSelect(String languageCode) {
+  languageSystemData = [];
+  for (int i = 0; i < languageSystemCode.length; i++) {
+    for (int j = 0; j < languageSystemCode[i].langs.length; j++) {
+      if (languageSystemCode[i].langs[j].code == userLanguage) {
+        languageSystemData.add(LanguageSystemModel(
+            code: languageSystemCode[i].code.trim(),
+            text: languageSystemCode[i].langs[j].text.trim()));
+      }
+    }
+  }
+  /*global.languageSystemData.sort((a, b) {
+    return a.code.compareTo(b.code);
+  });*/
 }

@@ -51,6 +51,7 @@ class SelectLanguageScreenState extends State<SelectLanguageScreen> {
                         setState(() {
                           global.userLanguage = countryCodes[index];
                           GetStorage().write('language', global.userLanguage);
+                          global.languageSelect(global.userLanguage);
                           Navigator.of(context).pushReplacementNamed('/menu');
                         });
                       },

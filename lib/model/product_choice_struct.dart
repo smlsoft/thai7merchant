@@ -4,13 +4,9 @@ import 'package:json_annotation/json_annotation.dart';
 part 'product_choice_struct.g.dart';
 
 /// ข้อเลือกย่อยสินค้า
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class ProductChoiceModel {
-  /// อ้างอืงรหัสสินค้า เพื่อตัดสต๊อก
-  String refbarcode;
-
-  /// อ้างอิงหน่วยนับ เพื่อตัดสต๊อก
-  String refunitcode;
+  String guid;
 
   /// ชื่อข้อเลือกย่อย
   List<LanguageDataModel> names;
@@ -18,19 +14,30 @@ class ProductChoiceModel {
   /// ราคาข้อเลือกย่อย (เพิ่ม)
   double price;
 
+  /// ตัดสต๊อกสินค้า
+  bool isstock;
+
+  /// อ้างอิง Barcode
+  String refbarcode;
+
+  /// อ้างอิงสินค้า เพื่อตัดสต๊อก
+  String refproductcode;
+
+  /// อ้างอิงหน่วยนับ เพื่อตัดสต๊อก
+  String refunitcode;
+
   /// จำนวนเพื่อตัดสต๊อก
   double qty;
 
-  /// จำนวนที่เลือกได้สูงสุด
-  double qtymax;
-
   ProductChoiceModel({
+    required this.guid,
     required this.refbarcode,
+    required this.refproductcode,
     required this.refunitcode,
     required this.names,
+    required this.isstock,
     required this.price,
     required this.qty,
-    required this.qtymax,
   });
 
   factory ProductChoiceModel.fromJson(Map<String, dynamic> json) =>

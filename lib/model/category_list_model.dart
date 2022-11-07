@@ -4,6 +4,8 @@ class CategoryListModel {
   late CategoryModel detail;
   late List<CategoryListModel> childCategorys;
   late bool isExpand = true;
+  late bool isMoveUp = false;
+  late bool isMoveDown = false;
 
   CategoryListModel({
     required this.detail,

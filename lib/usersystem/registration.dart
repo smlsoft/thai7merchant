@@ -4,7 +4,6 @@ import 'package:thai7merchant/usersystem/login_shop.dart';
 import 'package:flutter/material.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:flutter_html/flutter_html.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import 'package:thai7merchant/usersystem/otp/otp_screen.dart';

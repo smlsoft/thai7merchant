@@ -2,25 +2,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:thai7merchant/bloc/color/color_bloc.dart';
+import 'package:thai7merchant/bloc/customer_group/customer_group_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/language_model.dart';
-import 'package:thai7merchant/model/color.dart';
+import 'package:thai7merchant/model/customer_group.dart';
 import 'package:split_view/split_view.dart';
-import 'package:flex_color_picker/flex_color_picker.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:invert_colors/invert_colors.dart';
-import 'package:icon_decoration/icon_decoration.dart';
 import 'package:translator/translator.dart';
 
-class ColorScreen extends StatefulWidget {
-  const ColorScreen({Key? key}) : super(key: key);
+class CustomerGroupScreen extends StatefulWidget {
+  const CustomerGroupScreen({Key? key}) : super(key: key);
 
   @override
-  State<ColorScreen> createState() => ColorScreenState();
+  State<CustomerGroupScreen> createState() => CustomerGroupScreenState();
 }
 
-class ColorScreenState extends State<ColorScreen>
+class CustomerGroupScreenState extends State<CustomerGroupScreen>
     with SingleTickerProviderStateMixin {
   final translator = GoogleTranslator();
   late TabController tabController;
@@ -31,8 +27,8 @@ class ColorScreenState extends State<ColorScreen>
   List<TextEditingController> fieldTextController = [];
   List<FocusNode> fieldFocusNodes = [];
   int focusNodeIndex = 0;
-  List<ColorModel> colorListDatas = [];
-  List<String> colorGuidListChecked = [];
+  List<CustomerGroupModel> listDatas = [];
+  List<String> guidListChecked = [];
   List<LanguageDataModel> names = [];
   ScrollController listScrollController = ScrollController();
   List<GlobalKey> listKeys = [];
@@ -41,7 +37,7 @@ class ColorScreenState extends State<ColorScreen>
   String selectGuid = "";
   bool isChange = false;
   bool isSaveAllow = false;
-  late ColorState blocColorState;
+  late CustomerGroupState blocCustomerGroupState;
   String headerEdit = "";
   late MediaQueryData queryData;
   int currentListIndex = -1;
@@ -50,11 +46,6 @@ class ColorScreenState extends State<ColorScreen>
   bool isKeyDown = false;
   bool showCheckBox = false;
   bool isEditMode = false;
-  Color colorSelected = Colors.white;
-  String colorSelectedHex = "";
-  Color publicColorSelected = Colors.white;
-  String publicColorSelectedCode = "";
-  String publicColorSelectedHex = "";
 
   @override
   void initState() {
@@ -90,8 +81,8 @@ class ColorScreenState extends State<ColorScreen>
   }
 
   void loadDataList(String search) {
-    context.read<ColorBloc>().add(ColorLoadList(
-        offset: (colorListDatas.isEmpty) ? 0 : colorListDatas.length,
+    context.read<CustomerGroupBloc>().add(CustomerGroupLoadList(
+        offset: (listDatas.isEmpty) ? 0 : listDatas.length,
         limit: loaDataPerPage,
         search: search));
   }
@@ -127,11 +118,6 @@ class ColorScreenState extends State<ColorScreen>
     isChange = false;
     focusNodeIndex = 0;
     fieldFocusNodes[focusNodeIndex].requestFocus();
-    setState(() {
-      publicColorSelectedCode = "white";
-      publicColorSelected = Colors.white;
-      publicColorSelectedCode = "#ffffff";
-    });
   }
 
   void discardData({required Function callBack}) {
@@ -139,14 +125,14 @@ class ColorScreenState extends State<ColorScreen>
       showDialog<String>(
           context: context,
           builder: (BuildContext context) => AlertDialog(
-                title: const Text('มีการแก้ไขข้อมูล'),
-                content: const Text('ต้องการออกจากหน้าจอนี้ ใช่หรือไม่'),
+                title: Text(global.language('data_editing')),
+                content: Text(global.language('leave_this_screen')),
                 actions: <Widget>[
                   ElevatedButton(
                       style:
                           ElevatedButton.styleFrom(backgroundColor: Colors.red),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('ไม่')),
+                      child: Text(global.language('no'))),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue),
@@ -154,7 +140,7 @@ class ColorScreenState extends State<ColorScreen>
                         Navigator.pop(context);
                         callBack();
                       },
-                      child: const Text('ใช่')),
+                      child: Text(global.language('yes'))),
                 ],
               ));
     } else {
@@ -163,9 +149,9 @@ class ColorScreenState extends State<ColorScreen>
   }
 
   void getData(String guid) {
-    headerEdit = "แสดง";
+    headerEdit = global.language("show");
     isEditMode = false;
-    context.read<ColorBloc>().add(ColorGet(guid: guid));
+    context.read<CustomerGroupBloc>().add(CustomerGroupGet(guid: guid));
   }
 
   Widget listScreen({bool mobileScreen = false}) {
@@ -173,7 +159,7 @@ class ColorScreenState extends State<ColorScreen>
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('สีสินค้า'),
+        title: Text(global.language('customer_group')),
         leading: IconButton(
           focusNode: FocusNode(skipTraversal: true),
           icon: const Icon(Icons.arrow_back),
@@ -194,7 +180,7 @@ class ColorScreenState extends State<ColorScreen>
                     setState(() {
                       if (showCheckBox) {
                         showCheckBox = false;
-                        colorGuidListChecked.clear();
+                        guidListChecked.clear();
                       } else {
                         showCheckBox = true;
                         global.showSnackBar(
@@ -203,7 +189,7 @@ class ColorScreenState extends State<ColorScreen>
                               Icons.delete,
                               color: Colors.white,
                             ),
-                            "เลือกรายการที่ต้องการลบ",
+                            global.language("choose_item_delete"),
                             Colors.blue);
                       }
                     });
@@ -211,7 +197,7 @@ class ColorScreenState extends State<ColorScreen>
                 },
                 icon: const Icon(Icons.check_box),
               )),
-          if (colorGuidListChecked.isNotEmpty)
+          if (guidListChecked.isNotEmpty)
             Padding(
                 padding: const EdgeInsets.only(right: 20.0),
                 child: IconButton(
@@ -220,7 +206,7 @@ class ColorScreenState extends State<ColorScreen>
                     showDialog<String>(
                       context: context,
                       builder: (BuildContext context) => AlertDialog(
-                        title: const Text('ต้องการลบข้อมูลหรือไม่'),
+                        title: Text(global.language('confirm_delete')),
                         actions: <Widget>[
                           ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -232,10 +218,11 @@ class ColorScreenState extends State<ColorScreen>
                                   backgroundColor: Colors.blue),
                               onPressed: () {
                                 Navigator.pop(context);
-                                context.read<ColorBloc>().add(ColorDeleteMany(
-                                    guid: colorGuidListChecked));
+                                context.read<CustomerGroupBloc>().add(
+                                    CustomerGroupDeleteMany(
+                                        guid: guidListChecked));
                               },
-                              child: const Text('ลบ')),
+                              child: Text(global.language('delete'))),
                         ],
                       ),
                     );
@@ -257,7 +244,7 @@ class ColorScreenState extends State<ColorScreen>
                       showCheckBox = false;
                       isChange = false;
                       clearEditData();
-                      headerEdit = "เพิ่ม";
+                      headerEdit = global.language("append");
                       isSaveAllow = true;
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                         tabController.animateTo(1);
@@ -279,10 +266,10 @@ class ColorScreenState extends State<ColorScreen>
               if (event is RawKeyDownEvent) {
                 if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
                   isKeyDown = false;
-                  int index = colorListDatas.indexOf(colorListDatas.firstWhere(
+                  int index = listDatas.indexOf(listDatas.firstWhere(
                       (element) => element.guidfixed == selectGuid));
                   if (index > 0) {
-                    selectGuid = colorListDatas[index - 1].guidfixed;
+                    selectGuid = listDatas[index - 1].guidfixed;
                     currentListIndex = index + 1;
                     isKeyUp = true;
                     getData(selectGuid);
@@ -290,9 +277,9 @@ class ColorScreenState extends State<ColorScreen>
                 }
                 if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
                   isKeyUp = false;
-                  int index = colorListDatas.indexOf(colorListDatas.firstWhere(
+                  int index = listDatas.indexOf(listDatas.firstWhere(
                       (element) => element.guidfixed == selectGuid));
-                  selectGuid = colorListDatas[index + 1].guidfixed;
+                  selectGuid = listDatas[index + 1].guidfixed;
                   currentListIndex = index + 1;
                   isKeyDown = true;
                   getData(selectGuid);
@@ -329,12 +316,14 @@ class ColorScreenState extends State<ColorScreen>
                               autofocus: true,
                               focusNode: searchFocusNode,
                               controller: searchController,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 isDense: true,
                                 contentPadding:
-                                    EdgeInsets.only(top: 10, bottom: 10),
+                                    const EdgeInsets.only(top: 10, bottom: 10),
                                 border: InputBorder.none,
-                                hintText: (kIsWeb) ? "ค้นหา (F2)" : "ค้นหา",
+                                hintText: (kIsWeb)
+                                    ? "${global.language('search')} (F2)"
+                                    : global.language('search'),
                               ))))),
               Container(
                   key: headerKey,
@@ -346,26 +335,17 @@ class ColorScreenState extends State<ColorScreen>
                         bottom: BorderSide(width: 1.0, color: Colors.grey),
                       )),
                   child: Row(children: [
-                    const Expanded(
+                    Expanded(
                         flex: 5,
-                        child: Text("รหัสสี",
-                            style: TextStyle(
+                        child: Text(global.language("customer_group_code"),
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold))),
-                    const Expanded(
+                    Expanded(
                         flex: 10,
                         child: Text(
-                          "ชื่อสี",
-                          style: TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.bold),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        )),
-                    const Expanded(
-                        flex: 4,
-                        child: Text(
-                          "สีที่เลือก",
-                          style: TextStyle(
+                          global.language("customer_group_name"),
+                          style: const TextStyle(
                               color: Colors.black, fontWeight: FontWeight.bold),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -380,7 +360,7 @@ class ColorScreenState extends State<ColorScreen>
                   child: SingleChildScrollView(
                       controller: listScrollController,
                       child: Column(
-                          children: colorListDatas
+                          children: listDatas
                               .map((value) => listObject(value, showCheckBox))
                               .toList())))
             ],
@@ -388,20 +368,20 @@ class ColorScreenState extends State<ColorScreen>
     );
   }
 
-  void switchToEdit(ColorModel value) {
+  void switchToEdit(CustomerGroupModel value) {
     setState(() {
       selectGuid = value.guidfixed;
       getData(selectGuid);
-      headerEdit = "แก้ไข";
+      headerEdit = global.language("edit");
       isSaveAllow = true;
       isEditMode = true;
     });
   }
 
-  Widget listObject(ColorModel value, bool showCheckBox) {
+  Widget listObject(CustomerGroupModel value, bool showCheckBox) {
     bool isCheck = false;
-    for (int i = 0; i < colorGuidListChecked.length; i++) {
-      if (colorGuidListChecked[i] == value.guidfixed) {
+    for (int i = 0; i < guidListChecked.length; i++) {
+      if (guidListChecked[i] == value.guidfixed) {
         isCheck = true;
         break;
       }
@@ -413,9 +393,9 @@ class ColorScreenState extends State<ColorScreen>
             setState(() {
               selectGuid = value.guidfixed;
               if (isCheck == true) {
-                colorGuidListChecked.remove(value.guidfixed);
+                guidListChecked.remove(value.guidfixed);
               } else {
-                colorGuidListChecked.add(value.guidfixed);
+                guidListChecked.add(value.guidfixed);
               }
               global.showSnackBar(
                   context,
@@ -423,7 +403,7 @@ class ColorScreenState extends State<ColorScreen>
                     Icons.check,
                     color: Colors.white,
                   ),
-                  "เลือกแล้ว ${colorGuidListChecked.length} รายการ",
+                  "${global.language("chosen")} ${guidListChecked.length} ${global.language("list")}",
                   Colors.blue);
             });
           } else {
@@ -470,25 +450,6 @@ class ColorScreenState extends State<ColorScreen>
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   )),
-              Expanded(
-                  flex: 4,
-                  child: Row(children: [
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                          color: global.colorFromHex(value.colorselecthex),
-                          border: Border.all(color: Colors.black)),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                          color: global.colorFromHex(value.colorsystemhex),
-                          border: Border.all(color: Colors.black)),
-                    )
-                  ])),
               if (showCheckBox)
                 Expanded(
                     flex: 1,
@@ -515,16 +476,14 @@ class ColorScreenState extends State<ColorScreen>
   void saveOrUpdateData() {
     showCheckBox = false;
     if (selectGuid.trim().isEmpty) {
-      ColorModel colorModel = ColorModel(
+      CustomerGroupModel data = CustomerGroupModel(
         guidfixed: "",
         code: fieldTextController[0].text,
         names: packLanguage(),
-        colorselect: colorSelected.value.toString(),
-        colorselecthex: colorSelectedHex,
-        colorsystem: publicColorSelectedCode,
-        colorsystemhex: publicColorSelectedHex,
       );
-      context.read<ColorBloc>().add(ColorSave(colorModel: colorModel));
+      context
+          .read<CustomerGroupBloc>()
+          .add(CustomerGroupSave(customerGroupModel: data));
     } else {
       updateData(selectGuid);
     }
@@ -533,38 +492,30 @@ class ColorScreenState extends State<ColorScreen>
   void updateData(String guid) {
     var names = packLanguage();
     showCheckBox = false;
-    ColorModel colorModel = ColorModel(
+    CustomerGroupModel data = CustomerGroupModel(
       guidfixed: guid,
       code: fieldTextController[0].text,
       names: names,
-      colorselect: colorSelected.value.toString(),
-      colorsystem: publicColorSelectedCode,
-      colorselecthex: colorSelectedHex,
-      colorsystemhex: publicColorSelectedHex,
     );
     context
-        .read<ColorBloc>()
-        .add(ColorUpdate(guid: guid, colorModel: colorModel));
+        .read<CustomerGroupBloc>()
+        .add(CustomerGroupUpdate(guid: guid, customerGroupModel: data));
   }
 
-  void getDataToEditScreen(ColorModel color) {
+  void getDataToEditScreen(CustomerGroupModel customerGroup) {
     isChange = false;
-    selectGuid = color.guidfixed;
-    fieldTextController[0].text = color.code;
+    selectGuid = customerGroup.guidfixed;
+    fieldTextController[0].text = customerGroup.code;
     for (int i = 0; i < languageList.length; i++) {
       fieldTextController[i + 1].text = "";
     }
     for (int i = 0; i < languageList.length; i++) {
-      for (int j = 0; j < color.names.length; j++) {
-        if (languageList[i].code == color.names[j].code) {
-          fieldTextController[i + 1].text = color.names[j].name;
+      for (int j = 0; j < customerGroup.names.length; j++) {
+        if (languageList[i].code == customerGroup.names[j].code) {
+          fieldTextController[i + 1].text = customerGroup.names[j].name;
         }
       }
     }
-    publicColorSelectedCode = color.colorsystem;
-    publicColorSelected =
-        global.colorFromHex(color.colorsystemhex.replaceAll("#", ""));
-    colorSelected = Color(int.parse(color.colorselect));
   }
 
   void findFocusNext(int index) {
@@ -598,7 +549,7 @@ class ColorScreenState extends State<ColorScreen>
                       });
                     })
                 : null,
-            title: Text("$headerEditสีสินค้า"),
+            title: Text(headerEdit + global.language("customer_group")),
             actions: <Widget>[
               if (selectGuid.isNotEmpty)
                 Padding(
@@ -610,23 +561,22 @@ class ColorScreenState extends State<ColorScreen>
                         showDialog<String>(
                           context: context,
                           builder: (BuildContext context) => AlertDialog(
-                            title: const Text('ต้องการลบข้อมูลหรือไม่'),
+                            title: Text(global.language('delete_confirm')),
                             actions: <Widget>[
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.red),
                                   onPressed: () => Navigator.pop(context),
-                                  child: const Text('ไม่')),
+                                  child: Text(global.language('no'))),
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.blue),
                                   onPressed: () {
                                     Navigator.pop(context);
-                                    context
-                                        .read<ColorBloc>()
-                                        .add(ColorDelete(guid: selectGuid));
+                                    context.read<CustomerGroupBloc>().add(
+                                        CustomerGroupDelete(guid: selectGuid));
                                   },
-                                  child: const Text('ลบ')),
+                                  child: Text(global.language('confirm'))),
                             ],
                           ),
                         );
@@ -663,8 +613,8 @@ class ColorScreenState extends State<ColorScreen>
                       focusNode: FocusNode(skipTraversal: true),
                       onPressed: () {
                         showCheckBox = false;
-                        switchToEdit(colorListDatas[colorListDatas.indexOf(
-                            colorListDatas.firstWhere((element) =>
+                        switchToEdit(listDatas[listDatas.indexOf(
+                            listDatas.firstWhere((element) =>
                                 element.guidfixed == selectGuid))]);
                       },
                       icon: const Icon(
@@ -725,9 +675,10 @@ class ColorScreenState extends State<ColorScreen>
                                     selection:
                                         fieldTextController[0].selection);
                               },
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: "รหัสสี",
+                              decoration: InputDecoration(
+                                border: const OutlineInputBorder(),
+                                labelText:
+                                    global.language("customer_group_code"),
                               ))),
                       const SizedBox(height: 10),
                       for (int i = 0; i < languageList.length; i++)
@@ -748,178 +699,10 @@ class ColorScreenState extends State<ColorScreen>
                             decoration: InputDecoration(
                               border: const OutlineInputBorder(),
                               labelText:
-                                  "ชื่อสีสินค้า (${languageList[i].name})",
+                                  "${global.language("customer_group_name")} (${languageList[i].name})",
                             ),
                           ),
                         ),
-                      Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              color: colorSelected,
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(5)),
-                          child: Container(
-                              padding: const EdgeInsets.all(10),
-                              child: ColorPicker(
-                                color: colorSelected,
-                                padding: const EdgeInsets.all(0),
-                                heading: Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        border: Border.all(color: Colors.grey),
-                                        borderRadius: BorderRadius.circular(5)),
-                                    child: Row(children: [
-                                      Container(
-                                          padding:
-                                              const EdgeInsets.only(left: 10),
-                                          child: Text(
-                                            'เลือกสี (เพื่อแสดงตัวอย่างสีในระบบ)',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium,
-                                          )),
-                                      const Spacer(),
-                                      IconButton(
-                                          icon: const Icon(Icons.clear),
-                                          onPressed: () {
-                                            setState(() {
-                                              colorSelected = Colors.white;
-                                            });
-                                          })
-                                    ])),
-                                showColorName: true,
-                                showColorCode: true,
-                                onColorChanged: (Color colorValue) {
-                                  setState(() {
-                                    colorSelected = colorValue;
-                                    colorSelectedHex = colorValue.value
-                                        .toRadixString(16)
-                                        .toString();
-                                  });
-                                },
-                                pickersEnabled: const <ColorPickerType, bool>{
-                                  ColorPickerType.both: true,
-                                  ColorPickerType.primary: true,
-                                  ColorPickerType.accent: true,
-                                  ColorPickerType.bw: false,
-                                  ColorPickerType.custom: true,
-                                  ColorPickerType.wheel: true,
-                                },
-                              ))),
-                      const SizedBox(height: 10),
-                      Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                              color: publicColorSelected,
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(5)),
-                          child: Column(children: [
-                            Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(5)),
-                                width: double.infinity,
-                                child: const Center(
-                                    child: Text("จัดเข้ากลุ่มสีในระบบ THAI7"))),
-                            const SizedBox(height: 10),
-                            Wrap(
-                              spacing: 4.0,
-                              runSpacing: 4.0,
-                              children: [
-                                for (int i = 0;
-                                    i < global.publicColors.length;
-                                    i++)
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                        side: const BorderSide(
-                                          width: 1.0,
-                                          color: Colors.grey,
-                                        ),
-                                        backgroundColor: global.colorFromHex(
-                                            global.publicColors[i].color),
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5))),
-                                    onPressed: () {
-                                      setState(() {
-                                        publicColorSelectedCode =
-                                            global.publicColors[i].code;
-                                        publicColorSelectedHex =
-                                            global.publicColors[i].color;
-                                        publicColorSelected =
-                                            global.colorFromHex(
-                                                publicColorSelectedHex);
-                                      });
-                                    },
-                                    child: SizedBox(
-                                        width: 50,
-                                        height: 50,
-                                        child: Column(
-                                          children: [
-                                            Expanded(
-                                                child: Container(
-                                                    alignment: Alignment.center,
-                                                    child: (publicColorSelectedCode ==
-                                                            global
-                                                                .publicColors[i]
-                                                                .code)
-                                                        ? InvertColors(
-                                                            child:
-                                                                DecoratedIcon(
-                                                            icon: Icon(
-                                                                Icons.check,
-                                                                size: 32,
-                                                                color: global
-                                                                    .colorFromHex(global
-                                                                        .publicColors[
-                                                                            i]
-                                                                        .color)),
-                                                            decoration:
-                                                                const IconDecoration(
-                                                                    border: IconBorder(
-                                                                        width:
-                                                                            2)),
-                                                          ))
-                                                        : null)),
-                                            Padding(
-                                                padding: const EdgeInsets.only(
-                                                    bottom: 5),
-                                                child: Stack(
-                                                  children: [
-                                                    Text(
-                                                      global
-                                                          .publicColors[i].name,
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        foreground: Paint()
-                                                          ..style =
-                                                              PaintingStyle
-                                                                  .stroke
-                                                          ..strokeWidth = 4
-                                                          ..color = Colors.grey,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      global
-                                                          .publicColors[i].name,
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ))
-                                          ],
-                                        )),
-                                  )
-                              ],
-                            )
-                          ])),
                       const SizedBox(height: 10),
                       if (isSaveAllow)
                         SizedBox(
@@ -930,8 +713,8 @@ class ColorScreenState extends State<ColorScreen>
                                   saveOrUpdateData();
                                 },
                                 icon: const Icon(Icons.save),
-                                label: const Text(
-                                    (kIsWeb) ? "บันทึก (F10)" : "บันทึก")))
+                                label: Text(global.language("save") +
+                                    ((kIsWeb) ? " (F10)" : ""))))
                     ])))));
   }
 
@@ -940,24 +723,24 @@ class ColorScreenState extends State<ColorScreen>
     queryData = MediaQuery.of(context);
     listKeys.clear();
     if (showCheckBox == false) {
-      colorGuidListChecked.clear();
+      guidListChecked.clear();
     }
     return Scaffold(
         resizeToAvoidBottomInset: true,
         body: LayoutBuilder(builder: (context, constraints) {
-          return BlocListener<ColorBloc, ColorState>(
+          return BlocListener<CustomerGroupBloc, CustomerGroupState>(
               listener: (context, state) {
-                blocColorState = state;
+                blocCustomerGroupState = state;
                 // Load
-                if (state is ColorLoadSuccess) {
+                if (state is CustomerGroupLoadSuccess) {
                   setState(() {
-                    if (state.colors.isNotEmpty) {
-                      colorListDatas.addAll(state.colors);
+                    if (state.customerGroups.isNotEmpty) {
+                      listDatas.addAll(state.customerGroups);
                     }
                   });
                 }
                 // Save
-                if (state is ColorSaveSuccess) {
+                if (state is CustomerGroupSaveSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -965,14 +748,14 @@ class ColorScreenState extends State<ColorScreen>
                           Icons.save,
                           color: Colors.white,
                         ),
-                        "บันทึกสำเร็จ",
+                        global.language("save_success"),
                         Colors.blue);
                     clearEditData();
-                    colorListDatas.clear();
+                    listDatas.clear();
                     loadDataList(searchText);
                   });
                 }
-                if (state is ColorSaveFailed) {
+                if (state is CustomerGroupSaveFailed) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -980,12 +763,12 @@ class ColorScreenState extends State<ColorScreen>
                           Icons.save,
                           color: Colors.white,
                         ),
-                        "บันทึกไม่สำเร็จ : ${state.message}",
+                        "${global.language("not_success_save")} : ${state.message}",
                         Colors.red);
                   });
                 }
                 // Update
-                if (state is ColorUpdateSuccess) {
+                if (state is CustomerGroupUpdateSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -993,10 +776,10 @@ class ColorScreenState extends State<ColorScreen>
                           Icons.edit,
                           color: Colors.white,
                         ),
-                        "แก้ไขสำเร็จ",
+                        global.language("edit_success"),
                         Colors.blue);
                     clearEditData();
-                    colorListDatas.clear();
+                    listDatas.clear();
                     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                       tabController.animateTo(0);
                     });
@@ -1005,7 +788,7 @@ class ColorScreenState extends State<ColorScreen>
                     getData(selectGuid);
                   });
                 }
-                if (state is ColorUpdateFailed) {
+                if (state is CustomerGroupUpdateFailed) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1013,12 +796,12 @@ class ColorScreenState extends State<ColorScreen>
                           Icons.edit,
                           color: Colors.white,
                         ),
-                        "แก้ไขไม่สำเร็จ : ${state.message}",
+                        "${global.language("not_edit_success")} : ${state.message}",
                         Colors.red);
                   });
                 }
                 // Delete
-                if (state is ColorDeleteSuccess) {
+                if (state is CustomerGroupDeleteSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1026,9 +809,9 @@ class ColorScreenState extends State<ColorScreen>
                           Icons.delete,
                           color: Colors.white,
                         ),
-                        "ลบสำเร็จ",
+                        global.language("delete_success"),
                         Colors.blue);
-                    colorListDatas.clear();
+                    listDatas.clear();
                     clearEditData();
                     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                       tabController.animateTo(0);
@@ -1037,7 +820,7 @@ class ColorScreenState extends State<ColorScreen>
                   });
                 }
                 // Delete Many
-                if (state is ColorDeleteManySuccess) {
+                if (state is CustomerGroupDeleteManySuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1045,18 +828,18 @@ class ColorScreenState extends State<ColorScreen>
                           Icons.delete,
                           color: Colors.white,
                         ),
-                        "ลบสำเร็จ",
+                        global.language("not_delete_success"),
                         Colors.blue);
-                    colorListDatas.clear();
+                    listDatas.clear();
                     clearEditData();
                     loadDataList(searchText);
                     showCheckBox = false;
                   });
                 }
                 // Get
-                if (state is ColorGetSuccess) {
+                if (state is CustomerGroupGetSuccess) {
                   setState(() {
-                    getDataToEditScreen(state.color);
+                    getDataToEditScreen(state.customerGroup);
                     if (isEditMode) {
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                         tabController.animateTo(1);

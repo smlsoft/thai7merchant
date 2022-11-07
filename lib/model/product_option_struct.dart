@@ -5,24 +5,27 @@ import 'package:thai7merchant/model/product_choice_struct.dart';
 part 'product_option_struct.g.dart';
 
 /// ข้อเลือกพิเศษ
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class ProductOptionModel {
+  String guid;
+
+  /// เลือกได้น้อยสุด
+  int minselect = 0;
+
   /// เลือกได้สูงสุด
   int maxselect = 0;
 
   /// ชื่อข้อเลือกพิเศษ
   List<LanguageDataModel> names;
 
-  /// บังคับเลือก
-  bool isrequired;
-
   /// รายการข้อเลือกย่อย
   List<ProductChoiceModel> choices;
 
   ProductOptionModel({
+    required this.guid,
     required this.maxselect,
     required this.names,
-    required this.isrequired,
+    required this.minselect,
     required this.choices,
   });
 

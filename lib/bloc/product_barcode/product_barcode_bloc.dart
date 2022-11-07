@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/services.dart';
 import 'package:thai7merchant/model/product_barcode_struct.dart';
+import 'package:thai7merchant/model/upload_image_model.dart';
 import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/repositories/product_barcode_repository.dart';
 
@@ -21,6 +25,7 @@ class ProductBarcodeBloc
     on<ProductBarcodeDelete>(productbarcodeDelete);
     on<ProductBarcodeDeleteMany>(productbarcodeDeleteMany);
     on<ProductBarcodeGet>(onProductBarcodeGet);
+    on<ProductBarcodeWithImageSave>(onProductBarcodeWithImageSave);
   }
 
   void onProductBarcodeLoad(
@@ -110,6 +115,26 @@ class ProductBarcodeBloc
       }
     } catch (e) {
       // emit(ProductBarcodeDeleteFailure(message: e.toString()));
+    }
+  }
+
+  void onProductBarcodeWithImageSave(ProductBarcodeWithImageSave event,
+      Emitter<ProductBarcodeState> emit) async {
+    emit(ProductBarcodeSaveInProgress());
+    try {
+      ApiResponse result = await _productBarcodeRepository.uploadImage(
+          event.imageFile, event.imageWeb!);
+      if (result.success) {
+        UploadImageModel uploadImage = UploadImageModel.fromJson(result.data);
+        ProductBarcodeModel productBarcodeModel = event.productBarcodeModel;
+        productBarcodeModel.imageuri = uploadImage.uri;
+        await _productBarcodeRepository.saveProductBarcode(productBarcodeModel);
+        emit(ProductBarcodeSaveSuccess());
+      } else {
+        emit(ProductBarcodeSaveFailed(message: result.message));
+      }
+    } catch (e) {
+      emit(ProductBarcodeSaveFailed(message: e.toString()));
     }
   }
 }

@@ -19,13 +19,35 @@ class LanguageModel {
 class LanguageDataModel {
   String code;
   String name;
-  bool isauto;
 
-  LanguageDataModel(
-      {required this.code, required this.name, required this.isauto});
+  LanguageDataModel({required this.code, required this.name});
 
   factory LanguageDataModel.fromJson(Map<String, dynamic> json) =>
       _$LanguageDataModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$LanguageDataModelToJson(this);
+}
+
+@JsonSerializable(explicitToJson: true)
+class LanguageSystemModel {
+  String code;
+  String text;
+
+  LanguageSystemModel({required this.code, required this.text});
+
+  factory LanguageSystemModel.fromJson(Map<String, dynamic> json) =>
+      _$LanguageSystemModelFromJson(json);
+  Map<String, dynamic> toJson() => _$LanguageSystemModelToJson(this);
+}
+
+@JsonSerializable(explicitToJson: true)
+class LanguageSystemCodeModel {
+  String code;
+  List<LanguageSystemModel> langs;
+
+  LanguageSystemCodeModel({required this.code, required this.langs});
+
+  factory LanguageSystemCodeModel.fromJson(Map<String, dynamic> json) =>
+      _$LanguageSystemCodeModelFromJson(json);
+  Map<String, dynamic> toJson() => _$LanguageSystemCodeModelToJson(this);
 }

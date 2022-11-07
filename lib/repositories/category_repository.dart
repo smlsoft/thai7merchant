@@ -86,7 +86,7 @@ class CategoryRepository {
     Dio client = Client().init();
     String fileName = file.path.split('/').last;
     FormData formData = FormData.fromMap({
-      "file": await MultipartFile.fromBytes(image, filename: fileName + '.png'),
+      "file": await MultipartFile.fromBytes(image, filename: '$fileName.png'),
     });
     try {
       final response = await client.post('/upload/images', data: formData);
