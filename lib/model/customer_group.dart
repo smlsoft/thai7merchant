@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:thai7merchant/model/language_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
 
 part 'customer_group.g.dart';
 

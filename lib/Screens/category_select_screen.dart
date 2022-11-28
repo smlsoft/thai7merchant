@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thai7merchant/bloc/category/category_bloc.dart';
 import 'package:thai7merchant/model/category_list_model.dart';
 import 'package:thai7merchant/model/category_model.dart';
-import 'package:thai7merchant/model/language_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:translator/translator.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart';
@@ -55,7 +55,7 @@ class CategorySelectScreenState extends State<CategorySelectScreen>
               width: level * 10,
             ),
             Expanded(
-              child: Text(category.detail.names[0].name,
+              child: Text(category.detail.names![0].name,
                   style: const TextStyle(fontSize: 18)),
             ),
             if (category.childCategorys.isNotEmpty)

@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/model/customer_group.dart';
 import 'package:thai7merchant/repositories/customer_group_repository.dart';
@@ -21,7 +21,8 @@ class CustomerGroupBloc extends Bloc<CustomerGroupEvent, CustomerGroupState> {
     on<CustomerGroupGet>(onCustomerGroupGet);
   }
 
-  void onCustomerGroupLoad(CustomerGroupLoadList event, Emitter<CustomerGroupState> emit) async {
+  void onCustomerGroupLoad(
+      CustomerGroupLoadList event, Emitter<CustomerGroupState> emit) async {
     emit(CustomerGroupInProgress());
 
     try {
@@ -34,14 +35,16 @@ class CustomerGroupBloc extends Bloc<CustomerGroupEvent, CustomerGroupState> {
             .toList();
         emit(CustomerGroupLoadSuccess(customerGroups: customerGroups));
       } else {
-        emit(const CustomerGroupLoadFailed(message: 'Customer Group Not Found'));
+        emit(
+            const CustomerGroupLoadFailed(message: 'Customer Group Not Found'));
       }
     } catch (e) {
       emit(CustomerGroupLoadFailed(message: e.toString()));
     }
   }
 
-  void customerGroupDelete(CustomerGroupDelete event, Emitter<CustomerGroupState> emit) async {
+  void customerGroupDelete(
+      CustomerGroupDelete event, Emitter<CustomerGroupState> emit) async {
     emit(CustomerGroupDeleteInProgress());
     try {
       await _customerGroupRepository.deleteCustomerGroup(event.guid);
@@ -52,7 +55,8 @@ class CustomerGroupBloc extends Bloc<CustomerGroupEvent, CustomerGroupState> {
     }
   }
 
-  void customerGroupDeleteMany(CustomerGroupDeleteMany event, Emitter<CustomerGroupState> emit) async {
+  void customerGroupDeleteMany(
+      CustomerGroupDeleteMany event, Emitter<CustomerGroupState> emit) async {
     emit(CustomerGroupDeleteManyInProgress());
     try {
       await _customerGroupRepository.deleteCustomerGroupMany(event.guid);
@@ -63,32 +67,39 @@ class CustomerGroupBloc extends Bloc<CustomerGroupEvent, CustomerGroupState> {
     }
   }
 
-  void onCustomerGroupSave(CustomerGroupSave event, Emitter<CustomerGroupState> emit) async {
+  void onCustomerGroupSave(
+      CustomerGroupSave event, Emitter<CustomerGroupState> emit) async {
     emit(CustomerGroupSaveInProgress());
     try {
-      await _customerGroupRepository.saveCustomerGroup(event.customerGroupModel);
+      await _customerGroupRepository
+          .saveCustomerGroup(event.customerGroupModel);
       emit(CustomerGroupSaveSuccess());
     } catch (e) {
       emit(CustomerGroupSaveFailed(message: e.toString()));
     }
   }
 
-  void onCustomerGroupUpdate(CustomerGroupUpdate event, Emitter<CustomerGroupState> emit) async {
+  void onCustomerGroupUpdate(
+      CustomerGroupUpdate event, Emitter<CustomerGroupState> emit) async {
     emit(CustomerGroupUpdateInProgress());
     try {
-      await _customerGroupRepository.updateCustomerGroup(event.guid, event.customerGroupModel);
+      await _customerGroupRepository.updateCustomerGroup(
+          event.guid, event.customerGroupModel);
       emit(CustomerGroupUpdateSuccess());
     } catch (e) {
       emit(CustomerGroupUpdateFailed(message: e.toString()));
     }
   }
 
-  void onCustomerGroupGet(CustomerGroupGet event, Emitter<CustomerGroupState> emit) async {
+  void onCustomerGroupGet(
+      CustomerGroupGet event, Emitter<CustomerGroupState> emit) async {
     emit(CustomerGroupGetInProgress());
     try {
-      final result = await _customerGroupRepository.getCustomerGroup(event.guid);
+      final result =
+          await _customerGroupRepository.getCustomerGroup(event.guid);
       if (result.success) {
-        CustomerGroupModel customerGroup = CustomerGroupModel.fromJson(result.data);
+        CustomerGroupModel customerGroup =
+            CustomerGroupModel.fromJson(result.data);
         emit(CustomerGroupGetSuccess(customerGroup: customerGroup));
       } else {
         emit(const CustomerGroupGetFailed(message: 'CustomerGroup Not Found'));

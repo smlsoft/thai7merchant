@@ -1,10 +1,9 @@
 import 'dart:io';
-
 import 'dart:typed_data';
-
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:thai7merchant/model/upload_image_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
+import 'package:thai7merchant/model/master_model.dart';
 import 'package:thai7merchant/repositories/category_repository.dart';
 import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/model/category_model.dart';
@@ -26,6 +25,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     on<CategoryDelete>(categoryDelete);
     on<CategoryDeleteMany>(categoryDeleteMany);
     on<CategoryGet>(onCategoryGet);
+    on<CategoryUpdateXOrder>(onCategoryUpdateXOrder);
   }
 
   void onCategoryLoad(
@@ -102,6 +102,13 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     }
   }
 
+  void onCategoryUpdateXOrder(
+      CategoryUpdateXOrder event, Emitter<CategoryState> emit) async {
+    try {
+      await _categoryRepository.updateCategoryXOrder(event.orderList);
+    } catch (_) {}
+  }
+
   void onCategoryUpdate(
       CategoryUpdate event, Emitter<CategoryState> emit) async {
     emit(CategoryUpdateInProgress());
@@ -127,8 +134,11 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
           parentguidall: event.categoryModel.parentguidall,
           imageuri: uploadImage.uri,
           childcount: event.categoryModel.childcount,
+          colorselect: event.categoryModel.colorselect,
+          colorselecthex: event.categoryModel.colorselecthex,
+          useimageorcolor: event.categoryModel.useimageorcolor,
           names: event.categoryModel.names,
-          xsort: event.categoryModel.xsort,
+          xsorts: event.categoryModel.xsorts,
           barcodes: event.categoryModel.barcodes,
         );
         await _categoryRepository.updateCategory(event.guid, categoryModel);

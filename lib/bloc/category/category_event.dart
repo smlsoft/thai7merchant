@@ -61,6 +61,17 @@ class CategorySave extends CategoryEvent {
   List<Object> get props => [categoryModel];
 }
 
+class CategoryUpdateXOrder extends CategoryEvent {
+  final List<XSortModel> orderList;
+
+  const CategoryUpdateXOrder({
+    required this.orderList,
+  });
+
+  @override
+  List<Object> get props => [List<XSortModel>];
+}
+
 class CategoryWithImageSave extends CategoryEvent {
   final File imageFile;
   final CategoryModel categoryModel;

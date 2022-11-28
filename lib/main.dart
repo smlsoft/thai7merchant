@@ -6,14 +6,16 @@ import 'package:thai7merchant/bloc/customer/customer_bloc.dart';
 import 'package:thai7merchant/bloc/customer_group/customer_group_bloc.dart';
 import 'package:thai7merchant/bloc/image/image_upload_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
+import 'package:thai7merchant/bloc/product/product_bloc.dart';
 import 'package:thai7merchant/bloc/product_barcode/product_barcode_bloc.dart';
 import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
 import 'package:thai7merchant/menu_screen.dart';
-import 'package:thai7merchant/model/language_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/repositories/color_repository.dart';
 import 'package:thai7merchant/repositories/customer_group_repository.dart';
 import 'package:thai7merchant/repositories/customer_repository.dart';
+import 'package:thai7merchant/repositories/product_repository.dart';
 import 'package:thai7merchant/repositories/unit_repository.dart';
 import 'package:thai7merchant/select_language_screen.dart';
 import 'package:thai7merchant/repositories/image_upload_repository.dart';
@@ -161,6 +163,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<ProductBarcodeBloc>(
           create: (_) => ProductBarcodeBloc(
               productBarcodeRepository: ProductBarcodeRepository()),
+        ),
+        BlocProvider<ProductBloc>(
+          create: (_) => ProductBloc(productRepository: ProductRepository()),
         ),
       ],
       child: MaterialApp(

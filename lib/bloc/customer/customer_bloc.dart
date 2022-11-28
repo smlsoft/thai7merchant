@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/model/customer.dart';
 import 'package:thai7merchant/repositories/customer_repository.dart';
@@ -21,7 +21,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     on<CustomerGet>(onCustomerGet);
   }
 
-  void onCustomerLoad(CustomerLoadList event, Emitter<CustomerState> emit) async {
+  void onCustomerLoad(
+      CustomerLoadList event, Emitter<CustomerState> emit) async {
     emit(CustomerInProgress());
 
     try {
@@ -52,7 +53,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     }
   }
 
-  void customerDeleteMany(CustomerDeleteMany event, Emitter<CustomerState> emit) async {
+  void customerDeleteMany(
+      CustomerDeleteMany event, Emitter<CustomerState> emit) async {
     emit(CustomerDeleteManyInProgress());
     try {
       await _customerRepository.deleteCustomerMany(event.guid);
@@ -73,7 +75,8 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     }
   }
 
-  void onCustomerUpdate(CustomerUpdate event, Emitter<CustomerState> emit) async {
+  void onCustomerUpdate(
+      CustomerUpdate event, Emitter<CustomerState> emit) async {
     emit(CustomerUpdateInProgress());
     try {
       await _customerRepository.updateCustomer(event.guid, event.customerModel);

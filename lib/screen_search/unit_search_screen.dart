@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/global_model.dart';
-import 'package:thai7merchant/model/unit.dart';
+import 'package:thai7merchant/model/product_struct.dart';
 
 class UnitSearchScreen extends StatefulWidget {
   const UnitSearchScreen({Key? key}) : super(key: key);

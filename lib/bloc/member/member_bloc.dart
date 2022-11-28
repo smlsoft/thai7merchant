@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/repositories/member_repository.dart';
 import 'package:thai7merchant/repositories/client.dart';

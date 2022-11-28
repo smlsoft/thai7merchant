@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/config_model.dart';
-import 'package:thai7merchant/model/language_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/price_model.dart';
 import 'package:thai7merchant/model/public_color_model.dart';
 import 'package:thai7merchant/model/public_name_model.dart';
@@ -73,7 +73,7 @@ void loadConfig() {
     LanguageModel(
         code: "jp", codeTranslator: "th", name: "ญี่ปุ่น", use: false),
     LanguageModel(code: "kr", codeTranslator: "th", name: "เกาหลี", use: false),
-    LanguageModel(code: "lo", codeTranslator: "lo", name: "ลาว", use: false),
+    LanguageModel(code: "lo", codeTranslator: "lo", name: "ลาว", use: true),
     LanguageModel(
         code: "mr", codeTranslator: "th", name: "เมียนม่า", use: false),
     LanguageModel(

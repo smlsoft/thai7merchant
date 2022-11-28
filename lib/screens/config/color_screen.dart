@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thai7merchant/bloc/color/color_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
-import 'package:thai7merchant/model/language_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/color.dart';
 import 'package:split_view/split_view.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';

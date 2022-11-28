@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
-import 'package:thai7merchant/model/product_barcode_struct.dart';
-import 'package:thai7merchant/model/upload_image_model.dart';
+import 'package:thai7merchant/model/product_struct.dart';
+import 'package:thai7merchant/model/master_model.dart';
 import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/repositories/product_barcode_repository.dart';
 

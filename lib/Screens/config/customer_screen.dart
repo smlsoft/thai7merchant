@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:remove_background/crop_widget.dart';
 import 'package:thai7merchant/bloc/customer/customer_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
-import 'package:thai7merchant/model/language_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/customer.dart';
 import 'package:split_view/split_view.dart';
 import 'package:translator/translator.dart';
@@ -592,7 +592,7 @@ class CustomerScreenState extends State<CustomerScreen>
                 });
               },
             ),
-            const Text("บุคคลธรรมดา"),
+            Text(global.language("customer_individual")),
             const SizedBox(width: 10),
             Radio(
               focusNode: FocusNode(skipTraversal: true),
@@ -604,7 +604,7 @@ class CustomerScreenState extends State<CustomerScreen>
                 });
               },
             ),
-            const Text("นิติบุคคล"),
+            Text(global.language("customer_company")),
           ],
         )));
     nodeIndex++;

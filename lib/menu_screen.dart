@@ -5,6 +5,7 @@ import 'package:thai7merchant/screens/config/customer_group_screen.dart';
 import 'package:thai7merchant/screens/config/customer_screen.dart';
 import 'package:thai7merchant/screens/config/pattern_screen.dart';
 import 'package:thai7merchant/screens/config/product_barcode_screen.dart';
+import 'package:thai7merchant/screens/config/product_screen.dart';
 import 'package:thai7merchant/screens/config/unit_screen.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:thai7merchant/global.dart' as global;
@@ -81,6 +82,15 @@ class MenuScreenState extends State<MenuScreen> with TickerProviderStateMixin {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ColorScreen()),
+            );
+          }),
+      menu(
+          title: "สินค้า",
+          description: "สินค้า",
+          callback: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProductScreen()),
             );
           }),
       menu(

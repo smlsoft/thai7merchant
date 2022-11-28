@@ -5,8 +5,8 @@ import 'package:thai7merchant/model/product_struct.dart';
 import 'client.dart';
 import 'package:dio/dio.dart';
 
-class ProductBarcodeRepository {
-  Future<ApiResponse> getProductBarcodeList({
+class ProductRepository {
+  Future<ApiResponse> getProductList({
     int limit = 0,
     int offset = 0,
     String search = "",
@@ -32,7 +32,7 @@ class ProductBarcodeRepository {
     }
   }
 
-  Future<ApiResponse> deleteProductBarcode(String guid) async {
+  Future<ApiResponse> deleteProduct(String guid) async {
     Dio client = Client().init();
     try {
       final response = await client.delete('/product/barcode/$guid');
@@ -48,7 +48,7 @@ class ProductBarcodeRepository {
   }
 
   /// ลบที่ละหลาย GUID
-  Future<ApiResponse> deleteProductBarcodeMany(List<String> guids) async {
+  Future<ApiResponse> deleteProductMany(List<String> guids) async {
     Dio client = Client().init();
     try {
       final response = await client.delete('/product/barcode', data: guids);
@@ -63,7 +63,7 @@ class ProductBarcodeRepository {
     }
   }
 
-  Future<ApiResponse> getProductBarcode(String guid) async {
+  Future<ApiResponse> getProduct(String guid) async {
     Dio client = Client().init();
     try {
       final response = await client.get('/product/barcode/$guid');
@@ -78,10 +78,9 @@ class ProductBarcodeRepository {
     }
   }
 
-  Future<ApiResponse> saveProductBarcode(
-      ProductBarcodeModel productBarcode) async {
+  Future<ApiResponse> saveProduct(ProductModel Product) async {
     Dio client = Client().init();
-    final data = productBarcode.toJson();
+    final data = Product.toJson();
     try {
       final response = await client.post('/product/barcode', data: data);
       try {
@@ -95,10 +94,9 @@ class ProductBarcodeRepository {
     }
   }
 
-  Future<ApiResponse> updateProductBarcode(
-      String guid, ProductBarcodeModel productBarcode) async {
+  Future<ApiResponse> updateProduct(String guid, ProductModel Product) async {
     Dio client = Client().init();
-    final data = productBarcode.toJson();
+    final data = Product.toJson();
     try {
       final response = await client.put('/product/barcode/$guid', data: data);
       try {

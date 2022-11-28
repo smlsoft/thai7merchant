@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,7 +11,6 @@ import 'package:thai7merchant/bloc/category/category_bloc.dart';
 import 'package:thai7merchant/model/category_list_model.dart';
 import 'package:thai7merchant/model/category_model.dart';
 import 'package:thai7merchant/model/global_model.dart';
-import 'package:thai7merchant/model/language_model.dart';
 import 'package:translator/translator.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart';
@@ -57,20 +57,33 @@ class CategoryScreenState extends State<CategoryScreen>
   int xorder = 0;
   List<String> xorderUpdateList = [];
   late Timer timerForUpdateXOrder;
+  Color colorSelected = Colors.white;
+  String colorSelectedHex = "";
+  bool useImageOrColor = true;
 
   void updateXOrder() {
+    List<XSortModel> updateList = [];
     print("-------------------------");
     List<String> distinctXOrder = xorderUpdateList.toSet().toList();
     for (int index = 0; index < distinctXOrder.length; index++) {
       String guid = xorderUpdateList[index];
       CategoryListModel? getCategory = findByGuid(rootCategorys, guid);
       if (getCategory != null) {
+        updateList.add(XSortModel(
+            guidfixed: getCategory.detail.guidfixed,
+            xorder: getCategory.detail.xsorts![0].xorder,
+            code: "X"));
         print(getCategory.detail.guidfixed +
             " " +
-            getCategory.detail.names[0].name +
+            getCategory.detail.names![0].name +
             " " +
-            getCategory.detail.xsort![0].xorder.toString());
+            getCategory.detail.xsorts![0].xorder.toString());
       }
+    }
+    if (updateList.isNotEmpty) {
+      context
+          .read<CategoryBloc>()
+          .add(CategoryUpdateXOrder(orderList: updateList));
     }
     xorderUpdateList.clear();
   }
@@ -127,14 +140,14 @@ class CategoryScreenState extends State<CategoryScreen>
       {String result = ""}) {
     for (int findIndex = 0; findIndex < categorys.length; findIndex++) {
       if (guid == categorys[findIndex].detail.guidfixed) {
-        return result + categorys[findIndex].detail.names[0].name;
+        return result + categorys[findIndex].detail.names![0].name;
       }
       if (categorys[findIndex].childCategorys.isNotEmpty) {
         String find = categoryFullName(
             categorys[findIndex].childCategorys, guid,
             result: result);
         if (find.isNotEmpty) {
-          return "$result${categorys[findIndex].detail.names[0].name},$find";
+          return "$result${categorys[findIndex].detail.names![0].name},$find";
         }
       }
     }
@@ -164,10 +177,13 @@ class CategoryScreenState extends State<CategoryScreen>
         guidfixed: "",
         parentguid: selectParentGuid,
         parentguidall: selectParentGuidAll(rootCategorys, selectParentGuid),
+        useimageorcolor: useImageOrColor,
+        colorselect: colorSelected.value.toString(),
+        colorselecthex: colorSelectedHex,
         imageuri: "",
         childcount: 0,
         names: packLanguage(),
-        xsort: [SortDataModel(code: "", xorder: xorder)],
+        xsorts: [SortDataModel(code: "X", xorder: xorder)],
         barcodes: [],
       );
       if (imageFile.path.isNotEmpty) {
@@ -193,8 +209,11 @@ class CategoryScreenState extends State<CategoryScreen>
       parentguidall: selectParentGuidAll(rootCategorys, selectParentGuid),
       imageuri: selectImageUri,
       childcount: 0,
+      useimageorcolor: useImageOrColor,
+      colorselect: colorSelected.value.toString(),
+      colorselecthex: colorSelectedHex,
       names: packLanguage(),
-      xsort: [SortDataModel(code: "x", xorder: xorder)],
+      xsorts: [SortDataModel(code: "X", xorder: xorder)],
       barcodes: [],
     );
     if (imageWeb != null) {
@@ -261,8 +280,14 @@ class CategoryScreenState extends State<CategoryScreen>
         color = Colors.red;
       }
 
-      category.detail.xsort ??= [SortDataModel(code: "", xorder: index + 1)];
-      category.detail.xsort![0].xorder = index + 1;
+      if (category.detail.xsorts!.isEmpty) {
+        category.detail.xsorts!
+            .add(SortDataModel(code: "X", xorder: index + 1));
+      }
+      if (category.detail.xsorts![0].xorder != index + 1) {
+        category.detail.xsorts![0].xorder = index + 1;
+        xorderUpdateList.add(category.detail.guidfixed);
+      }
 
       return Container(
           color: color,
@@ -275,7 +300,7 @@ class CategoryScreenState extends State<CategoryScreen>
               ),
               Expanded(
                 child: Text(
-                    "${category.detail.xsort![0].xorder} ${global.packName(category.detail.names)}",
+                    "${category.detail.xsorts![0].xorder} ${global.packName(category.detail.names!)}",
                     style: const TextStyle(fontSize: 18)),
               ),
               if (category.childCategorys.isNotEmpty)
@@ -329,18 +354,23 @@ class CategoryScreenState extends State<CategoryScreen>
     });
   }
 
+  void updateXorderAll(List<CategoryListModel> categorys) {
+    // Update Xorder ทุกตัว
+    for (var index = 0; index < categorys.length; index++) {
+      xorderUpdateList.add(categorys[index].detail.guidfixed);
+    }
+  }
+
   Widget categoryList(int level, List<CategoryListModel> categorys) {
     for (var index = 0; index < categorys.length; index++) {
       Widget detail = categoryDetail(
           level, categorys[index], index, categorys.length, moveUpCallBack: () {
-        xorderUpdateList.add(categorys[index].detail.guidfixed);
-        xorderUpdateList.add(categorys[index - 1].detail.guidfixed);
         categorys.insert(index, categorys.removeAt(index - 1));
+        updateXorderAll(categorys);
         buildColumnWidget();
       }, moveDownCallBack: () {
-        xorderUpdateList.add(categorys[index].detail.guidfixed);
-        xorderUpdateList.add(categorys[index + 1].detail.guidfixed);
         categorys.insert(index, categorys.removeAt(index + 1));
+        updateXorderAll(categorys);
         buildColumnWidget();
       });
       listColumns.add(GestureDetector(
@@ -352,7 +382,7 @@ class CategoryScreenState extends State<CategoryScreen>
                 isEditMode = false;
                 selectDragTargetGuid = "";
                 selectGuid = categorys[index].detail.guidfixed;
-                selectParentName = categorys[index].detail.names[0].name;
+                selectParentName = categorys[index].detail.names![0].name;
                 selectImageUri = categorys[index].detail.imageuri;
                 headerEdit = global.language("show");
                 isDeleteAllow = categorys[index].childCategorys.isEmpty;
@@ -368,7 +398,7 @@ class CategoryScreenState extends State<CategoryScreen>
                 isEditMode = true;
                 selectDragTargetGuid = "";
                 selectGuid = categorys[index].detail.guidfixed;
-                selectParentName = categorys[index].detail.names[0].name;
+                selectParentName = categorys[index].detail.names![0].name;
                 headerEdit = global.language("edit");
                 isDeleteAllow = categorys[index].childCategorys.isEmpty;
                 switchToEdit(selectGuid);
@@ -393,7 +423,7 @@ class CategoryScreenState extends State<CategoryScreen>
               feedback: SizedBox(
                   width: 100,
                   height: 100,
-                  child: Text(global.packName(categorys[index].detail.names),
+                  child: Text(global.packName(categorys[index].detail.names!),
                       style: const TextStyle(fontSize: 18))),
               child: detail)));
       if (categorys[index].childCategorys.isNotEmpty &&
@@ -741,6 +771,37 @@ class CategoryScreenState extends State<CategoryScreen>
                       ),
                     ),
                   ),
+                const SizedBox(height: 10),
+                Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      children: [
+                        Radio(
+                          focusNode: FocusNode(skipTraversal: true),
+                          value: true,
+                          groupValue: useImageOrColor,
+                          onChanged: (value) {
+                            setState(() {
+                              useImageOrColor = true;
+                            });
+                          },
+                        ),
+                        const Text("ใช้รูปภาพ"),
+                        const SizedBox(width: 10),
+                        Radio(
+                          focusNode: FocusNode(skipTraversal: true),
+                          value: false,
+                          groupValue: useImageOrColor,
+                          onChanged: (value) {
+                            setState(() {
+                              useImageOrColor = false;
+                            });
+                          },
+                        ),
+                        const Text("ใช้สี"),
+                      ],
+                    )),
                 if (isEditMode)
                   Row(
                     children: [
@@ -778,21 +839,19 @@ class CategoryScreenState extends State<CategoryScreen>
                                   });
                                 }
                               }
-                            : () {
-                                setState(() async {
-                                  final XFile? photo = await _picker.pickImage(
-                                      source: ImageSource.gallery,
-                                      maxHeight: 480,
-                                      maxWidth: 640,
-                                      imageQuality: 60);
-                                  if (photo != null) {
-                                    var f = await photo.readAsBytes();
-                                    setState(() {
-                                      imageWeb = f;
-                                      imageFile = File(photo.path);
-                                    });
-                                  }
-                                });
+                            : () async {
+                                final XFile? photo = await _picker.pickImage(
+                                    source: ImageSource.gallery,
+                                    maxHeight: 480,
+                                    maxWidth: 640,
+                                    imageQuality: 60);
+                                if (photo != null) {
+                                  var f = await photo.readAsBytes();
+                                  setState(() {
+                                    imageWeb = f;
+                                    imageFile = File(photo.path);
+                                  });
+                                }
                               },
                         icon: const Icon(
                           Icons.folder,
@@ -880,10 +939,60 @@ class CategoryScreenState extends State<CategoryScreen>
                         ),
                       )),
                     ])),
-                // else
-                //   (selectImageUri != '')
-                //       ? Image.network(selectImageUri, fit: BoxFit.cover)
-                //       : Image.asset('assets/img/noimg.png', fit: BoxFit.cover),
+                const SizedBox(height: 10),
+                Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                        color: colorSelected,
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(5)),
+                    child: Container(
+                        padding: const EdgeInsets.all(10),
+                        child: ColorPicker(
+                          color: colorSelected,
+                          padding: const EdgeInsets.all(0),
+                          heading: Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(5)),
+                              child: Row(children: [
+                                Container(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Text(
+                                      'เลือกสี (เพื่อแสดงตัวอย่างสีในระบบ)',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium,
+                                    )),
+                                const Spacer(),
+                                IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      setState(() {
+                                        colorSelected = Colors.white;
+                                      });
+                                    })
+                              ])),
+                          showColorName: true,
+                          showColorCode: true,
+                          onColorChanged: (Color colorValue) {
+                            setState(() {
+                              colorSelected = colorValue;
+                              colorSelectedHex =
+                                  colorValue.value.toRadixString(16).toString();
+                            });
+                          },
+                          pickersEnabled: const <ColorPickerType, bool>{
+                            ColorPickerType.both: true,
+                            ColorPickerType.primary: true,
+                            ColorPickerType.accent: true,
+                            ColorPickerType.bw: false,
+                            ColorPickerType.custom: true,
+                            ColorPickerType.wheel: true,
+                          },
+                        ))),
                 const SizedBox(height: 10),
                 if (isEditMode)
                   SizedBox(
@@ -921,13 +1030,18 @@ class CategoryScreenState extends State<CategoryScreen>
     selectImageUri = category.imageuri;
     imageWeb = null;
     imageFile = File('');
+    xorder = category.xsorts![0].xorder;
+    useImageOrColor = category.useimageorcolor;
+    colorSelected =
+        global.colorFromHex(category.colorselecthex.replaceAll("#", ""));
+    colorSelectedHex = category.colorselecthex;
     for (int i = 0; i < languageList.length; i++) {
       fieldTextController[i].text = "";
     }
     for (int i = 0; i < languageList.length; i++) {
-      for (int j = 0; j < category.names.length; j++) {
-        if (languageList[i].code == category.names[j].code) {
-          fieldTextController[i].text = category.names[j].name;
+      for (int j = 0; j < category.names!.length; j++) {
+        if (languageList[i].code == category.names![j].code) {
+          fieldTextController[i].text = category.names![j].name;
         }
       }
     }
@@ -959,6 +1073,17 @@ class CategoryScreenState extends State<CategoryScreen>
                     rootCategorys.add(
                         CategoryListModel(detail: item, childCategorys: []));
                   }
+                  for (int loop = 0; loop < rootCategorys.length; loop++) {
+                    if (rootCategorys[loop].detail.xsorts == null) {
+                      rootCategorys[loop].detail.xsorts = [
+                        SortDataModel(code: "X", xorder: 0)
+                      ];
+                      print(rootCategorys[loop].detail.names![0].name);
+                    }
+                  }
+                  // Sort
+                  rootCategorys.sort((a, b) => a.detail.xsorts![0].xorder
+                      .compareTo(b.detail.xsorts![0].xorder));
                   int index = 0;
                   while (index < rootCategorys.length) {
                     if (rootCategorys[index].detail.parentguid.isNotEmpty) {
@@ -975,6 +1100,7 @@ class CategoryScreenState extends State<CategoryScreen>
                       index++;
                     }
                   }
+                  // Build
                   buildColumnWidget();
                   setState(() {});
                 }

@@ -1,8 +1,7 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/repositories/unit_repository.dart';
-import 'package:thai7merchant/repositories/client.dart';
-import 'package:thai7merchant/model/unit.dart';
+import 'package:thai7merchant/model/product_struct.dart';
 
 part 'unit_event.dart';
 part 'unit_state.dart';

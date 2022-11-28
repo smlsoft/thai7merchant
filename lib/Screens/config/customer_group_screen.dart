@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thai7merchant/bloc/customer_group/customer_group_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
-import 'package:thai7merchant/model/language_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/customer_group.dart';
 import 'package:split_view/split_view.dart';
 import 'package:translator/translator.dart';

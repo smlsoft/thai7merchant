@@ -1,4 +1,4 @@
-import 'package:thai7merchant/model/language_model.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/price_model.dart';
 
 class ConfigModel {

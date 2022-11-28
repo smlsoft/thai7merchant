@@ -6,7 +6,7 @@ import 'dart:math';
 import 'package:thai7merchant/bloc/category/category_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
 import 'package:thai7merchant/model/category_model.dart';
-import 'package:thai7merchant/model/image_upload.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/option.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
@@ -53,9 +53,12 @@ class _ProductAddState extends State<ProductAdd> {
     parentguid: "",
     parentguidall: "",
     imageuri: "",
+    useimageorcolor: true,
+    colorselect: "",
+    colorselecthex: "",
     childcount: 0,
     names: [],
-    xsort: [],
+    xsorts: [],
     barcodes: []
   );
 

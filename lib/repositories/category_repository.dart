@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:thai7merchant/model/category_list_model.dart';
 import 'package:thai7merchant/model/category_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:thai7merchant/model/global_model.dart';
 import '../app_const.dart';
 import 'client.dart';
 import 'package:dio/dio.dart';
@@ -126,6 +128,22 @@ class CategoryRepository {
     final data = categoryModel.toJson();
     try {
       final response = await client.put('/product/category/$guid', data: data);
+      try {
+        return ApiResponse.fromMap(response.data);
+      } catch (ex) {
+        throw Exception(ex);
+      }
+    } on DioError catch (ex) {
+      String errorMessage = ex.response.toString();
+      throw Exception(errorMessage);
+    }
+  }
+
+  Future<ApiResponse> updateCategoryXOrder(List<XSortModel> list) async {
+    Dio client = Client().init();
+    final data = jsonEncode(list);
+    try {
+      final response = await client.put('/product/category/xsort', data: data);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {

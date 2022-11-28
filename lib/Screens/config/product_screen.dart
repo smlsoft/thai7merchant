@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
+import 'package:group_radio_button/group_radio_button.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:thai7merchant/bloc/product_barcode/product_barcode_bloc.dart';
+import 'package:thai7merchant/bloc/product/product_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
-import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/price_model.dart';
 import 'package:thai7merchant/model/product_struct.dart';
@@ -17,14 +17,14 @@ import 'package:split_view/split_view.dart';
 import 'package:thai7merchant/screen_search/unit_search_screen.dart';
 import 'package:translator/translator.dart';
 
-class ProductBarcodeScreen extends StatefulWidget {
-  const ProductBarcodeScreen({Key? key}) : super(key: key);
+class ProductScreen extends StatefulWidget {
+  const ProductScreen({Key? key}) : super(key: key);
 
   @override
-  State<ProductBarcodeScreen> createState() => ProductBarcodeScreenState();
+  State<ProductScreen> createState() => ProductScreenState();
 }
 
-class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
+class ProductScreenState extends State<ProductScreen>
     with SingleTickerProviderStateMixin {
   final translator = GoogleTranslator();
   late TabController tabController;
@@ -35,7 +35,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   List<PriceModel> priceList = <PriceModel>[];
   List<FocusNode> fieldFocusNodes = [];
   int focusNodeIndex = 0;
-  List<ProductBarcodeModel> listDatas = [];
+  List<ProductModel> listDatas = [];
   List<String> guidListChecked = [];
   List<LanguageDataModel> names = [];
   ScrollController listScrollController = ScrollController();
@@ -45,7 +45,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   String selectGuid = "";
   bool isChange = false;
   bool isSaveAllow = false;
-  late ProductBarcodeState blocCurrentState;
+  late ProductState blocCurrentState;
   String headerEdit = "";
   late MediaQueryData queryData;
   int currentListIndex = -1;
@@ -54,9 +54,9 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   bool isKeyDown = false;
   bool showCheckBox = false;
   bool isEditMode = false;
-  late ProductBarcodeModel screenData;
-  File imageFile = File('');
-  Uint8List? imageWeb;
+  late ProductModel screenData;
+  List<File> imageFile = [];
+  List<dynamic> imageWeb = [];
   final ImagePicker imagePicker = ImagePicker();
   late DropzoneViewController dropZoneController;
 
@@ -88,7 +88,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   }
 
   void loadDataList(String search) {
-    context.read<ProductBarcodeBloc>().add(ProductBarcodeLoadList(
+    context.read<ProductBloc>().add(ProductLoadList(
         offset: (listDatas.isEmpty) ? 0 : listDatas.length,
         limit: loaDataPerPage,
         search: search));
@@ -130,17 +130,24 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
       ));
     }
 
-    screenData = ProductBarcodeModel(
-        barcode: "",
-        guidfixed: "",
-        categoryguid: "",
-        names: names,
-        itemcode: "",
-        itemunitcode: "",
-        itemunitnames: itemunitnames,
-        prices: prices,
-        imageuri: "",
-        options: []);
+    screenData = ProductModel(
+      guidfixed: "",
+      categoryguid: "",
+      names: names,
+      itemcode: "",
+      barcodes: [],
+      useserialnumber: false,
+      units: [],
+      imageuris: [],
+      unitcost: "",
+      unitstandard: "",
+      multiunit: false,
+      itemstocktype: 1,
+      vattype: 1,
+      issumpoint: true,
+      itemtype: 0,
+      prices: prices,
+    );
 
     isChange = false;
     focusNodeIndex = 0;
@@ -178,7 +185,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   void getData(String guid) {
     headerEdit = global.language("show");
     isEditMode = false;
-    context.read<ProductBarcodeBloc>().add(ProductBarcodeGet(guid: guid));
+    context.read<ProductBloc>().add(ProductGet(guid: guid));
   }
 
   Widget listScreen({bool mobileScreen = false}) {
@@ -186,7 +193,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(global.language('barcode')),
+        title: Text(global.language('product')),
         leading: IconButton(
           focusNode: FocusNode(skipTraversal: true),
           icon: const Icon(Icons.arrow_back),
@@ -245,9 +252,8 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                                   backgroundColor: Colors.blue),
                               onPressed: () {
                                 Navigator.pop(context);
-                                context.read<ProductBarcodeBloc>().add(
-                                    ProductBarcodeDeleteMany(
-                                        guid: guidListChecked));
+                                context.read<ProductBloc>().add(
+                                    ProductDeleteMany(guid: guidListChecked));
                               },
                               child: Text(global.language('delete'))),
                         ],
@@ -399,7 +405,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                   child: Row(children: [
                     Expanded(
                         flex: 5,
-                        child: Text(global.language("barcode"),
+                        child: Text(global.language("product_code"),
                             style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold))),
@@ -430,7 +436,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     );
   }
 
-  void switchToEdit(ProductBarcodeModel value) {
+  void switchToEdit(ProductModel value) {
     setState(() {
       selectGuid = value.guidfixed;
       getData(selectGuid);
@@ -440,7 +446,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     });
   }
 
-  Widget listObject(ProductBarcodeModel value, bool showCheckBox) {
+  Widget listObject(ProductModel value, bool showCheckBox) {
     bool isCheck = false;
     for (int i = 0; i < guidListChecked.length; i++) {
       if (guidListChecked[i] == value.guidfixed) {
@@ -503,7 +509,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Expanded(
                   flex: 5,
-                  child: Text(value.barcode,
+                  child: Text(value.itemcode,
                       maxLines: 2, overflow: TextOverflow.ellipsis)),
               Expanded(
                   flex: 10,
@@ -523,18 +529,18 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
 
   void saveOrUpdateData() {
     showCheckBox = false;
+    String json = jsonEncode(screenData.toJson());
+    print(json);
     if (selectGuid.trim().isEmpty) {
-      if (imageFile.path.isNotEmpty) {
-        context.read<ProductBarcodeBloc>().add(ProductBarcodeWithImageSave(
-              productBarcodeModel: screenData,
+      /*if (imageFile.path.isNotEmpty) {
+        context.read<ProductBloc>().add(ProductWithImageSave(
+              productModel: screenData,
               imageFile: imageFile,
               imageWeb: imageWeb,
             ));
       } else {
-        context
-            .read<ProductBarcodeBloc>()
-            .add(ProductBarcodeSave(productBarcodeModel: screenData));
-      }
+        context.read<ProductBloc>().add(ProductSave(productModel: screenData));
+      }*/
     } else {
       updateData(selectGuid);
     }
@@ -543,8 +549,8 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   void updateData(String guid) {
     showCheckBox = false;
     context
-        .read<ProductBarcodeBloc>()
-        .add(ProductBarcodeUpdate(guid: guid, productBarcodeModel: screenData));
+        .read<ProductBloc>()
+        .add(ProductUpdate(guid: guid, productModel: screenData));
   }
 
   void findFocusNext(int index) {
@@ -575,18 +581,18 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
             textInputAction: TextInputAction.next,
             focusNode: fieldFocusNodes[nodeIndex],
             textAlign: TextAlign.left,
-            controller: TextEditingController(text: screenData.barcode),
+            controller: TextEditingController(text: screenData.itemcode),
             textCapitalization: TextCapitalization.characters,
             inputFormatters: <TextInputFormatter>[
               FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9]'))
             ],
             onChanged: (value) {
               isChange = true;
-              screenData.barcode = value.toUpperCase();
+              screenData.itemcode = value.toUpperCase();
             },
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              labelText: global.language("barcode"),
+              labelText: global.language("product_code"),
             ))));
     for (int languageIndex = 0;
         languageIndex < languageList.length;
@@ -629,6 +635,81 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
         ),
       ));
     }
+    formWidgets.add(Row(
+      children: [
+        RadioButton(
+          description: global.language("product_is_stock"),
+          value: 0,
+          groupValue: screenData.itemstocktype,
+          onChanged: (value) {
+            setState(() {
+              screenData.itemstocktype = 0;
+            });
+          },
+        ),
+        RadioButton(
+          description: global.language("product_is_service"),
+          value: 1,
+          groupValue: screenData.itemstocktype,
+          activeColor: Colors.red,
+          onChanged: (value) {
+            setState(() {
+              screenData.itemstocktype = 1;
+            });
+          },
+        ),
+      ],
+    ));
+    formWidgets.add(Row(
+      children: [
+        RadioButton(
+          description: global.language("product_vat_type_1"),
+          value: 1,
+          groupValue: screenData.vattype,
+          onChanged: (value) {
+            setState(() {
+              screenData.vattype = 1;
+            });
+          },
+        ),
+        RadioButton(
+          description: global.language("product_vat_type_2"),
+          value: 2,
+          groupValue: screenData.vattype,
+          activeColor: Colors.red,
+          onChanged: (value) {
+            setState(() {
+              screenData.vattype = 2;
+            });
+          },
+        ),
+      ],
+    ));
+    formWidgets.add(Row(
+      children: [
+        RadioButton(
+          description: global.language("product_use_point_1"),
+          value: true,
+          groupValue: screenData.issumpoint,
+          onChanged: (value) {
+            setState(() {
+              screenData.issumpoint = true;
+            });
+          },
+        ),
+        RadioButton(
+          description: global.language("product_use_point_2"),
+          value: 2,
+          groupValue: screenData.issumpoint,
+          activeColor: Colors.red,
+          onChanged: (value) {
+            setState(() {
+              screenData.issumpoint = false;
+            });
+          },
+        ),
+      ],
+    ));
     nodeIndex++;
     formWidgets.add(Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -640,14 +721,14 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
             textInputAction: TextInputAction.next,
             focusNode: fieldFocusNodes[nodeIndex],
             textAlign: TextAlign.left,
-            controller: TextEditingController(text: screenData.itemunitcode),
+            controller: TextEditingController(text: screenData.unitcost),
             textCapitalization: TextCapitalization.characters,
             inputFormatters: <TextInputFormatter>[
               FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9]'))
             ],
             onChanged: (value) {
               isChange = true;
-              screenData.itemunitcode = value.toUpperCase();
+              screenData.unitcost = value.toUpperCase();
             },
             decoration: InputDecoration(
               suffixIcon: IconButton(
@@ -664,17 +745,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                         if (value != null) {
                           SearchReturnValueModel returnValue =
                               value as SearchReturnValueModel;
-                          screenData.itemunitcode = returnValue.code;
-                          for (int languageFindIndex = 0;
-                              languageFindIndex < languageList.length;
-                              languageFindIndex++) {
-                            if (screenData
-                                    .itemunitnames[languageFindIndex].code ==
-                                returnValue.names[languageFindIndex].code) {
-                              screenData.itemunitnames[languageFindIndex].name =
-                                  returnValue.names[languageFindIndex].name;
-                            }
-                          }
+                          screenData.unitcost = returnValue.code;
                         }
                       });
                     }
@@ -682,48 +753,270 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                 },
               ),
               border: const OutlineInputBorder(),
-              labelText: global.language("unit_code"),
+              labelText: global.language("product_unit_cost"),
             ))));
-    for (int languageIndex = 0;
-        languageIndex < languageList.length;
-        languageIndex++) {
-      nodeIndex++;
-      formWidgets.add(Padding(
+    nodeIndex++;
+    formWidgets.add(Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
         child: TextFormField(
-          readOnly: !isEditMode,
+            readOnly: !isEditMode,
+            onFieldSubmitted: (value) {
+              findFocusNext(nodeIndex);
+            },
+            textInputAction: TextInputAction.next,
+            focusNode: fieldFocusNodes[nodeIndex],
+            textAlign: TextAlign.left,
+            controller: TextEditingController(text: screenData.unitstandard),
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9]'))
+            ],
+            onChanged: (value) {
+              isChange = true;
+              screenData.unitstandard = value.toUpperCase();
+            },
+            decoration: InputDecoration(
+              suffixIcon: IconButton(
+                focusNode: FocusNode(skipTraversal: true),
+                icon: const Icon(Icons.search),
+                onPressed: () {
+                  Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const UnitSearchScreen()))
+                      .then((value) {
+                    if (value != null) {
+                      setState(() {
+                        if (value != null) {
+                          SearchReturnValueModel returnValue =
+                              value as SearchReturnValueModel;
+                          screenData.unitstandard = returnValue.code;
+                        }
+                      });
+                    }
+                  });
+                },
+              ),
+              border: const OutlineInputBorder(),
+              labelText: global.language("product_unit_standard"),
+            ))));
+    formWidgets.add(Row(
+      children: [
+        RadioButton(
+          description: global.language("product_single_unit"),
+          value: false,
+          groupValue: screenData.multiunit,
           onChanged: (value) {
-            isChange = true;
-            int foundLanguage = -1;
-            for (int j = 0; j < screenData.itemunitnames.length; j++) {
-              if (screenData.names[j].code ==
-                  languageList[languageIndex].code) {
-                foundLanguage = j;
-                break;
-              }
-            }
-            if (foundLanguage == -1) {
-              screenData.itemunitnames.add(LanguageDataModel(
-                  code: languageList[languageIndex].code, name: value));
-            } else {
-              screenData.itemunitnames[foundLanguage].name = value;
-            }
+            setState(() {
+              screenData.multiunit = false;
+            });
           },
-          onFieldSubmitted: (value) {
-            findFocusNext(nodeIndex);
-          },
-          textInputAction: TextInputAction.next,
-          focusNode: fieldFocusNodes[nodeIndex],
-          textAlign: TextAlign.left,
-          controller: TextEditingController(
-              text: screenData.itemunitnames[languageIndex].name),
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            labelText:
-                "${global.language("unit_name")} (${languageList[languageIndex].name})",
-          ),
         ),
-      ));
+        RadioButton(
+          description: global.language("product_multi_unit"),
+          value: true,
+          groupValue: screenData.multiunit,
+          activeColor: Colors.red,
+          onChanged: (value) {
+            setState(() {
+              screenData.multiunit = true;
+              if (screenData.units.isEmpty) {
+                screenData.units.add(ProductUnitModel(
+                  xorder: 0,
+                  unitcode: screenData.unitstandard,
+                  unitname: "",
+                  divider: 1,
+                  stand: 1,
+                  stockcount: true,
+                ));
+              }
+            });
+          },
+        ),
+      ],
+    ));
+    if (screenData.multiunit) {
+      List<Widget> multiUnitWidgets = [];
+      for (int i = 0; i < screenData.units.length; i++) {
+        nodeIndex++;
+        multiUnitWidgets.add(Container(
+            width: double.infinity,
+            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+            child: Column(
+              children: [
+                Row(children: [
+                  Expanded(
+                      flex: 5,
+                      child: TextFormField(
+                          readOnly: !isEditMode,
+                          onChanged: (value) {
+                            isChange = true;
+                            screenData.units[i].unitcode = value;
+                          },
+                          onFieldSubmitted: (value) {
+                            findFocusNext(nodeIndex);
+                          },
+                          textInputAction: TextInputAction.next,
+                          focusNode: fieldFocusNodes[nodeIndex],
+                          textAlign: TextAlign.left,
+                          controller: TextEditingController(
+                              text: screenData.units[i].unitcode),
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: global.language("product_unit_code"),
+                            suffixIcon: IconButton(
+                              focusNode: FocusNode(skipTraversal: true),
+                              icon: const Icon(Icons.search),
+                              onPressed: () {
+                                Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const UnitSearchScreen()))
+                                    .then((value) {
+                                  if (value != null) {
+                                    setState(() {
+                                      if (value != null) {
+                                        SearchReturnValueModel returnValue =
+                                            value as SearchReturnValueModel;
+                                        screenData.units[i].unitcode =
+                                            returnValue.code;
+                                      }
+                                    });
+                                  }
+                                });
+                              },
+                            ),
+                          ))),
+                  Expanded(
+                      child: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      setState(() {
+                        screenData.units.removeAt(i);
+                      });
+                    },
+                  )),
+                  if (i > 0)
+                    Expanded(
+                        child: IconButton(
+                      icon: const Icon(Icons.move_up),
+                      onPressed: () {
+                        setState(() {
+                          screenData.units.removeAt(i);
+                        });
+                      },
+                    )),
+                  if (i < screenData.units.length - 1)
+                    Expanded(
+                      child: IconButton(
+                        icon: const Icon(Icons.move_down),
+                        onPressed: () {
+                          setState(() {
+                            screenData.units.removeAt(i);
+                          });
+                        },
+                      ),
+                    )
+                ]),
+                TextFormField(
+                  readOnly: true,
+                  textAlign: TextAlign.left,
+                  controller:
+                      TextEditingController(text: screenData.units[i].unitname),
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: global.language("product_unit_name"),
+                  ),
+                ),
+                Row(children: [
+                  Expanded(
+                      flex: 1,
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        readOnly: !isEditMode,
+                        onChanged: (value) {
+                          isChange = true;
+                          screenData.units[i].stand = double.tryParse(value)!;
+                        },
+                        onFieldSubmitted: (value) {
+                          findFocusNext(nodeIndex);
+                        },
+                        textInputAction: TextInputAction.next,
+                        focusNode: fieldFocusNodes[nodeIndex],
+                        textAlign: TextAlign.left,
+                        controller: TextEditingController(
+                            text: screenData.units[i].stand.toString()),
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: global.language("product_unit_stand"),
+                        ),
+                      )),
+                  Expanded(
+                      flex: 1,
+                      child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        readOnly: !isEditMode,
+                        onChanged: (value) {
+                          isChange = true;
+                          screenData.units[i].divider = double.tryParse(value)!;
+                        },
+                        onFieldSubmitted: (value) {
+                          findFocusNext(nodeIndex);
+                        },
+                        textInputAction: TextInputAction.next,
+                        focusNode: fieldFocusNodes[nodeIndex],
+                        textAlign: TextAlign.left,
+                        controller: TextEditingController(
+                            text: screenData.units[i].divider.toString()),
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText: global.language("product_unit_divider"),
+                        ),
+                      )),
+                ]),
+                Row(children: [
+                  Checkbox(
+                      value: screenData.units[i].stockcount,
+                      onChanged: (value) {
+                        setState(() {
+                          screenData.units[i].stockcount = value!;
+                        });
+                      }),
+                  Text(global.language("product_unit_stock_count"))
+                ]),
+              ],
+            )));
+      }
+      multiUnitWidgets.add(Container(
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+          width: double.infinity,
+          child: ElevatedButton(
+              focusNode: FocusNode(skipTraversal: true),
+              onPressed: () {
+                setState(() {
+                  screenData.units.add(ProductUnitModel(
+                    xorder: 0,
+                    unitcode: "",
+                    unitname: "",
+                    divider: 0,
+                    stand: 0,
+                    stockcount: true,
+                  ));
+                });
+              },
+              child: Text(global.language("product_unit_add")))));
+      formWidgets.add(Container(
+          margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+          width: double.infinity,
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Column(
+            children: multiUnitWidgets,
+          )));
     }
     for (int priceIndex = 0; priceIndex < priceList.length; priceIndex++) {
       nodeIndex++;
@@ -766,521 +1059,18 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
         ),
       ));
     }
-    if (screenData.options.isNotEmpty) {
-      for (int optionIndex = 0;
-          optionIndex < screenData.options.length;
-          optionIndex++) {
-        List<Widget> optionList = [];
-        optionList.add(Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Text(
-                        "${global.language("option")} ${optionIndex + 1}",
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)))),
-            if (optionIndex > 0)
-              IconButton(
-                  onPressed: () {
-                    setState(() {
-                      screenData.options.insert(optionIndex - 1,
-                          screenData.options.removeAt(optionIndex));
-                    });
-                  },
-                  icon: const Icon(Icons.move_up),
-                  focusNode: FocusNode(skipTraversal: true),
-                  color: Colors.blue,
-                  iconSize: 20),
-            if (optionIndex < screenData.options.length - 1)
-              IconButton(
-                  onPressed: () {
-                    setState(() {
-                      screenData.options.insert(optionIndex + 1,
-                          screenData.options.removeAt(optionIndex));
-                    });
-                  },
-                  icon: const Icon(Icons.move_down),
-                  color: Colors.red,
-                  focusNode: FocusNode(skipTraversal: true),
-                  iconSize: 20),
-          ],
-        ));
-        for (int languageIndex = 0;
-            languageIndex < languageList.length;
-            languageIndex++) {
-          nodeIndex++;
-          optionList.add(Padding(
-            padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-            child: TextFormField(
-              readOnly: !isEditMode,
-              onChanged: (value) {
-                isChange = true;
-                int foundLanguage = -1;
-                for (int l = 0;
-                    l < screenData.options[optionIndex].names.length;
-                    l++) {
-                  if (screenData.options[optionIndex].names[l].code ==
-                      languageList[languageIndex].code) {
-                    foundLanguage = l;
-                    break;
-                  }
-                }
-                if (foundLanguage == -1) {
-                  screenData.options[optionIndex].names.add(LanguageDataModel(
-                      code: languageList[languageIndex].code, name: value));
-                } else {
-                  screenData.options[optionIndex].names[foundLanguage].name =
-                      value;
-                }
-              },
-              onFieldSubmitted: (value) {
-                findFocusNext(nodeIndex);
-              },
-              textInputAction: TextInputAction.next,
-              focusNode: fieldFocusNodes[nodeIndex],
-              textAlign: TextAlign.left,
-              controller: TextEditingController(
-                  text: screenData
-                      .options[optionIndex].names[languageIndex].name),
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText:
-                    "${global.language("option_name")} (${languageList[languageIndex].name})",
-              ),
-            ),
-          ));
-        }
-        List<Widget> choiceList = [];
-        for (int choiceIndex = 0;
-            choiceIndex < screenData.options[optionIndex].choices.length;
-            choiceIndex++) {
-          List<Widget> choiceRow = [];
-          if (choiceList.isNotEmpty) {
-            choiceRow.add(const Divider(
-              color: Colors.black,
-            ));
-          }
-          choiceRow.add(Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                  child: Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: Text(
-                          "${global.language("choice")} ${choiceIndex + 1}",
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)))),
-              if (choiceIndex > 0)
-                IconButton(
-                    onPressed: () {
-                      setState(() {
-                        screenData.options[optionIndex].choices.insert(
-                            choiceIndex - 1,
-                            screenData.options[optionIndex].choices
-                                .removeAt(choiceIndex));
-                      });
-                    },
-                    icon: const Icon(Icons.move_up),
-                    focusNode: FocusNode(skipTraversal: true),
-                    color: Colors.blue,
-                    iconSize: 20),
-              if (choiceIndex <
-                  screenData.options[optionIndex].choices.length - 1)
-                IconButton(
-                    onPressed: () {
-                      setState(() {
-                        screenData.options[optionIndex].choices.insert(
-                            choiceIndex + 1,
-                            screenData.options[optionIndex].choices
-                                .removeAt(choiceIndex));
-                      });
-                    },
-                    icon: const Icon(Icons.move_down),
-                    color: Colors.green,
-                    focusNode: FocusNode(skipTraversal: true),
-                    iconSize: 20),
-            ],
-          ));
-          for (int languageIndex = 0;
-              languageIndex < languageList.length;
-              languageIndex++) {
-            nodeIndex++;
-            choiceRow.add(Padding(
-              padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-              child: TextFormField(
-                readOnly: !isEditMode,
-                onChanged: (value) {
-                  isChange = true;
-                  int foundLanguage = -1;
-                  for (int l = 0;
-                      l <
-                          screenData.options[optionIndex].choices[choiceIndex]
-                              .names.length;
-                      l++) {
-                    if (screenData.options[optionIndex].choices[choiceIndex]
-                            .names[l].code ==
-                        languageList[languageIndex].code) {
-                      foundLanguage = l;
-                      break;
-                    }
-                  }
-                  if (foundLanguage == -1) {
-                    screenData.options[optionIndex].choices[choiceIndex].names
-                        .add(LanguageDataModel(
-                            code: languageList[languageIndex].code,
-                            name: value));
-                  } else {
-                    screenData.options[optionIndex].choices[choiceIndex]
-                        .names[foundLanguage].name = value;
-                  }
-                },
-                onFieldSubmitted: (value) {
-                  findFocusNext(nodeIndex);
-                },
-                textInputAction: TextInputAction.next,
-                focusNode: fieldFocusNodes[nodeIndex],
-                textAlign: TextAlign.left,
-                controller: TextEditingController(
-                    text: screenData.options[optionIndex].choices[choiceIndex]
-                        .names[languageIndex].name),
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  labelText:
-                      "${global.language("choice_name")} (${languageList[languageIndex].name})",
-                ),
-              ),
-            ));
-          }
-          nodeIndex++;
-          choiceRow.add(Padding(
-            padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-            child: TextFormField(
-              readOnly: !isEditMode,
-              onChanged: (value) {
-                isChange = true;
-                screenData.options[optionIndex].choices[choiceIndex].qty =
-                    double.tryParse(value)!;
-              },
-              onFieldSubmitted: (value) {
-                findFocusNext(nodeIndex);
-              },
-              keyboardType: TextInputType.number,
-              textInputAction: TextInputAction.next,
-              focusNode: fieldFocusNodes[nodeIndex],
-              textAlign: TextAlign.left,
-              controller: TextEditingController(
-                  text: screenData.options[optionIndex].choices[choiceIndex].qty
-                      .toString()),
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText: global.language("choice_add_price"),
-              ),
-            ),
-          ));
-          choiceRow.add(Padding(
-              padding: const EdgeInsets.only(left: 5, right: 5),
-              child: CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  focusNode: FocusNode(skipTraversal: true),
-                  title: Text(global.language("choice_is_stock")),
-                  value: screenData
-                      .options[optionIndex].choices[choiceIndex].isstock,
-                  onChanged: ((value) {
-                    setState(() {
-                      screenData.options[optionIndex].choices[choiceIndex]
-                              .isstock =
-                          !screenData.options[optionIndex].choices[choiceIndex]
-                              .isstock;
-                    });
-                  }))));
-          if (screenData.options[optionIndex].choices[choiceIndex].isstock) {
-            nodeIndex++;
-            choiceRow.add(Padding(
-                padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-                child: TextFormField(
-                    readOnly: !isEditMode,
-                    onFieldSubmitted: (value) {
-                      findFocusNext(nodeIndex);
-                    },
-                    textInputAction: TextInputAction.next,
-                    focusNode: fieldFocusNodes[nodeIndex],
-                    textAlign: TextAlign.left,
-                    controller: TextEditingController(
-                        text: screenData.options[optionIndex]
-                            .choices[choiceIndex].refbarcode),
-                    textCapitalization: TextCapitalization.characters,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9]'))
-                    ],
-                    onChanged: (value) {
-                      isChange = true;
-                      screenData.options[optionIndex].choices[choiceIndex]
-                          .refbarcode = value.toUpperCase();
-                    },
-                    decoration: InputDecoration(
-                      suffixIcon: IconButton(
-                        focusNode: FocusNode(skipTraversal: true),
-                        icon: const Icon(Icons.search),
-                        onPressed: () async {},
-                      ),
-                      border: const OutlineInputBorder(),
-                      labelText: global.language("barcode"),
-                    ))));
-            choiceRow.add(Padding(
-                padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-                child: TextFormField(
-                    focusNode: FocusNode(skipTraversal: true),
-                    readOnly: !isEditMode,
-                    textInputAction: TextInputAction.next,
-                    textAlign: TextAlign.left,
-                    controller: TextEditingController(
-                        text: screenData.options[optionIndex]
-                            .choices[choiceIndex].refproductcode),
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      labelText: global.language("product_code"),
-                    ))));
-            choiceRow.add(Padding(
-                padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-                child: TextFormField(
-                    focusNode: FocusNode(skipTraversal: true),
-                    readOnly: !isEditMode,
-                    textInputAction: TextInputAction.next,
-                    textAlign: TextAlign.left,
-                    controller: TextEditingController(
-                        text: screenData.options[optionIndex]
-                            .choices[choiceIndex].refunitcode),
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      labelText: global.language("unit_code"),
-                    ))));
-            nodeIndex++;
-            choiceRow.add(Padding(
-              padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-              child: TextFormField(
-                readOnly: !isEditMode,
-                onChanged: (value) {
-                  isChange = true;
-                  screenData.options[optionIndex].choices[choiceIndex].qty =
-                      double.tryParse(value)!;
-                },
-                onFieldSubmitted: (value) {
-                  findFocusNext(nodeIndex);
-                },
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.next,
-                focusNode: fieldFocusNodes[nodeIndex],
-                textAlign: TextAlign.left,
-                controller: TextEditingController(
-                    text: screenData
-                        .options[optionIndex].choices[choiceIndex].qty
-                        .toString()),
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  labelText: global.language("choice_stock_qty"),
-                ),
-              ),
-            ));
-          }
-          choiceList.add(Column(children: choiceRow));
-        }
-        if (choiceList.isNotEmpty) {
-          optionList.add(Container(
-              padding: const EdgeInsets.only(left: 5, right: 5),
-              width: double.infinity,
-              child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.cyan.shade100,
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(5)),
-                  width: double.infinity,
-                  child: Column(children: choiceList))));
-        }
-        if (isEditMode) {
-          optionList.add(Container(
-              padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-              width: double.infinity,
-              child: ElevatedButton(
-                  focusNode: FocusNode(skipTraversal: true),
-                  onPressed: () {
-                    setState(() {
-                      List<LanguageDataModel> names = [];
-                      for (int k = 0; k < languageList.length; k++) {
-                        names.add(LanguageDataModel(
-                            code: languageList[k].code, name: ""));
-                      }
-                      screenData.options[optionIndex].choices
-                          .add(ProductChoiceModel(
-                        guid: "",
-                        refbarcode: "",
-                        isstock: false,
-                        refproductcode: "",
-                        refunitcode: "",
-                        names: names,
-                        qty: 0,
-                        price: 0,
-                      ));
-                    });
-                  },
-                  child: Text(global.language("add_choice")))));
-        }
-        formWidgets.add(Container(
-          padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
-          width: double.infinity,
-          child: Container(
-              decoration: BoxDecoration(
-                  color: Colors.cyan.shade300,
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(5)),
-              width: double.infinity,
-              child: Column(
-                children: optionList,
-              )),
-        ));
-        nodeIndex++;
-        optionList.add(Padding(
-            padding:
-                const EdgeInsets.only(left: 5, right: 5, top: 5, bottom: 10),
-            child: Row(children: [
-              Expanded(
-                  child: TextFormField(
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
-                      readOnly: true,
-                      textInputAction: TextInputAction.next,
-                      focusNode: FocusNode(skipTraversal: true),
-                      textAlign: TextAlign.center,
-                      controller: TextEditingController(
-                          text: screenData.options[optionIndex].minselect
-                              .toString()),
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText:
-                            "${screenData.options[optionIndex].names[0].name} ${global.language("option_min_select_choice")}",
-                        suffixIcon: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  icon: const Icon(Icons.arrow_downward),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (screenData
-                                              .options[optionIndex].minselect >
-                                          0) {
-                                        screenData
-                                            .options[optionIndex].minselect--;
-                                      }
-                                    });
-                                  }),
-                              IconButton(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  icon: const Icon(Icons.arrow_upward),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (screenData
-                                              .options[optionIndex].minselect <
-                                          screenData.options[optionIndex]
-                                              .choices.length) {
-                                        screenData
-                                            .options[optionIndex].minselect++;
-                                      }
-                                    });
-                                  })
-                            ]),
-                      ))),
-              const SizedBox(width: 5),
-              Expanded(
-                  child: TextFormField(
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
-                      readOnly: true,
-                      textInputAction: TextInputAction.next,
-                      focusNode: FocusNode(skipTraversal: true),
-                      textAlign: TextAlign.center,
-                      controller: TextEditingController(
-                          text: screenData.options[optionIndex].maxselect
-                              .toString()),
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText:
-                            "${screenData.options[optionIndex].names[0].name} ${global.language("option_max_select_choice")}",
-                        suffixIcon: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  icon: const Icon(Icons.arrow_downward),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (screenData
-                                              .options[optionIndex].maxselect >
-                                          0) {
-                                        screenData
-                                            .options[optionIndex].maxselect--;
-                                      }
-                                    });
-                                  }),
-                              IconButton(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  icon: const Icon(Icons.arrow_upward),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (screenData
-                                              .options[optionIndex].maxselect <
-                                          screenData.options[optionIndex]
-                                              .choices.length) {
-                                        screenData
-                                            .options[optionIndex].maxselect++;
-                                      }
-                                    });
-                                  })
-                            ]),
-                      ))),
-            ])));
-      }
-    }
     if (isEditMode) {
-      formWidgets.add(Container(
-          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-          width: double.infinity,
-          child: ElevatedButton(
-              focusNode: FocusNode(skipTraversal: true),
-              onPressed: () {
-                setState(() {
-                  List<LanguageDataModel> names = [];
-                  for (int k = 0; k < languageList.length; k++) {
-                    names.add(LanguageDataModel(
-                        code: languageList[k].code, name: ""));
-                  }
-                  screenData.options.add(ProductOptionModel(
-                      guid: "",
-                      minselect: 1,
-                      maxselect: 1,
-                      names: names,
-                      choices: []));
-                });
-              },
-              child: Text(global.language("add_option")))));
-      formWidgets.add(Row(
-        children: [
+      for (int imageIndex = 0;
+          imageIndex < screenData.imageuris.length;
+          imageIndex++) {
+        formWidgets.add(Row(children: [
           Expanded(
               child: ElevatedButton.icon(
             focusNode: FocusNode(skipTraversal: true),
             onPressed: () async {
               setState(() {
-                imageWeb = null;
-                imageFile = File('');
+                imageWeb[imageIndex] = null;
+                imageFile[imageIndex] = File('');
               });
             },
             icon: const Icon(
@@ -1302,26 +1092,22 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                     if (image != null) {
                       var f = await image.readAsBytes();
                       setState(() {
-                        imageWeb = f;
-                        imageFile = File(image.path);
+                        imageWeb[imageIndex] = f;
+                        imageFile[imageIndex] = File(image.path);
                       });
                     }
                   }
-                : () {
-                    setState(() async {
-                      final XFile? photo = await imagePicker.pickImage(
-                          source: ImageSource.gallery,
-                          maxHeight: 480,
-                          maxWidth: 640,
-                          imageQuality: 60);
-                      if (photo != null) {
-                        var f = await photo.readAsBytes();
-                        setState(() {
-                          imageWeb = f;
-                          imageFile = File(photo.path);
-                        });
-                      }
-                    });
+                : () async {
+                    final XFile? photo = await imagePicker.pickImage(
+                        source: ImageSource.gallery,
+                        maxHeight: 480,
+                        maxWidth: 640,
+                        imageQuality: 60);
+                    if (photo != null) {
+                      imageWeb[imageIndex] = await photo.readAsBytes();
+                      imageFile[imageIndex] = File(photo.path);
+                      setState(() {});
+                    }
                   },
             icon: const Icon(
               Icons.folder,
@@ -1342,8 +1128,8 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                 if (photo != null) {
                   var f = await photo.readAsBytes();
                   setState(() {
-                    imageWeb = f;
-                    imageFile = File(photo.path);
+                    imageWeb[imageIndex] = f;
+                    imageFile[imageIndex] = File(photo.path);
                   });
                 }
               },
@@ -1352,62 +1138,78 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
               ),
               label: Text(global.language('take_photo')),
             )),
-        ],
-      ));
-    }
-    formWidgets.add(Container(
-        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-        width: double.infinity,
-        height: 300,
-        child: Stack(children: [
-          if (kIsWeb)
-            DropzoneView(
-              operation: DragOperation.copy,
-              cursor: CursorType.grab,
-              onCreated: (ctrl) => dropZoneController = ctrl,
-              onLoaded: () {},
-              onError: (ev) {},
-              onHover: () {},
-              onLeave: () {},
-              onDrop: (ev) async {
-                final bytes = await dropZoneController.getFileData(ev);
+        ]));
+
+        formWidgets.add(Container(
+            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+            width: double.infinity,
+            height: 300,
+            child: Stack(children: [
+              if (kIsWeb)
+                DropzoneView(
+                  operation: DragOperation.copy,
+                  cursor: CursorType.grab,
+                  onCreated: (ctrl) => dropZoneController = ctrl,
+                  onLoaded: () {},
+                  onError: (ev) {},
+                  onHover: () {},
+                  onLeave: () {},
+                  onDrop: (ev) async {
+                    final bytes = await dropZoneController.getFileData(ev);
+                    setState(() {
+                      imageWeb[imageIndex] = bytes;
+                    });
+                  },
+                  onDropMultiple: (ev) async {},
+                ),
+              Center(
+                  child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.black),
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: const [
+                    BoxShadow(
+                        offset: Offset(0, 4),
+                        color: Colors.cyan, //edited
+                        spreadRadius: 4,
+                        blurRadius: 10 //edited
+                        )
+                  ],
+                  image: (imageWeb[imageIndex] != null)
+                      ? DecorationImage(
+                          image: MemoryImage(imageWeb[imageIndex]),
+                          fit: BoxFit.fill)
+                      : (screenData.imageuris[imageIndex] != '')
+                          ? DecorationImage(
+                              image: NetworkImage(
+                                  screenData.imageuris[imageIndex]),
+                              fit: BoxFit.fill)
+                          : const DecorationImage(
+                              image: AssetImage('assets/img/noimg.png'),
+                              fit: BoxFit.fill),
+                ),
+                child: const SizedBox(
+                  width: 500,
+                  height: 500,
+                ),
+              )),
+            ])));
+      }
+      formWidgets.add(Container(
+          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+          width: double.infinity,
+          child: ElevatedButton(
+              focusNode: FocusNode(skipTraversal: true),
+              onPressed: () {
                 setState(() {
-                  imageWeb = bytes;
+                  screenData.imageuris.add('');
+                  imageWeb.add(null);
+                  imageFile.add(File(''));
                 });
               },
-              onDropMultiple: (ev) async {},
-            ),
-          Center(
-              child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(color: Colors.black),
-              borderRadius: BorderRadius.circular(5),
-              boxShadow: const [
-                BoxShadow(
-                    offset: Offset(0, 4),
-                    color: Colors.cyan, //edited
-                    spreadRadius: 4,
-                    blurRadius: 10 //edited
-                    )
-              ],
-              image: (imageWeb != null)
-                  ? DecorationImage(
-                      image: MemoryImage(imageWeb!), fit: BoxFit.fill)
-                  : (screenData.imageuri != '')
-                      ? DecorationImage(
-                          image: NetworkImage(screenData.imageuri),
-                          fit: BoxFit.fill)
-                      : const DecorationImage(
-                          image: AssetImage('assets/img/noimg.png'),
-                          fit: BoxFit.fill),
-            ),
-            child: const SizedBox(
-              width: 500,
-              height: 500,
-            ),
-          )),
-        ])));
+              child: Text(global.language("product_image_add")))));
+    }
 
     if (isSaveAllow) {
       formWidgets.add(Container(
@@ -1443,7 +1245,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                       });
                     })
                 : null,
-            title: Text(headerEdit + global.language("barcode")),
+            title: Text(headerEdit + global.language("product")),
             actions: <Widget>[
               if (selectGuid.isNotEmpty)
                 Padding(
@@ -1467,8 +1269,9 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                                       backgroundColor: Colors.blue),
                                   onPressed: () {
                                     Navigator.pop(context);
-                                    context.read<ProductBarcodeBloc>().add(
-                                        ProductBarcodeDelete(guid: selectGuid));
+                                    context
+                                        .read<ProductBloc>()
+                                        .add(ProductDelete(guid: selectGuid));
                                   },
                                   child: Text(global.language('confirm'))),
                             ],
@@ -1557,19 +1360,19 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     return Scaffold(
         resizeToAvoidBottomInset: true,
         body: LayoutBuilder(builder: (context, constraints) {
-          return BlocListener<ProductBarcodeBloc, ProductBarcodeState>(
+          return BlocListener<ProductBloc, ProductState>(
               listener: (context, state) {
                 blocCurrentState = state;
                 // Load
-                if (state is ProductBarcodeLoadSuccess) {
+                if (state is ProductLoadSuccess) {
                   setState(() {
-                    if (state.productbarcodes.isNotEmpty) {
-                      listDatas.addAll(state.productbarcodes);
+                    if (state.products.isNotEmpty) {
+                      listDatas.addAll(state.products);
                     }
                   });
                 }
                 // Save
-                if (state is ProductBarcodeSaveSuccess) {
+                if (state is ProductSaveSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1584,7 +1387,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                     loadDataList(searchText);
                   });
                 }
-                if (state is ProductBarcodeSaveFailed) {
+                if (state is ProductSaveFailed) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1597,7 +1400,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                   });
                 }
                 // Update
-                if (state is ProductBarcodeUpdateSuccess) {
+                if (state is ProductUpdateSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1617,7 +1420,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                     getData(selectGuid);
                   });
                 }
-                if (state is ProductBarcodeUpdateFailed) {
+                if (state is ProductUpdateFailed) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1630,7 +1433,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                   });
                 }
                 // Delete
-                if (state is ProductBarcodeDeleteSuccess) {
+                if (state is ProductDeleteSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1649,7 +1452,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                   });
                 }
                 // Delete Many
-                if (state is ProductBarcodeDeleteManySuccess) {
+                if (state is ProductDeleteManySuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1666,10 +1469,10 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                   });
                 }
                 // Get
-                if (state is ProductBarcodeGetSuccess) {
+                if (state is ProductGetSuccess) {
                   setState(() {
                     isChange = false;
-                    screenData = state.productbarcode;
+                    screenData = state.product;
                     if (isEditMode) {
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                         tabController.animateTo(1);

@@ -4,8 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
-import 'package:thai7merchant/model/language_model.dart';
-import 'package:thai7merchant/model/unit.dart';
+import 'package:thai7merchant/model/global_model.dart';
+import 'package:thai7merchant/model/product_struct.dart';
 import 'package:split_view/split_view.dart';
 import 'package:translator/translator.dart';
 
