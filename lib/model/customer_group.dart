@@ -6,15 +6,16 @@ part 'customer_group.g.dart';
 @JsonSerializable(explicitToJson: true)
 class CustomerGroupModel {
   String guidfixed;
+
   /// รหัสกลุ่มลูกค้า
-  String code;
+  String customercode;
+
   /// ชื่อกลุ่มลูกค้า
   List<LanguageDataModel> names = <LanguageDataModel>[];
-  
 
   CustomerGroupModel({
     required this.guidfixed,
-    required this.code,
+    required this.customercode,
     List<LanguageDataModel>? names,
   }) : names = names ?? <LanguageDataModel>[];
 

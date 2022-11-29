@@ -1,6 +1,5 @@
 part of 'customer_bloc.dart';
 
-
 abstract class CustomerEvent extends Equatable {
   const CustomerEvent();
 
@@ -60,6 +59,20 @@ class CustomerSave extends CustomerEvent {
 
   @override
   List<Object> get props => [customerModel];
+}
+
+class CustomerWithImageSave extends CustomerEvent {
+  final List<File> imageFile;
+  final CustomerModel customerModel;
+  final List<Uint8List> imageWeb;
+  const CustomerWithImageSave({
+    required this.imageWeb,
+    required this.imageFile,
+    required this.customerModel,
+  });
+
+  @override
+  List<Object> get props => [customerModel, imageFile];
 }
 
 class CustomerUpdate extends CustomerEvent {

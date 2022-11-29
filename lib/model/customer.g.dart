@@ -19,8 +19,9 @@ CustomerModel _$CustomerModelFromJson(Map<String, dynamic> json) =>
       addressforshipping: (json['addressforshipping'] as List<dynamic>)
           .map((e) => CustomerAddressModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      imageuris:
-          (json['imageuris'] as List<dynamic>).map((e) => e as String).toList(),
+      images: (json['images'] as List<dynamic>)
+          .map((e) => ImagesModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
       taxid: json['taxid'] as String,
       email: json['email'] as String,
     );
@@ -34,7 +35,7 @@ Map<String, dynamic> _$CustomerModelToJson(CustomerModel instance) =>
       'addressforbilling': instance.addressforbilling.toJson(),
       'addressforshipping':
           instance.addressforshipping.map((e) => e.toJson()).toList(),
-      'imageuris': instance.imageuris,
+      'images': instance.images.map((e) => e.toJson()).toList(),
       'taxid': instance.taxid,
       'email': instance.email,
     };
@@ -44,10 +45,10 @@ CustomerAddressModel _$CustomerAddressModelFromJson(
     CustomerAddressModel(
       address:
           (json['address'] as List<dynamic>).map((e) => e as String).toList(),
-      countryCode: json['countryCode'] as String,
-      provincecode: json['provincecode'] as String,
-      districtcode: json['districtcode'] as String,
-      subDistrictcode: json['subDistrictcode'] as String,
+      countryCode: json['countrycode'] as String ?? "1",
+      provincecode: json['provincecode'] as String ?? "1",
+      districtcode: json['districtcode'] as String ?? "1",
+      subDistrictcode: json['subdistrictcode'] as String ?? "1",
       zipcode: json['zipcode'] as String,
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),

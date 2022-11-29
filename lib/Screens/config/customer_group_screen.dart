@@ -441,7 +441,7 @@ class CustomerGroupScreenState extends State<CustomerGroupScreen>
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Expanded(
                   flex: 5,
-                  child: Text(value.code,
+                  child: Text(value.customercode,
                       maxLines: 2, overflow: TextOverflow.ellipsis)),
               Expanded(
                   flex: 10,
@@ -478,7 +478,7 @@ class CustomerGroupScreenState extends State<CustomerGroupScreen>
     if (selectGuid.trim().isEmpty) {
       CustomerGroupModel data = CustomerGroupModel(
         guidfixed: "",
-        code: fieldTextController[0].text,
+        customercode: fieldTextController[0].text,
         names: packLanguage(),
       );
       context
@@ -494,7 +494,7 @@ class CustomerGroupScreenState extends State<CustomerGroupScreen>
     showCheckBox = false;
     CustomerGroupModel data = CustomerGroupModel(
       guidfixed: guid,
-      code: fieldTextController[0].text,
+      customercode: fieldTextController[0].text,
       names: names,
     );
     context
@@ -505,7 +505,7 @@ class CustomerGroupScreenState extends State<CustomerGroupScreen>
   void getDataToEditScreen(CustomerGroupModel customerGroup) {
     isChange = false;
     selectGuid = customerGroup.guidfixed;
-    fieldTextController[0].text = customerGroup.code;
+    fieldTextController[0].text = customerGroup.customercode;
     for (int i = 0; i < languageList.length; i++) {
       fieldTextController[i + 1].text = "";
     }

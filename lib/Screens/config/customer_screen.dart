@@ -32,6 +32,7 @@ class CustomerScreenState extends State<CustomerScreen>
   List<LanguageModel> languageList = <LanguageModel>[];
   List<FocusNode> fieldFocusNodes = [];
   int focusNodeIndex = 0;
+  List<File> imageFile = [];
   List<CustomerModel> listDatas = [];
   List<String> guidListChecked = [];
   List<LanguageDataModel> names = [];
@@ -114,7 +115,10 @@ class CustomerScreenState extends State<CustomerScreen>
       names.add(LanguageDataModel(code: languageList[k].code, name: ""));
       addressNames.add(LanguageDataModel(code: languageList[k].code, name: ""));
     }
-
+    List<LanguageDataModel> nameBill = [];
+    for (int k = 0; k < languageList.length; k++) {
+      nameBill.add(LanguageDataModel(code: languageList[k].code, name: ""));
+    }
     screenData = CustomerModel(
       guidfixed: "",
       code: "",
@@ -129,12 +133,12 @@ class CustomerScreenState extends State<CustomerScreen>
         zipcode: "",
         latitude: 0,
         longitude: 0,
-        contactnames: [],
+        contactnames: nameBill,
         phoneprimary: "",
         phonesecondary: "",
       ),
       addressforshipping: [],
-      imageuris: [],
+      images: [],
       taxid: "",
       email: "",
     );
@@ -483,7 +487,17 @@ class CustomerScreenState extends State<CustomerScreen>
   void saveOrUpdateData() {
     showCheckBox = false;
     if (selectGuid.trim().isEmpty) {
-      context.read<CustomerBloc>().add(CustomerSave(customerModel: screenData));
+      if (imageFile.length > 0) {
+        context.read<CustomerBloc>().add(CustomerWithImageSave(
+              customerModel: screenData,
+              imageFile: imageFile,
+              imageWeb: imageWeb,
+            ));
+      } else {
+        context
+            .read<CustomerBloc>()
+            .add(CustomerSave(customerModel: screenData));
+      }
     } else {
       updateData(selectGuid);
     }
@@ -983,10 +997,10 @@ class CustomerScreenState extends State<CustomerScreen>
     }
     List<Widget> imageList = [];
     for (int imageIndex = 0;
-        imageIndex < screenData.imageuris.length;
+        imageIndex < screenData.images.length;
         imageIndex++) {
       imageList.add(Container(
-          width: 200,
+          width: 300,
           padding: const EdgeInsets.only(left: 5, right: 5, bottom: 5, top: 5),
           decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
@@ -999,8 +1013,9 @@ class CustomerScreenState extends State<CustomerScreen>
                       child: IconButton(
                     focusNode: FocusNode(skipTraversal: true),
                     onPressed: () async {
-                      screenData.imageuris.removeAt(imageIndex);
+                      screenData.images.removeAt(imageIndex);
                       imageWeb.removeAt(imageIndex);
+                      imageFile.removeAt(imageIndex);
                       setState(() {});
                     },
                     icon: const Icon(
@@ -1014,10 +1029,16 @@ class CustomerScreenState extends State<CustomerScreen>
                     onPressed: (kIsWeb)
                         ? () async {
                             XFile? image = await _picker.pickImage(
-                                source: ImageSource.gallery, imageQuality: 60);
+                                source: ImageSource.gallery,
+                                maxHeight: 480,
+                                maxWidth: 640,
+                                imageQuality: 60);
                             if (image != null) {
                               var f = await image.readAsBytes();
-                              imageWeb[imageIndex] = f;
+                              setState(() {
+                                imageWeb[imageIndex] = f;
+                                imageFile[imageIndex] = File(image.path);
+                              });
                               setState(() {
                                 FocusScope.of(context).unfocus();
                               });
@@ -1025,10 +1046,14 @@ class CustomerScreenState extends State<CustomerScreen>
                           }
                         : () async {
                             final XFile? photo = await _picker.pickImage(
-                                source: ImageSource.gallery, imageQuality: 60);
+                                source: ImageSource.camera,
+                                maxHeight: 480,
+                                maxWidth: 640,
+                                imageQuality: 60);
                             if (photo != null) {
                               var f = await photo.readAsBytes();
                               imageWeb[imageIndex] = f;
+                              imageFile.add(File(photo.path));
                               setState(() {
                                 FocusScope.of(context).unfocus();
                               });
@@ -1045,10 +1070,14 @@ class CustomerScreenState extends State<CustomerScreen>
                       focusNode: FocusNode(skipTraversal: true),
                       onPressed: () async {
                         final XFile? photo = await _picker.pickImage(
-                            source: ImageSource.camera, imageQuality: 60);
+                            source: ImageSource.camera,
+                            maxHeight: 480,
+                            maxWidth: 640,
+                            imageQuality: 60);
                         if (photo != null) {
                           var f = await photo.readAsBytes();
                           imageWeb[imageIndex] = f;
+                          imageFile.add(File(photo.path));
                           setState(() {});
                         }
                       },
@@ -1058,9 +1087,9 @@ class CustomerScreenState extends State<CustomerScreen>
                     )),
                 ],
               ),
-              Container(
-                  padding:
-                      const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+              SizedBox(
+                  width: 300,
+                  height: 300,
                   child: Stack(children: [
                     DropzoneView(
                       operation: DragOperation.copy,
@@ -1092,18 +1121,71 @@ class CustomerScreenState extends State<CustomerScreen>
                               blurRadius: 10 //edited
                               )
                         ],
+                        image: (imageWeb[imageIndex].isNotEmpty)
+                            ? DecorationImage(
+                                image: MemoryImage(imageWeb[imageIndex]),
+                                fit: BoxFit.fill)
+                            : (screenData.images[imageIndex] != '')
+                                ? DecorationImage(
+                                    image: NetworkImage(
+                                        screenData.images[imageIndex].uri),
+                                    fit: BoxFit.fill)
+                                : const DecorationImage(
+                                    image: AssetImage('assets/img/noimg.png'),
+                                    fit: BoxFit.fill),
                       ),
-                      child: (imageWeb[imageIndex].isNotEmpty)
-                          ? Image(image: MemoryImage(imageWeb[imageIndex]))
-                          : (screenData.imageuris[imageIndex] != '')
-                              ? Image(
-                                  image: NetworkImage(
-                                      screenData.imageuris[imageIndex]),
-                                )
-                              : const Image(
-                                  image: AssetImage('assets/img/noimg.png')),
+                      child: const SizedBox(
+                        width: 500,
+                        height: 500,
+                      ),
                     )),
-                  ]))
+                  ])),
+              // Container(
+              //     padding:
+              //         const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+              //     child: Stack(children: [
+              //       DropzoneView(
+              //         operation: DragOperation.copy,
+              //         cursor: CursorType.grab,
+              //         onCreated: (ctrl) => dropZoneController = ctrl,
+              //         onLoaded: () {},
+              //         onError: (ev) {},
+              //         onHover: () {},
+              //         onLeave: () {},
+              //         onDrop: (ev) async {
+              //           final bytes = await dropZoneController.getFileData(ev);
+              //           setState(() {
+              //             imageWeb[imageIndex] = bytes;
+              //           });
+              //         },
+              //         onDropMultiple: (ev) async {},
+              //       ),
+              //       Center(
+              //           child: DecoratedBox(
+              //         decoration: BoxDecoration(
+              //           color: Colors.white,
+              //           border: Border.all(color: Colors.black),
+              //           borderRadius: BorderRadius.circular(5),
+              //           boxShadow: const [
+              //             BoxShadow(
+              //                 offset: Offset(0, 4),
+              //                 color: Colors.cyan, //edited
+              //                 spreadRadius: 4,
+              //                 blurRadius: 10 //edited
+              //                 )
+              //           ],
+              //         ),
+              //         child: (imageWeb[imageIndex].isNotEmpty)
+              //             ? Image(image: MemoryImage(imageWeb[imageIndex]))
+              //             : (screenData.images[imageIndex] != '')
+              //                 ? Image(
+              //                     image: NetworkImage(
+              //                         screenData.images[imageIndex]),
+              //                   )
+              //                 : const Image(
+              //                     image: AssetImage('assets/img/noimg.png')),
+              //       )),
+              //     ]))
             ],
           )));
     }
@@ -1117,8 +1199,9 @@ class CustomerScreenState extends State<CustomerScreen>
               focusNode: FocusNode(skipTraversal: true),
               onPressed: () {
                 setState(() {
-                  screenData.imageuris.add("");
+                  screenData.images.add(ImagesModel(uri: '', xorder: 0));
                   imageWeb.add(Uint8List(0));
+                  imageFile.add(File(''));
                   FocusScope.of(context).unfocus();
                 });
               },

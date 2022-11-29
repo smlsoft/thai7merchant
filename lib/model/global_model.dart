@@ -101,3 +101,17 @@ class ImageUpload {
 
   Map<String, dynamic> toJson() => _$ImageUploadToJson(this);
 }
+
+class ImagesModel {
+  String uri;
+  int xorder;
+  ImagesModel({
+    required this.uri,
+    required this.xorder,
+  });
+
+  factory ImagesModel.fromJson(Map<String, dynamic> json) =>
+      _$ImagesModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ImagesModelToJson(this);
+}

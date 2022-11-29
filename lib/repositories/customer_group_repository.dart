@@ -14,7 +14,8 @@ class CustomerGroupRepository {
     Dio client = Client().init();
 
     try {
-      String query = "/unit/list?offset=$offset&limit=$limit&q=$search";
+      String query =
+          "/customershop/customergroup/list?offset=$offset&limit=$limit&q=$search";
       final response = await client.get(query);
       try {
         final rawData = json.decode(response.toString());
@@ -34,7 +35,7 @@ class CustomerGroupRepository {
   Future<ApiResponse> deleteCustomerGroup(String guid) async {
     Dio client = Client().init();
     try {
-      final response = await client.delete('/unit/$guid');
+      final response = await client.delete('/customershop/customergroup/$guid');
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -50,7 +51,8 @@ class CustomerGroupRepository {
   Future<ApiResponse> deleteCustomerGroupMany(List<String> guids) async {
     Dio client = Client().init();
     try {
-      final response = await client.delete('/unit', data: guids);
+      final response =
+          await client.delete('/customershop/customergroup', data: guids);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -65,7 +67,7 @@ class CustomerGroupRepository {
   Future<ApiResponse> getCustomerGroup(String guid) async {
     Dio client = Client().init();
     try {
-      final response = await client.get('/unit/$guid');
+      final response = await client.get('/customershop/customergroup/$guid');
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -77,11 +79,13 @@ class CustomerGroupRepository {
     }
   }
 
-  Future<ApiResponse> saveCustomerGroup(CustomerGroupModel customerGroupModel) async {
+  Future<ApiResponse> saveCustomerGroup(
+      CustomerGroupModel customerGroupModel) async {
     Dio client = Client().init();
     final data = customerGroupModel.toJson();
     try {
-      final response = await client.post('/unit', data: data);
+      final response =
+          await client.post('/customershop/customergroup', data: data);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -93,11 +97,13 @@ class CustomerGroupRepository {
     }
   }
 
-  Future<ApiResponse> updateCustomerGroup(String guid, CustomerGroupModel customerGroupModel) async {
+  Future<ApiResponse> updateCustomerGroup(
+      String guid, CustomerGroupModel customerGroupModel) async {
     Dio client = Client().init();
     final data = customerGroupModel.toJson();
     try {
-      final response = await client.put('/unit/$guid', data: data);
+      final response =
+          await client.put('/customershop/customergroup/$guid', data: data);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {

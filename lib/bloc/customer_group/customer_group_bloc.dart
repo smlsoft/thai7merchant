@@ -71,6 +71,7 @@ class CustomerGroupBloc extends Bloc<CustomerGroupEvent, CustomerGroupState> {
       CustomerGroupSave event, Emitter<CustomerGroupState> emit) async {
     emit(CustomerGroupSaveInProgress());
     try {
+      print(event.customerGroupModel);
       await _customerGroupRepository
           .saveCustomerGroup(event.customerGroupModel);
       emit(CustomerGroupSaveSuccess());

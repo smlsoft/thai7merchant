@@ -21,7 +21,7 @@ class CustomerModel {
   late List<CustomerAddressModel> addressforshipping;
 
   /// รูปภาพ
-  late List<String> imageuris;
+  late List<ImagesModel> images;
 
   /// เลขประจำตัวผู้เสียภาษี/บัตรประชาชน
   late String taxid;
@@ -36,7 +36,7 @@ class CustomerModel {
     required this.personaltype,
     required this.addressforbilling,
     required this.addressforshipping,
-    required this.imageuris,
+    required this.images,
     required this.taxid,
     required this.email,
   });

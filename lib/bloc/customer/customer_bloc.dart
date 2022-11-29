@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:thai7merchant/model/customer.dart';
+import 'package:thai7merchant/model/global_model.dart';
+import 'package:thai7merchant/model/master_model.dart';
 import 'package:thai7merchant/repositories/customer_repository.dart';
 import 'package:thai7merchant/repositories/client.dart';
+import 'dart:io';
 
 part 'customer_event.dart';
 part 'customer_state.dart';
@@ -15,6 +19,7 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         super(CustomerInitial()) {
     on<CustomerLoadList>(onCustomerLoad);
     on<CustomerSave>(onCustomerSave);
+    on<CustomerWithImageSave>(onCustomerWithImageSave);
     on<CustomerUpdate>(onCustomerUpdate);
     on<CustomerDelete>(customerDelete);
     on<CustomerDeleteMany>(customerDeleteMany);
@@ -70,6 +75,48 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     try {
       await _customerRepository.saveCustomer(event.customerModel);
       emit(CustomerSaveSuccess());
+    } catch (e) {
+      emit(CustomerSaveFailed(message: e.toString()));
+    }
+  }
+
+  void onCustomerWithImageSave(
+      CustomerWithImageSave event, Emitter<CustomerState> emit) async {
+    emit(CustomerSaveInProgress());
+    try {
+      List<ImagesModel> imagesList = [];
+      if (event.imageFile.isNotEmpty) {
+        for (int i = 0; i < event.imageFile.length; i++) {
+          if (event.imageFile[i].uri != '') {
+            ApiResponse result = await _customerRepository.uploadImage(
+                event.imageFile[i], event.imageWeb[i]);
+            if (result.success) {
+              UploadImageModel uploadImage =
+                  UploadImageModel.fromJson(result.data);
+              imagesList.add(ImagesModel(uri: uploadImage.uri, xorder: i));
+            } else {
+              emit(CustomerSaveFailed(message: result.message));
+            }
+          }
+        }
+
+        if (imagesList.length == event.imageFile.length) {
+          CustomerModel customerModel = event.customerModel;
+          customerModel.images = imagesList;
+          customerModel.addressforbilling.guid = "";
+          for (int i = 0; i < customerModel.addressforshipping.length; i++) {
+            customerModel.addressforshipping[i].guid = "";
+          }
+
+          print(customerModel);
+          await _customerRepository.saveCustomer(customerModel);
+          emit(CustomerSaveSuccess());
+        } else {
+          emit(const CustomerSaveFailed(message: 'image upload failed'));
+        }
+      } else {
+        emit(CustomerSaveFailed(message: 'no image found'));
+      }
     } catch (e) {
       emit(CustomerSaveFailed(message: e.toString()));
     }
