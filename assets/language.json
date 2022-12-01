@@ -4303,5 +4303,450 @@
                 "text": ""
             }
         ]
+    },
+    {
+        "code": "customer_individual",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Customer Individual"
+            },
+            {
+                "code": "th",
+                "text": "ลูกค้าบุคคล"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "customer_company",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Customer Company"
+            },
+            {
+                "code": "th",
+                "text": "ลูกค้าบริษัท"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_is_stock",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Stock Control"
+            },
+            {
+                "code": "th",
+                "text": "สต๊อกสินค้า"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_is_service",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Service"
+            },
+            {
+                "code": "th",
+                "text": "สินค้าบริการ"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_vat_type_1",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Include Vat"
+            },
+            {
+                "code": "th",
+                "text": "ภาษีรวมใน"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_vat_type_2",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Exclude Vat"
+            },
+            {
+                "code": "th",
+                "text": "ภาษีแยกนอก"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_use_point_1",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Point Available"
+            },
+            {
+                "code": "th",
+                "text": "ใช้คะแนนได้"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_use_point_2",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Point Unavailable"
+            },
+            {
+                "code": "th",
+                "text": "ใช้คะแนนได้ไม่ได้"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_cost",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Unit Cost"
+            },
+            {
+                "code": "th",
+                "text": "หน่วยต้นทุน"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_standard",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Unit Standard"
+            },
+            {
+                "code": "th",
+                "text": "หน่วยมาตราฐาน"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_single_unit",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Single Unit"
+            },
+            {
+                "code": "th",
+                "text": "หน่วยนับเดียว"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_multi_unit",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Multi Unit"
+            },
+            {
+                "code": "th",
+                "text": "หลายหน่วยนับ"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_code",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Code"
+            },
+            {
+                "code": "th",
+                "text": "รหัส"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_name",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Name"
+            },
+            {
+                "code": "th",
+                "text": "ชื่อ"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_stand",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Stand Value"
+            },
+            {
+                "code": "th",
+                "text": "ตัวตั้ง"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_divider",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Divider Value"
+            },
+            {
+                "code": "th",
+                "text": "ตัวหาร"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_stock_count",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Stock Count"
+            },
+            {
+                "code": "th",
+                "text": "นับสต๊อก"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_add",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Add unit"
+            },
+            {
+                "code": "th",
+                "text": "เพิ่มหน่่วยนับ"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_image_add",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Add Image"
+            },
+            {
+                "code": "th",
+                "text": "เพิ่มรูปภาพ"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "guidfixed",
+        "langs": [
+            {
+                "code": "en",
+                "text": "code"
+            },
+            {
+                "code": "th",
+                "text": "รหัส"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "category_name",
+        "langs": [
+            {
+                "code": "en",
+                "text": "Name"
+            },
+            {
+                "code": "th",
+                "text": "ชื่อกลุ่มสินค้า"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
     }
+
+    
+    
+    
 ]

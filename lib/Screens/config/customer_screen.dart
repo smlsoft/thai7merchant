@@ -486,6 +486,7 @@ class CustomerScreenState extends State<CustomerScreen>
 
   void saveOrUpdateData() {
     showCheckBox = false;
+
     if (selectGuid.trim().isEmpty) {
       if (imageFile.length > 0) {
         context.read<CustomerBloc>().add(CustomerWithImageSave(
@@ -505,14 +506,56 @@ class CustomerScreenState extends State<CustomerScreen>
 
   void updateData(String guid) {
     showCheckBox = false;
-    context
-        .read<CustomerBloc>()
-        .add(CustomerUpdate(guid: guid, customerModel: screenData));
+    List<File> imageFileUpdate = [];
+    List<Uint8List> imageWebUpdate = [];
+    List<ImagesModel> imageUris = [];
+    for (int i = 0; i < imageWeb.length; i++) {
+      print(imageWeb.length);
+      print(imageFile.length);
+      print(screenData.images.length);
+      if (imageWeb[i].isNotEmpty || screenData.images[i].uri != '') {
+        imageFileUpdate.add(imageFile[i]);
+        imageWebUpdate.add(imageWeb[i]);
+        imageUris.add(ImagesModel(uri: screenData.images[i].uri, xorder: i));
+      }
+    }
+    print("imageWebUpdate.isNotEmpty " + imageWebUpdate.isNotEmpty.toString());
+    if (imageWebUpdate.isNotEmpty) {
+      context.read<CustomerBloc>().add(CustomerWithImageUpdate(
+            guid: guid,
+            customerModel: screenData,
+            imageFile: imageFile,
+            imagesUri: imageUris,
+            imageWeb: imageWeb,
+          ));
+    } else {
+      screenData.images = [];
+      context
+          .read<CustomerBloc>()
+          .add(CustomerUpdate(guid: guid, customerModel: screenData));
+    }
   }
 
   void getDataToEditScreen(CustomerModel customer) {
     isChange = false;
     selectGuid = customer.guidfixed;
+    screenData.addressforbilling = customer.addressforbilling;
+    screenData.addressforshipping = customer.addressforshipping;
+    screenData.code = customer.code;
+    screenData.email = customer.email;
+    screenData.guidfixed = customer.guidfixed;
+    screenData.images = customer.images;
+    screenData.names = customer.names;
+    screenData.personaltype = customer.personaltype;
+    screenData.taxid = customer.taxid;
+
+    imageWeb = [];
+    imageFile = [];
+
+    for (int i = 0; i < customer.images.length; i++) {
+      imageWeb.add(Uint8List(0));
+      imageFile.add(File(''));
+    }
   }
 
   void findFocusNext(int index) {
@@ -526,6 +569,7 @@ class CustomerScreenState extends State<CustomerScreen>
   Widget editScreen({mobileScreen}) {
     int nodeIndex = 0;
     List<Widget> formWidgets = [];
+    print(isEditMode);
     formWidgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: TextFormField(
@@ -1009,60 +1053,64 @@ class CustomerScreenState extends State<CustomerScreen>
             children: [
               Row(
                 children: [
-                  Expanded(
-                      child: IconButton(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onPressed: () async {
-                      screenData.images.removeAt(imageIndex);
-                      imageWeb.removeAt(imageIndex);
-                      imageFile.removeAt(imageIndex);
-                      setState(() {});
-                    },
-                    icon: const Icon(
-                      Icons.delete,
-                    ),
-                  )),
-                  const SizedBox(width: 5),
-                  Expanded(
-                      child: IconButton(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onPressed: (kIsWeb)
-                        ? () async {
-                            XFile? image = await _picker.pickImage(
-                                source: ImageSource.gallery,
-                                maxHeight: 480,
-                                maxWidth: 640,
-                                imageQuality: 60);
-                            if (image != null) {
-                              var f = await image.readAsBytes();
-                              setState(() {
-                                imageWeb[imageIndex] = f;
-                                imageFile[imageIndex] = File(image.path);
-                              });
-                              setState(() {
-                                FocusScope.of(context).unfocus();
-                              });
-                            }
-                          }
-                        : () async {
-                            final XFile? photo = await _picker.pickImage(
-                                source: ImageSource.camera,
-                                maxHeight: 480,
-                                maxWidth: 640,
-                                imageQuality: 60);
-                            if (photo != null) {
-                              var f = await photo.readAsBytes();
-                              imageWeb[imageIndex] = f;
-                              imageFile.add(File(photo.path));
-                              setState(() {
-                                FocusScope.of(context).unfocus();
-                              });
-                            }
+                  (isEditMode)
+                      ? Expanded(
+                          child: IconButton(
+                          focusNode: FocusNode(skipTraversal: true),
+                          onPressed: () async {
+                            screenData.images.removeAt(imageIndex);
+                            imageWeb.removeAt(imageIndex);
+                            imageFile.removeAt(imageIndex);
+                            setState(() {});
                           },
-                    icon: const Icon(
-                      Icons.folder,
-                    ),
-                  )),
+                          icon: const Icon(
+                            Icons.delete,
+                          ),
+                        ))
+                      : Container(),
+                  const SizedBox(width: 5),
+                  (isEditMode)
+                      ? Expanded(
+                          child: IconButton(
+                          focusNode: FocusNode(skipTraversal: true),
+                          onPressed: (kIsWeb)
+                              ? () async {
+                                  XFile? image = await _picker.pickImage(
+                                      source: ImageSource.gallery,
+                                      maxHeight: 480,
+                                      maxWidth: 640,
+                                      imageQuality: 60);
+                                  if (image != null) {
+                                    var f = await image.readAsBytes();
+                                    setState(() {
+                                      imageWeb[imageIndex] = f;
+                                      imageFile[imageIndex] = File(image.path);
+                                    });
+                                    setState(() {
+                                      FocusScope.of(context).unfocus();
+                                    });
+                                  }
+                                }
+                              : () async {
+                                  final XFile? photo = await _picker.pickImage(
+                                      source: ImageSource.camera,
+                                      maxHeight: 480,
+                                      maxWidth: 640,
+                                      imageQuality: 60);
+                                  if (photo != null) {
+                                    var f = await photo.readAsBytes();
+                                    imageWeb[imageIndex] = f;
+                                    imageFile.add(File(photo.path));
+                                    setState(() {
+                                      FocusScope.of(context).unfocus();
+                                    });
+                                  }
+                                },
+                          icon: const Icon(
+                            Icons.folder,
+                          ),
+                        ))
+                      : Container(),
                   const SizedBox(width: 5),
                   if (kIsWeb == false)
                     Expanded(
@@ -1125,7 +1173,7 @@ class CustomerScreenState extends State<CustomerScreen>
                             ? DecorationImage(
                                 image: MemoryImage(imageWeb[imageIndex]),
                                 fit: BoxFit.fill)
-                            : (screenData.images[imageIndex] != '')
+                            : (screenData.images[imageIndex].uri != '')
                                 ? DecorationImage(
                                     image: NetworkImage(
                                         screenData.images[imageIndex].uri),

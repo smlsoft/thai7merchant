@@ -19,8 +19,9 @@ ProductModel _$ProductModelFromJson(Map<String, dynamic> json) => ProductModel(
       units: (json['units'] as List<dynamic>)
           .map((e) => ProductUnitModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      imageuris:
-          (json['imageuris'] as List<dynamic>).map((e) => e as String).toList(),
+      images: (json['images'] as List<dynamic>)
+          .map((e) => ImagesModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
       unitcost: json['unitcost'] as String,
       unitstandard: json['unitstandard'] as String,
       multiunit: json['multiunit'] as bool,
@@ -43,7 +44,7 @@ Map<String, dynamic> _$ProductModelToJson(ProductModel instance) =>
       'multiunit': instance.multiunit,
       'useserialnumber': instance.useserialnumber,
       'units': instance.units.map((e) => e.toJson()).toList(),
-      'imageuris': instance.imageuris,
+      'images': instance.images.map((e) => e.toJson()).toList(),
       'unitcost': instance.unitcost,
       'unitstandard': instance.unitstandard,
       'itemstocktype': instance.itemstocktype,

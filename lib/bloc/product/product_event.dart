@@ -75,9 +75,9 @@ class ProductUpdate extends ProductEvent {
 }
 
 class ProductWithImageSave extends ProductEvent {
-  final File imageFile;
+  final List<File> imageFile;
   final ProductModel productModel;
-  final Uint8List? imageWeb;
+  final List<Uint8List> imageWeb;
   const ProductWithImageSave({
     required this.imageWeb,
     required this.imageFile,
@@ -88,3 +88,21 @@ class ProductWithImageSave extends ProductEvent {
   List<Object> get props => [ProductModel, imageFile];
 }
 
+class ProductWithImageUpdate extends ProductEvent {
+  final String guid;
+  final ProductModel productModel;
+  final List<File> imageFile;
+  final List<Uint8List> imageWeb;
+  final List<ImagesModel> imagesUri;
+
+  const ProductWithImageUpdate({
+    required this.guid,
+    required this.productModel,
+    required this.imageFile,
+    required this.imageWeb,
+    required this.imagesUri,
+  });
+
+  @override
+  List<Object> get props => [productModel];
+}

@@ -14,6 +14,7 @@ import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/price_model.dart';
 import 'package:thai7merchant/model/product_struct.dart';
 import 'package:split_view/split_view.dart';
+import 'package:thai7merchant/screen_search/product_group_search_screen.dart';
 import 'package:thai7merchant/screen_search/unit_search_screen.dart';
 import 'package:translator/translator.dart';
 
@@ -56,7 +57,7 @@ class ProductScreenState extends State<ProductScreen>
   bool isEditMode = false;
   late ProductModel screenData;
   List<File> imageFile = [];
-  List<dynamic> imageWeb = [];
+  List<Uint8List> imageWeb = [];
   final ImagePicker imagePicker = ImagePicker();
   late DropzoneViewController dropZoneController;
 
@@ -138,7 +139,7 @@ class ProductScreenState extends State<ProductScreen>
       barcodes: [],
       useserialnumber: false,
       units: [],
-      imageuris: [],
+      images: [],
       unitcost: "",
       unitstandard: "",
       multiunit: false,
@@ -530,9 +531,9 @@ class ProductScreenState extends State<ProductScreen>
   void saveOrUpdateData() {
     showCheckBox = false;
     String json = jsonEncode(screenData.toJson());
-    print(json);
+
     if (selectGuid.trim().isEmpty) {
-      /*if (imageFile.path.isNotEmpty) {
+      if (imageWeb.isNotEmpty) {
         context.read<ProductBloc>().add(ProductWithImageSave(
               productModel: screenData,
               imageFile: imageFile,
@@ -540,7 +541,7 @@ class ProductScreenState extends State<ProductScreen>
             ));
       } else {
         context.read<ProductBloc>().add(ProductSave(productModel: screenData));
-      }*/
+      }
     } else {
       updateData(selectGuid);
     }
@@ -548,9 +549,34 @@ class ProductScreenState extends State<ProductScreen>
 
   void updateData(String guid) {
     showCheckBox = false;
-    context
-        .read<ProductBloc>()
-        .add(ProductUpdate(guid: guid, productModel: screenData));
+    List<File> imageFileUpdate = [];
+    List<Uint8List> imageWebUpdate = [];
+    List<ImagesModel> imageUris = [];
+    for (int i = 0; i < imageWeb.length; i++) {
+      print(imageWeb.length);
+      print(imageFile.length);
+      print(screenData.images.length);
+      if (imageWeb[i].isNotEmpty || screenData.images[i].uri != '') {
+        imageFileUpdate.add(imageFile[i]);
+        imageWebUpdate.add(imageWeb[i]);
+        imageUris.add(ImagesModel(uri: screenData.images[i].uri, xorder: i));
+      }
+    }
+    print("imageWebUpdate.isNotEmpty " + imageWebUpdate.isNotEmpty.toString());
+    if (imageWebUpdate.isNotEmpty) {
+      context.read<ProductBloc>().add(ProductWithImageUpdate(
+            guid: guid,
+            productModel: screenData,
+            imageFile: imageFile,
+            imagesUri: imageUris,
+            imageWeb: imageWeb,
+          ));
+    } else {
+      screenData.images = [];
+      context
+          .read<ProductBloc>()
+          .add(ProductUpdate(guid: guid, productModel: screenData));
+    }
   }
 
   void findFocusNext(int index) {
@@ -564,13 +590,52 @@ class ProductScreenState extends State<ProductScreen>
   Widget editScreen({mobileScreen}) {
     int nodeIndex = 0;
     List<Widget> formWidgets = [];
-    formWidgets.add(Container(
+
+    formWidgets.add(Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-        width: double.infinity,
-        child: ElevatedButton(
-            focusNode: FocusNode(skipTraversal: true),
-            onPressed: () {},
-            child: Text(global.language("product_group")))));
+        child: TextFormField(
+            readOnly: !isEditMode,
+            onFieldSubmitted: (value) {
+              findFocusNext(nodeIndex);
+            },
+            textInputAction: TextInputAction.next,
+            focusNode: fieldFocusNodes[nodeIndex],
+            textAlign: TextAlign.left,
+            controller: TextEditingController(text: screenData.categoryguid),
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9]'))
+            ],
+            onChanged: (value) {
+              isChange = true;
+              screenData.categoryguid = value.toUpperCase();
+            },
+            decoration: InputDecoration(
+              suffixIcon: IconButton(
+                focusNode: FocusNode(skipTraversal: true),
+                icon: const Icon(Icons.search),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              const ProductSearchScreen())).then((value) {
+                    if (value != null) {
+                      setState(() {
+                        if (value != null) {
+                          SearchReturnValueModel returnValue =
+                              value as SearchReturnValueModel;
+                          screenData.categoryguid = returnValue.code;
+                        }
+                      });
+                    }
+                  });
+                },
+              ),
+              border: const OutlineInputBorder(),
+              labelText: global.language("product_group"),
+            ))));
+    nodeIndex++;
     formWidgets.add(Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
         child: TextFormField(
@@ -699,7 +764,7 @@ class ProductScreenState extends State<ProductScreen>
         ),
         RadioButton(
           description: global.language("product_use_point_2"),
-          value: 2,
+          value: false,
           groupValue: screenData.issumpoint,
           activeColor: Colors.red,
           onChanged: (value) {
@@ -837,8 +902,16 @@ class ProductScreenState extends State<ProductScreen>
     ));
     if (screenData.multiunit) {
       List<Widget> multiUnitWidgets = [];
+
+      List<List<FocusNode>> fieldFocusNodesUnits = [];
+      for (int i = 0; i < 20; i++) {
+        List<FocusNode> children = [];
+        for (int i = 0; i < 5; i++) {
+          children.add(FocusNode());
+        }
+        fieldFocusNodesUnits.add(children);
+      }
       for (int i = 0; i < screenData.units.length; i++) {
-        nodeIndex++;
         multiUnitWidgets.add(Container(
             width: double.infinity,
             padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -854,10 +927,9 @@ class ProductScreenState extends State<ProductScreen>
                             screenData.units[i].unitcode = value;
                           },
                           onFieldSubmitted: (value) {
-                            findFocusNext(nodeIndex);
+                            fieldFocusNodesUnits[i][1].requestFocus();
                           },
-                          textInputAction: TextInputAction.next,
-                          focusNode: fieldFocusNodes[nodeIndex],
+                          focusNode: fieldFocusNodesUnits[i][0],
                           textAlign: TextAlign.left,
                           controller: TextEditingController(
                               text: screenData.units[i].unitcode),
@@ -881,6 +953,9 @@ class ProductScreenState extends State<ProductScreen>
                                             value as SearchReturnValueModel;
                                         screenData.units[i].unitcode =
                                             returnValue.code;
+
+                                        screenData.units[i].unitname =
+                                            global.packName(returnValue.names);
                                       }
                                     });
                                   }
@@ -940,10 +1015,10 @@ class ProductScreenState extends State<ProductScreen>
                           screenData.units[i].stand = double.tryParse(value)!;
                         },
                         onFieldSubmitted: (value) {
-                          findFocusNext(nodeIndex);
+                          fieldFocusNodesUnits[i][2].requestFocus();
                         },
                         textInputAction: TextInputAction.next,
-                        focusNode: fieldFocusNodes[nodeIndex],
+                        focusNode: fieldFocusNodesUnits[i][1],
                         textAlign: TextAlign.left,
                         controller: TextEditingController(
                             text: screenData.units[i].stand.toString()),
@@ -962,10 +1037,14 @@ class ProductScreenState extends State<ProductScreen>
                           screenData.units[i].divider = double.tryParse(value)!;
                         },
                         onFieldSubmitted: (value) {
-                          findFocusNext(nodeIndex);
+                          if ((i + 1) < screenData.units.length) {
+                            fieldFocusNodesUnits[i + 1][0].requestFocus();
+                          } else {
+                            fieldFocusNodesUnits[0][0].requestFocus();
+                          }
                         },
                         textInputAction: TextInputAction.next,
-                        focusNode: fieldFocusNodes[nodeIndex],
+                        focusNode: fieldFocusNodesUnits[i][2],
                         textAlign: TextAlign.left,
                         controller: TextEditingController(
                             text: screenData.units[i].divider.toString()),
@@ -988,24 +1067,26 @@ class ProductScreenState extends State<ProductScreen>
               ],
             )));
       }
-      multiUnitWidgets.add(Container(
-          padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-          width: double.infinity,
-          child: ElevatedButton(
-              focusNode: FocusNode(skipTraversal: true),
-              onPressed: () {
-                setState(() {
-                  screenData.units.add(ProductUnitModel(
-                    xorder: 0,
-                    unitcode: "",
-                    unitname: "",
-                    divider: 0,
-                    stand: 0,
-                    stockcount: true,
-                  ));
-                });
-              },
-              child: Text(global.language("product_unit_add")))));
+      if (isEditMode) {
+        multiUnitWidgets.add(Container(
+            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+            width: double.infinity,
+            child: ElevatedButton(
+                focusNode: FocusNode(skipTraversal: true),
+                onPressed: () {
+                  setState(() {
+                    screenData.units.add(ProductUnitModel(
+                      xorder: 0,
+                      unitcode: "",
+                      unitname: "",
+                      divider: 0,
+                      stand: 0,
+                      stockcount: true,
+                    ));
+                  });
+                },
+                child: Text(global.language("product_unit_add")))));
+      }
       formWidgets.add(Container(
           margin: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
           width: double.infinity,
@@ -1059,157 +1140,163 @@ class ProductScreenState extends State<ProductScreen>
         ),
       ));
     }
-    if (isEditMode) {
-      for (int imageIndex = 0;
-          imageIndex < screenData.imageuris.length;
-          imageIndex++) {
-        formWidgets.add(Row(children: [
+
+    for (int imageIndex = 0;
+        imageIndex < screenData.images.length;
+        imageIndex++) {
+      formWidgets.add(Row(children: [
+        (isEditMode)
+            ? Expanded(
+                child: ElevatedButton.icon(
+                focusNode: FocusNode(skipTraversal: true),
+                onPressed: () async {
+                  setState(() {
+                    screenData.images.removeAt(imageIndex);
+                    imageWeb.removeAt(imageIndex);
+                    imageFile.removeAt(imageIndex);
+                  });
+                },
+                icon: const Icon(
+                  Icons.delete,
+                ),
+                label: Text(global.language('delete_picture')),
+              ))
+            : Container(),
+        const SizedBox(width: 5),
+        (isEditMode)
+            ? Expanded(
+                child: ElevatedButton.icon(
+                focusNode: FocusNode(skipTraversal: true),
+                onPressed: (kIsWeb)
+                    ? () async {
+                        XFile? image = await imagePicker.pickImage(
+                            source: ImageSource.gallery,
+                            maxHeight: 480,
+                            maxWidth: 640,
+                            imageQuality: 60);
+                        if (image != null) {
+                          var f = await image.readAsBytes();
+                          setState(() {
+                            imageWeb[imageIndex] = f;
+                            imageFile[imageIndex] = File(image.path);
+                          });
+                        }
+                      }
+                    : () async {
+                        final XFile? photo = await imagePicker.pickImage(
+                            source: ImageSource.gallery,
+                            maxHeight: 480,
+                            maxWidth: 640,
+                            imageQuality: 60);
+                        if (photo != null) {
+                          imageWeb[imageIndex] = await photo.readAsBytes();
+                          imageFile[imageIndex] = File(photo.path);
+                          setState(() {});
+                        }
+                      },
+                icon: const Icon(
+                  Icons.folder,
+                ),
+                label: Text(global.language("select_picture")),
+              ))
+            : Container(),
+        const SizedBox(width: 5),
+        if (kIsWeb == false)
           Expanded(
               child: ElevatedButton.icon(
             focusNode: FocusNode(skipTraversal: true),
             onPressed: () async {
-              setState(() {
-                imageWeb[imageIndex] = null;
-                imageFile[imageIndex] = File('');
-              });
+              final XFile? photo = await imagePicker.pickImage(
+                  source: ImageSource.camera,
+                  maxHeight: 480,
+                  maxWidth: 640,
+                  imageQuality: 60);
+              if (photo != null) {
+                var f = await photo.readAsBytes();
+                setState(() {
+                  imageWeb[imageIndex] = f;
+                  imageFile[imageIndex] = File(photo.path);
+                });
+              }
             },
             icon: const Icon(
-              Icons.delete,
+              Icons.camera_alt,
             ),
-            label: Text(global.language('delete_picture')),
+            label: Text(global.language('take_photo')),
           )),
-          const SizedBox(width: 5),
-          Expanded(
-              child: ElevatedButton.icon(
-            focusNode: FocusNode(skipTraversal: true),
-            onPressed: (kIsWeb)
-                ? () async {
-                    XFile? image = await imagePicker.pickImage(
-                        source: ImageSource.gallery,
-                        maxHeight: 480,
-                        maxWidth: 640,
-                        imageQuality: 60);
-                    if (image != null) {
-                      var f = await image.readAsBytes();
-                      setState(() {
-                        imageWeb[imageIndex] = f;
-                        imageFile[imageIndex] = File(image.path);
-                      });
-                    }
-                  }
-                : () async {
-                    final XFile? photo = await imagePicker.pickImage(
-                        source: ImageSource.gallery,
-                        maxHeight: 480,
-                        maxWidth: 640,
-                        imageQuality: 60);
-                    if (photo != null) {
-                      imageWeb[imageIndex] = await photo.readAsBytes();
-                      imageFile[imageIndex] = File(photo.path);
-                      setState(() {});
-                    }
-                  },
-            icon: const Icon(
-              Icons.folder,
-            ),
-            label: Text(global.language("select_picture")),
-          )),
-          const SizedBox(width: 5),
-          if (kIsWeb == false)
-            Expanded(
-                child: ElevatedButton.icon(
-              focusNode: FocusNode(skipTraversal: true),
-              onPressed: () async {
-                final XFile? photo = await imagePicker.pickImage(
-                    source: ImageSource.camera,
-                    maxHeight: 480,
-                    maxWidth: 640,
-                    imageQuality: 60);
-                if (photo != null) {
-                  var f = await photo.readAsBytes();
-                  setState(() {
-                    imageWeb[imageIndex] = f;
-                    imageFile[imageIndex] = File(photo.path);
-                  });
-                }
-              },
-              icon: const Icon(
-                Icons.camera_alt,
-              ),
-              label: Text(global.language('take_photo')),
-            )),
-        ]));
+      ]));
 
-        formWidgets.add(Container(
-            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-            width: double.infinity,
-            height: 300,
-            child: Stack(children: [
-              if (kIsWeb)
-                DropzoneView(
-                  operation: DragOperation.copy,
-                  cursor: CursorType.grab,
-                  onCreated: (ctrl) => dropZoneController = ctrl,
-                  onLoaded: () {},
-                  onError: (ev) {},
-                  onHover: () {},
-                  onLeave: () {},
-                  onDrop: (ev) async {
-                    final bytes = await dropZoneController.getFileData(ev);
-                    setState(() {
-                      imageWeb[imageIndex] = bytes;
-                    });
-                  },
-                  onDropMultiple: (ev) async {},
-                ),
-              Center(
-                  child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(5),
-                  boxShadow: const [
-                    BoxShadow(
-                        offset: Offset(0, 4),
-                        color: Colors.cyan, //edited
-                        spreadRadius: 4,
-                        blurRadius: 10 //edited
-                        )
-                  ],
-                  image: (imageWeb[imageIndex] != null)
-                      ? DecorationImage(
-                          image: MemoryImage(imageWeb[imageIndex]),
-                          fit: BoxFit.fill)
-                      : (screenData.imageuris[imageIndex] != '')
-                          ? DecorationImage(
-                              image: NetworkImage(
-                                  screenData.imageuris[imageIndex]),
-                              fit: BoxFit.fill)
-                          : const DecorationImage(
-                              image: AssetImage('assets/img/noimg.png'),
-                              fit: BoxFit.fill),
-                ),
-                child: const SizedBox(
-                  width: 500,
-                  height: 500,
-                ),
-              )),
-            ])));
-      }
       formWidgets.add(Container(
           padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
           width: double.infinity,
-          child: ElevatedButton(
-              focusNode: FocusNode(skipTraversal: true),
-              onPressed: () {
-                setState(() {
-                  screenData.imageuris.add('');
-                  imageWeb.add(null);
-                  imageFile.add(File(''));
-                });
-              },
-              child: Text(global.language("product_image_add")))));
+          height: 300,
+          child: Stack(children: [
+            if (kIsWeb)
+              DropzoneView(
+                operation: DragOperation.copy,
+                cursor: CursorType.grab,
+                onCreated: (ctrl) => dropZoneController = ctrl,
+                onLoaded: () {},
+                onError: (ev) {},
+                onHover: () {},
+                onLeave: () {},
+                onDrop: (ev) async {
+                  final bytes = await dropZoneController.getFileData(ev);
+                  setState(() {
+                    imageWeb[imageIndex] = bytes;
+                  });
+                },
+                onDropMultiple: (ev) async {},
+              ),
+            Center(
+                child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(5),
+                boxShadow: const [
+                  BoxShadow(
+                      offset: Offset(0, 4),
+                      color: Colors.cyan, //edited
+                      spreadRadius: 4,
+                      blurRadius: 10 //edited
+                      )
+                ],
+                image: (imageWeb[imageIndex].isNotEmpty)
+                    ? DecorationImage(
+                        image: MemoryImage(imageWeb[imageIndex]),
+                        fit: BoxFit.fill)
+                    : (screenData.images[imageIndex].uri != '')
+                        ? DecorationImage(
+                            image:
+                                NetworkImage(screenData.images[imageIndex].uri),
+                            fit: BoxFit.fill)
+                        : const DecorationImage(
+                            image: AssetImage('assets/img/noimg.png'),
+                            fit: BoxFit.fill),
+              ),
+              child: const SizedBox(
+                width: 500,
+                height: 500,
+              ),
+            )),
+          ])));
     }
+    formWidgets.add((isEditMode)
+        ? Container(
+            padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+            width: double.infinity,
+            child: ElevatedButton(
+                focusNode: FocusNode(skipTraversal: true),
+                onPressed: () {
+                  setState(() {
+                    screenData.images.add(ImagesModel(uri: '', xorder: 0));
+                    imageWeb.add(Uint8List(0));
+                    imageFile.add(File(''));
+                  });
+                },
+                child: Text(global.language("product_image_add"))))
+        : Container());
 
     if (isSaveAllow) {
       formWidgets.add(Container(
@@ -1472,7 +1559,15 @@ class ProductScreenState extends State<ProductScreen>
                 if (state is ProductGetSuccess) {
                   setState(() {
                     isChange = false;
+                    print(state.product.images.length);
                     screenData = state.product;
+                    imageWeb = [];
+                    imageFile = [];
+
+                    for (int i = 0; i < state.product.images.length; i++) {
+                      imageWeb.add(Uint8List(0));
+                      imageFile.add(File(''));
+                    }
                     if (isEditMode) {
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                         tabController.animateTo(1);

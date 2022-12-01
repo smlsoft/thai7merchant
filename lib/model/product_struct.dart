@@ -30,7 +30,7 @@ class ProductModel {
   List<ProductUnitModel> units;
 
   /// uri รูปภาพ (หลายรูป)
-  List<String> imageuris;
+  List<ImagesModel> images;
   // หน่วยต้นทุน สำหรับจัดทำบัญชี (เปลี่ยนไม่ได้)
   String unitcost;
 
@@ -60,7 +60,7 @@ class ProductModel {
     required this.itemcode,
     required this.useserialnumber,
     required this.units,
-    required this.imageuris,
+    required this.images,
     required this.unitcost,
     required this.unitstandard,
     required this.multiunit,

@@ -21,6 +21,7 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     on<CustomerSave>(onCustomerSave);
     on<CustomerWithImageSave>(onCustomerWithImageSave);
     on<CustomerUpdate>(onCustomerUpdate);
+    on<CustomerWithImageUpdate>(onCustomerWithImageUpdate);
     on<CustomerDelete>(customerDelete);
     on<CustomerDeleteMany>(customerDeleteMany);
     on<CustomerGet>(onCustomerGet);
@@ -115,7 +116,7 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
           emit(const CustomerSaveFailed(message: 'image upload failed'));
         }
       } else {
-        emit(CustomerSaveFailed(message: 'no image found'));
+        emit(const CustomerSaveFailed(message: 'no image found'));
       }
     } catch (e) {
       emit(CustomerSaveFailed(message: e.toString()));
@@ -128,6 +129,51 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
     try {
       await _customerRepository.updateCustomer(event.guid, event.customerModel);
       emit(CustomerUpdateSuccess());
+    } catch (e) {
+      emit(CustomerUpdateFailed(message: e.toString()));
+    }
+  }
+
+  void onCustomerWithImageUpdate(
+      CustomerWithImageUpdate event, Emitter<CustomerState> emit) async {
+    emit(CustomerUpdateInProgress());
+    try {
+      List<ImagesModel> imagesList = [];
+      if (event.imagesUri.isNotEmpty) {
+        for (int i = 0; i < event.imagesUri.length; i++) {
+          if (event.imageWeb[i].isNotEmpty) {
+            ApiResponse result = await _customerRepository.uploadImage(
+                event.imageFile[i], event.imageWeb[i]);
+            if (result.success) {
+              UploadImageModel uploadImage =
+                  UploadImageModel.fromJson(result.data);
+              imagesList.add(ImagesModel(uri: uploadImage.uri, xorder: i));
+            } else {
+              emit(CustomerUpdateFailed(message: result.message));
+            }
+          } else if (event.imagesUri[i].uri != '') {
+            imagesList.add(ImagesModel(uri: event.imagesUri[i].uri, xorder: i));
+          }
+        }
+
+        if (imagesList.isNotEmpty) {
+          CustomerModel customerModel = event.customerModel;
+          customerModel.images = imagesList;
+          customerModel.addressforbilling.guid = "";
+          for (int i = 0; i < customerModel.addressforshipping.length; i++) {
+            customerModel.addressforshipping[i].guid = "";
+          }
+
+          print(customerModel);
+          await _customerRepository.updateCustomer(
+              event.guid, event.customerModel);
+          emit(CustomerUpdateSuccess());
+        } else {
+          emit(const CustomerUpdateFailed(message: 'image upload failed'));
+        }
+      } else {
+        emit(const CustomerUpdateFailed(message: 'no image found'));
+      }
     } catch (e) {
       emit(CustomerUpdateFailed(message: e.toString()));
     }

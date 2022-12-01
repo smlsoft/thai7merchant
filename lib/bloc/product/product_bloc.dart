@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
+import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/product_struct.dart';
 import 'package:thai7merchant/model/master_model.dart';
 import 'package:thai7merchant/repositories/client.dart';
@@ -24,6 +25,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     on<ProductDeleteMany>(onProductDeleteMany);
     on<ProductGet>(onProductGet);
     on<ProductWithImageSave>(onProductWithImageSave);
+    on<ProductWithImageUpdate>(onProductWithImageUpdate);
   }
 
   void onProductLoad(ProductLoadList event, Emitter<ProductState> emit) async {
@@ -108,19 +110,78 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       ProductWithImageSave event, Emitter<ProductState> emit) async {
     emit(ProductSaveInProgress());
     try {
-      ApiResponse result = await _productRepository.uploadImage(
-          event.imageFile, event.imageWeb!);
-      if (result.success) {
-        /*UploadImageModel uploadImage = UploadImageModel.fromJson(result.data);
-        ProductModel productModel = event.ProductModel;
-        productModel.imageuri = uploadImage.uri;
-        await _productRepository.saveProduct(ProductModel);*/
-        emit(ProductSaveSuccess());
+      List<ImagesModel> imagesList = [];
+      if (event.imageWeb.isNotEmpty) {
+        for (int i = 0; i < event.imageWeb.length; i++) {
+          if (event.imageWeb[i].isNotEmpty) {
+            ApiResponse result = await _productRepository.uploadImage(
+                event.imageFile[i], event.imageWeb[i]);
+            if (result.success) {
+              UploadImageModel uploadImage =
+                  UploadImageModel.fromJson(result.data);
+              imagesList.add(ImagesModel(uri: uploadImage.uri, xorder: i));
+            } else {
+              emit(ProductSaveFailed(message: result.message));
+            }
+          }
+        }
+
+        if (imagesList.length == event.imageFile.length) {
+          ProductModel productModel = event.productModel;
+          productModel.images = imagesList;
+
+          print(productModel);
+          await _productRepository.saveProduct(productModel);
+          emit(ProductSaveSuccess());
+        } else {
+          emit(const ProductSaveFailed(message: 'image upload failed'));
+        }
       } else {
-        emit(ProductSaveFailed(message: result.message));
+        emit(const ProductSaveFailed(message: 'no image found'));
       }
     } catch (e) {
       emit(ProductSaveFailed(message: e.toString()));
+    }
+  }
+
+  void onProductWithImageUpdate(
+      ProductWithImageUpdate event, Emitter<ProductState> emit) async {
+    emit(ProductUpdateInProgress());
+    try {
+      List<ImagesModel> imagesList = [];
+      if (event.imagesUri.isNotEmpty) {
+        for (int i = 0; i < event.imagesUri.length; i++) {
+          if (event.imageWeb[i].isNotEmpty) {
+            ApiResponse result = await _productRepository.uploadImage(
+                event.imageFile[i], event.imageWeb[i]);
+            if (result.success) {
+              UploadImageModel uploadImage =
+                  UploadImageModel.fromJson(result.data);
+              imagesList.add(ImagesModel(uri: uploadImage.uri, xorder: i));
+            } else {
+              emit(ProductUpdateFailed(message: result.message));
+            }
+          } else if (event.imagesUri[i].uri != '') {
+            imagesList.add(ImagesModel(uri: event.imagesUri[i].uri, xorder: i));
+          }
+        }
+
+        if (imagesList.isNotEmpty) {
+          ProductModel productModel = event.productModel;
+          productModel.images = imagesList;
+
+          print(productModel);
+          await _productRepository.updateProduct(
+              event.guid, event.productModel);
+          emit(ProductUpdateSuccess());
+        } else {
+          emit(const ProductUpdateFailed(message: 'image upload failed'));
+        }
+      } else {
+        emit(const ProductUpdateFailed(message: 'no image found'));
+      }
+    } catch (e) {
+      emit(ProductUpdateFailed(message: e.toString()));
     }
   }
 }

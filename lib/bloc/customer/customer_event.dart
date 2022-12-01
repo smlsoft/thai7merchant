@@ -87,3 +87,22 @@ class CustomerUpdate extends CustomerEvent {
   @override
   List<Object> get props => [customerModel];
 }
+
+class CustomerWithImageUpdate extends CustomerEvent {
+  final String guid;
+  final CustomerModel customerModel;
+  final List<File> imageFile;
+  final List<Uint8List> imageWeb;
+  final List<ImagesModel> imagesUri;
+
+  const CustomerWithImageUpdate({
+    required this.guid,
+    required this.customerModel,
+    required this.imageFile,
+    required this.imageWeb,
+    required this.imagesUri,
+  });
+
+  @override
+  List<Object> get props => [customerModel];
+}

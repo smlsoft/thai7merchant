@@ -14,8 +14,7 @@ class ProductRepository {
     Dio client = Client().init();
 
     try {
-      String query =
-          "/product/barcode/list?offset=$offset&limit=$limit&q=$search";
+      String query = "/product/list?offset=$offset&limit=$limit&q=$search";
       final response = await client.get(query);
       try {
         final rawData = json.decode(response.toString());
@@ -35,7 +34,7 @@ class ProductRepository {
   Future<ApiResponse> deleteProduct(String guid) async {
     Dio client = Client().init();
     try {
-      final response = await client.delete('/product/barcode/$guid');
+      final response = await client.delete('/product/$guid');
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -51,7 +50,7 @@ class ProductRepository {
   Future<ApiResponse> deleteProductMany(List<String> guids) async {
     Dio client = Client().init();
     try {
-      final response = await client.delete('/product/barcode', data: guids);
+      final response = await client.delete('/product', data: guids);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -66,7 +65,7 @@ class ProductRepository {
   Future<ApiResponse> getProduct(String guid) async {
     Dio client = Client().init();
     try {
-      final response = await client.get('/product/barcode/$guid');
+      final response = await client.get('/product/$guid');
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -82,7 +81,7 @@ class ProductRepository {
     Dio client = Client().init();
     final data = Product.toJson();
     try {
-      final response = await client.post('/product/barcode', data: data);
+      final response = await client.post('/product', data: data);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
@@ -98,7 +97,7 @@ class ProductRepository {
     Dio client = Client().init();
     final data = Product.toJson();
     try {
-      final response = await client.put('/product/barcode/$guid', data: data);
+      final response = await client.put('/product/$guid', data: data);
       try {
         return ApiResponse.fromMap(response.data);
       } catch (ex) {
