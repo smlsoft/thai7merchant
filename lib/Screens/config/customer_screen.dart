@@ -95,6 +95,14 @@ class CustomerScreenState extends State<CustomerScreen>
     }
   }
 
+  String getLangName(String code) {
+    LanguageModel name = languageList.firstWhere(
+        (element) => element.code == code,
+        orElse: () =>
+            LanguageModel(code: '', codeTranslator: '', name: '', use: false));
+    return name.name;
+  }
+
   @override
   void dispose() {
     listScrollController.dispose();
@@ -596,6 +604,13 @@ class CustomerScreenState extends State<CustomerScreen>
     for (int languageIndex = 0;
         languageIndex < languageList.length;
         languageIndex++) {
+      LanguageDataModel name = screenData.names.firstWhere(
+          (element) => element.code == languageList[languageIndex].code,
+          orElse: () => LanguageDataModel(code: '', name: ''));
+      if (name.code == '') {
+        screenData.names.add(LanguageDataModel(
+            code: languageList[languageIndex].code, name: ''));
+      }
       nodeIndex++;
       formWidgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
@@ -603,20 +618,7 @@ class CustomerScreenState extends State<CustomerScreen>
           readOnly: !isEditMode,
           onChanged: (value) {
             isChange = true;
-            int foundLanguage = -1;
-            for (int j = 0; j < screenData.names.length; j++) {
-              if (screenData.names[j].code ==
-                  languageList[languageIndex].code) {
-                foundLanguage = j;
-                break;
-              }
-            }
-            if (foundLanguage == -1) {
-              screenData.names.add(LanguageDataModel(
-                  code: languageList[languageIndex].code, name: value));
-            } else {
-              screenData.names[foundLanguage].name = value;
-            }
+            screenData.names[languageIndex].name = value;
           },
           onFieldSubmitted: (value) {
             findFocusNext(focusNodeIndex);
@@ -629,7 +631,7 @@ class CustomerScreenState extends State<CustomerScreen>
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             labelText:
-                "${global.language("customer_name")} (${languageList[languageIndex].name})",
+                "${global.language("customer_name")} (${getLangName(screenData.names[languageIndex].code)})",
           ),
         ),
       ));

@@ -69,7 +69,7 @@ void loadConfig() {
   config.languages = [
     LanguageModel(code: "th", codeTranslator: "th", name: "ไทย", use: true),
     LanguageModel(code: "en", codeTranslator: "en", name: "อังกฤษ", use: true),
-    LanguageModel(code: "cn", codeTranslator: "zh-cn", name: "จีน", use: false),
+    LanguageModel(code: "cn", codeTranslator: "zh-cn", name: "จีน", use: true),
     LanguageModel(
         code: "jp", codeTranslator: "th", name: "ญี่ปุ่น", use: false),
     LanguageModel(code: "kr", codeTranslator: "th", name: "เกาหลี", use: false),

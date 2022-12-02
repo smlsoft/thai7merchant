@@ -63,7 +63,16 @@ class ProductDeleteManyInProgress extends ProductState {}
 
 class ProductDeleteManySuccess extends ProductState {}
 
-class ProductDeleteManyFailed extends ProductState {}
+class ProductDeleteManyFailed extends ProductState {
+  final String message;
+
+  const ProductDeleteManyFailed({
+    required this.message,
+  });
+
+  @override
+  List<Object> get props => [message];
+}
 
 class ProductGetInProgress extends ProductState {}
 

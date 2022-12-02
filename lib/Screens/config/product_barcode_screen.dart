@@ -102,6 +102,14 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     }
   }
 
+  String getLangName(String code) {
+    LanguageModel name = languageList.firstWhere(
+        (element) => element.code == code,
+        orElse: () =>
+            LanguageModel(code: '', codeTranslator: '', name: '', use: false));
+    return name.name;
+  }
+
   @override
   void dispose() {
     listScrollController.dispose();
@@ -591,6 +599,13 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     for (int languageIndex = 0;
         languageIndex < languageList.length;
         languageIndex++) {
+      LanguageDataModel productName = screenData.names.firstWhere(
+          (element) => element.code == languageList[languageIndex].code,
+          orElse: () => LanguageDataModel(code: '', name: ''));
+      if (productName.code == '') {
+        screenData.names.add(LanguageDataModel(
+            code: languageList[languageIndex].code, name: ''));
+      }
       nodeIndex++;
       formWidgets.add(Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -598,20 +613,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
           readOnly: !isEditMode,
           onChanged: (value) {
             isChange = true;
-            int foundLanguage = -1;
-            for (int j = 0; j < screenData.names.length; j++) {
-              if (screenData.names[j].code ==
-                  languageList[languageIndex].code) {
-                foundLanguage = j;
-                break;
-              }
-            }
-            if (foundLanguage == -1) {
-              screenData.names.add(LanguageDataModel(
-                  code: languageList[languageIndex].code, name: value));
-            } else {
-              screenData.names[foundLanguage].name = value;
-            }
+            screenData.names[languageIndex].name = value;
           },
           onFieldSubmitted: (value) {
             findFocusNext(nodeIndex);
@@ -624,7 +626,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             labelText:
-                "${global.language("product_name")} (${languageList[languageIndex].name})",
+                "${global.language("product_name")} (${getLangName(screenData.names[languageIndex].code)})",
           ),
         ),
       ));
@@ -687,6 +689,13 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     for (int languageIndex = 0;
         languageIndex < languageList.length;
         languageIndex++) {
+      LanguageDataModel unitName = screenData.itemunitnames.firstWhere(
+          (element) => element.code == languageList[languageIndex].code,
+          orElse: () => LanguageDataModel(code: '', name: ''));
+      if (unitName.code == '') {
+        screenData.itemunitnames.add(LanguageDataModel(
+            code: languageList[languageIndex].code, name: ''));
+      }
       nodeIndex++;
       formWidgets.add(Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -694,20 +703,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
           readOnly: !isEditMode,
           onChanged: (value) {
             isChange = true;
-            int foundLanguage = -1;
-            for (int j = 0; j < screenData.itemunitnames.length; j++) {
-              if (screenData.names[j].code ==
-                  languageList[languageIndex].code) {
-                foundLanguage = j;
-                break;
-              }
-            }
-            if (foundLanguage == -1) {
-              screenData.itemunitnames.add(LanguageDataModel(
-                  code: languageList[languageIndex].code, name: value));
-            } else {
-              screenData.itemunitnames[foundLanguage].name = value;
-            }
+            screenData.itemunitnames[languageIndex].name = value;
           },
           onFieldSubmitted: (value) {
             findFocusNext(nodeIndex);
@@ -720,12 +716,18 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             labelText:
-                "${global.language("unit_name")} (${languageList[languageIndex].name})",
+                "${global.language("unit_name")} (${getLangName(screenData.itemunitnames[languageIndex].code)})",
           ),
         ),
       ));
     }
     for (int priceIndex = 0; priceIndex < priceList.length; priceIndex++) {
+      PriceDataModel priceData = screenData.prices.firstWhere(
+          (element) => element.keynumber == priceList[priceIndex].keynumber,
+          orElse: () => PriceDataModel(keynumber: -1, price: 0));
+      if (priceData.keynumber < 0) {
+        screenData.prices.add(PriceDataModel(keynumber: priceIndex, price: 0));
+      }
       nodeIndex++;
       formWidgets.add(Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -734,21 +736,8 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
           keyboardType: TextInputType.number,
           onChanged: (value) {
             isChange = true;
-            int foundPrice = -1;
-            for (int j = 0; j < screenData.prices.length; j++) {
-              if (screenData.prices[j].keynumber ==
-                  priceList[priceIndex].keynumber) {
-                foundPrice = j;
-                break;
-              }
-            }
-            if (foundPrice == -1) {
-              screenData.prices.add(PriceDataModel(
-                  keynumber: priceList[priceIndex].keynumber,
-                  price: double.tryParse(value)!));
-            } else {
-              screenData.prices[foundPrice].price = double.tryParse(value)!;
-            }
+
+            screenData.prices[priceIndex].price = double.tryParse(value)!;
           },
           onFieldSubmitted: (value) {
             findFocusNext(nodeIndex);
@@ -810,6 +799,15 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
         for (int languageIndex = 0;
             languageIndex < languageList.length;
             languageIndex++) {
+          LanguageDataModel optionName = screenData.options[optionIndex].names
+              .firstWhere(
+                  (element) => element.code == languageList[languageIndex].code,
+                  orElse: () => LanguageDataModel(code: '', name: ''));
+          if (optionName.code == '') {
+            screenData.options[optionIndex].names.add(LanguageDataModel(
+                code: languageList[languageIndex].code, name: ''));
+          }
+
           nodeIndex++;
           optionList.add(Padding(
             padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
@@ -817,23 +815,8 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
               readOnly: !isEditMode,
               onChanged: (value) {
                 isChange = true;
-                int foundLanguage = -1;
-                for (int l = 0;
-                    l < screenData.options[optionIndex].names.length;
-                    l++) {
-                  if (screenData.options[optionIndex].names[l].code ==
-                      languageList[languageIndex].code) {
-                    foundLanguage = l;
-                    break;
-                  }
-                }
-                if (foundLanguage == -1) {
-                  screenData.options[optionIndex].names.add(LanguageDataModel(
-                      code: languageList[languageIndex].code, name: value));
-                } else {
-                  screenData.options[optionIndex].names[foundLanguage].name =
-                      value;
-                }
+                screenData.options[optionIndex].names[languageIndex].name =
+                    value;
               },
               onFieldSubmitted: (value) {
                 findFocusNext(nodeIndex);
@@ -847,7 +830,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 labelText:
-                    "${global.language("option_name")} (${languageList[languageIndex].name})",
+                    "${global.language("option_name")} (${getLangName(screenData.options[optionIndex].names[languageIndex].code)})",
               ),
             ),
           ));
@@ -906,6 +889,17 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
           for (int languageIndex = 0;
               languageIndex < languageList.length;
               languageIndex++) {
+            LanguageDataModel choiceName = screenData
+                .options[optionIndex].choices[choiceIndex].names
+                .firstWhere(
+                    (element) =>
+                        element.code == languageList[languageIndex].code,
+                    orElse: () => LanguageDataModel(code: '', name: ''));
+            if (choiceName.code == '') {
+              screenData.options[optionIndex].choices[choiceIndex].names.add(
+                  LanguageDataModel(
+                      code: languageList[languageIndex].code, name: ''));
+            }
             nodeIndex++;
             choiceRow.add(Padding(
               padding: const EdgeInsets.only(left: 5, right: 5, bottom: 10),
@@ -948,7 +942,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   labelText:
-                      "${global.language("choice_name")} (${languageList[languageIndex].name})",
+                      "${global.language("choice_name")} (${getLangName(screenData.options[optionIndex].choices[choiceIndex].names[languageIndex].code)})",
                 ),
               ),
             ));
@@ -1669,7 +1663,37 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                 if (state is ProductBarcodeGetSuccess) {
                   setState(() {
                     isChange = false;
+
                     screenData = state.productbarcode;
+                    // screenData.barcode = state.productbarcode.barcode;
+                    // screenData.guidfixed = state.productbarcode.guidfixed;
+                    // screenData.categoryguid = state.productbarcode.categoryguid;
+                    // screenData.itemcode = state.productbarcode.itemcode;
+                    // screenData.itemunitcode = state.productbarcode.itemunitcode;
+                    // screenData.imageuri = state.productbarcode.imageuri;
+                    // for (int i = 0; i < screenData.names.length; i++) {
+                    //   LanguageDataModel productName = state.productbarcode.names
+                    //       .firstWhere(
+                    //           (element) =>
+                    //               element.code == screenData.names[i].code,
+                    //           orElse: () =>
+                    //               LanguageDataModel(code: '', name: ''));
+                    //   if (productName.code != '') {
+                    //     screenData.names[i] = productName;
+                    //   }
+                    // }
+                    // for (int i = 0; i < screenData.itemunitnames.length; i++) {
+                    //   LanguageDataModel itemunitsNames = state.productbarcode.itemunitnames
+                    //       .firstWhere(
+                    //           (element) =>
+                    //               element.code == screenData.itemunitnames[i].code,
+                    //           orElse: () =>
+                    //               LanguageDataModel(code: '', name: ''));
+                    //   if (itemunitsNames.code != '') {
+                    //     screenData.itemunitnames[i] = itemunitsNames;
+                    //   }
+                    // }
+
                     if (isEditMode) {
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                         tabController.animateTo(1);

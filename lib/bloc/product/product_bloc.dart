@@ -67,7 +67,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
       emit(ProductDeleteManySuccess());
     } catch (e) {
-      // emit(ProductDeleteFailure(message: e.toString()));
+      emit(ProductDeleteManyFailed(message: e.toString()));
     }
   }
 

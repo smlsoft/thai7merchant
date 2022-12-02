@@ -103,6 +103,14 @@ class ProductScreenState extends State<ProductScreen>
     }
   }
 
+  String getLangName(String code) {
+    LanguageModel name = languageList.firstWhere(
+        (element) => element.code == code,
+        orElse: () =>
+            LanguageModel(code: '', codeTranslator: '', name: '', use: false));
+    return name.name;
+  }
+
   @override
   void dispose() {
     listScrollController.dispose();
@@ -530,7 +538,6 @@ class ProductScreenState extends State<ProductScreen>
 
   void saveOrUpdateData() {
     showCheckBox = false;
-    String json = jsonEncode(screenData.toJson());
 
     if (selectGuid.trim().isEmpty) {
       if (imageWeb.isNotEmpty) {
@@ -553,16 +560,13 @@ class ProductScreenState extends State<ProductScreen>
     List<Uint8List> imageWebUpdate = [];
     List<ImagesModel> imageUris = [];
     for (int i = 0; i < imageWeb.length; i++) {
-      print(imageWeb.length);
-      print(imageFile.length);
-      print(screenData.images.length);
       if (imageWeb[i].isNotEmpty || screenData.images[i].uri != '') {
         imageFileUpdate.add(imageFile[i]);
         imageWebUpdate.add(imageWeb[i]);
         imageUris.add(ImagesModel(uri: screenData.images[i].uri, xorder: i));
       }
     }
-    print("imageWebUpdate.isNotEmpty " + imageWebUpdate.isNotEmpty.toString());
+
     if (imageWebUpdate.isNotEmpty) {
       context.read<ProductBloc>().add(ProductWithImageUpdate(
             guid: guid,
@@ -662,6 +666,13 @@ class ProductScreenState extends State<ProductScreen>
     for (int languageIndex = 0;
         languageIndex < languageList.length;
         languageIndex++) {
+      LanguageDataModel name = screenData.names.firstWhere(
+          (element) => element.code == languageList[languageIndex].code,
+          orElse: () => LanguageDataModel(code: '', name: ''));
+      if (name.code == '') {
+        screenData.names.add(LanguageDataModel(
+            code: languageList[languageIndex].code, name: ''));
+      }
       nodeIndex++;
       formWidgets.add(Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
@@ -669,20 +680,7 @@ class ProductScreenState extends State<ProductScreen>
           readOnly: !isEditMode,
           onChanged: (value) {
             isChange = true;
-            int foundLanguage = -1;
-            for (int j = 0; j < screenData.names.length; j++) {
-              if (screenData.names[j].code ==
-                  languageList[languageIndex].code) {
-                foundLanguage = j;
-                break;
-              }
-            }
-            if (foundLanguage == -1) {
-              screenData.names.add(LanguageDataModel(
-                  code: languageList[languageIndex].code, name: value));
-            } else {
-              screenData.names[foundLanguage].name = value;
-            }
+            screenData.names[languageIndex].name = value;
           },
           onFieldSubmitted: (value) {
             findFocusNext(nodeIndex);
@@ -695,7 +693,7 @@ class ProductScreenState extends State<ProductScreen>
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             labelText:
-                "${global.language("product_name")} (${languageList[languageIndex].name})",
+                "${global.language("product_name")} (${getLangName(screenData.names[languageIndex].code)})",
           ),
         ),
       ));
@@ -1559,7 +1557,7 @@ class ProductScreenState extends State<ProductScreen>
                 if (state is ProductGetSuccess) {
                   setState(() {
                     isChange = false;
-                    print(state.product.images.length);
+
                     screenData = state.product;
                     imageWeb = [];
                     imageFile = [];
@@ -1568,6 +1566,7 @@ class ProductScreenState extends State<ProductScreen>
                       imageWeb.add(Uint8List(0));
                       imageFile.add(File(''));
                     }
+                    print(screenData);
                     if (isEditMode) {
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                         tabController.animateTo(1);
