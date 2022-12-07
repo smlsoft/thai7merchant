@@ -14,6 +14,7 @@ import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/price_model.dart';
 import 'package:thai7merchant/model/product_struct.dart';
 import 'package:split_view/split_view.dart';
+import 'package:thai7merchant/screen_search/product_group_search_screen.dart';
 import 'package:thai7merchant/screen_search/unit_search_screen.dart';
 import 'package:translator/translator.dart';
 
@@ -566,19 +567,58 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   Widget editScreen({mobileScreen}) {
     int nodeIndex = 0;
     List<Widget> formWidgets = [];
-    formWidgets.add(Container(
-        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-        width: double.infinity,
-        child: ElevatedButton(
-            focusNode: FocusNode(skipTraversal: true),
-            onPressed: () {},
-            child: Text(global.language("product_group")))));
+
     formWidgets.add(Padding(
         padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
         child: TextFormField(
             readOnly: !isEditMode,
             onFieldSubmitted: (value) {
-              findFocusNext(0);
+              findFocusNext(nodeIndex);
+            },
+            textInputAction: TextInputAction.next,
+            focusNode: fieldFocusNodes[nodeIndex],
+            textAlign: TextAlign.left,
+            controller: TextEditingController(text: screenData.categoryguid),
+            textCapitalization: TextCapitalization.characters,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9]'))
+            ],
+            onChanged: (value) {
+              isChange = true;
+              screenData.categoryguid = value.toUpperCase();
+            },
+            decoration: InputDecoration(
+              suffixIcon: IconButton(
+                focusNode: FocusNode(skipTraversal: true),
+                icon: const Icon(Icons.search),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              const ProductSearchScreen())).then((value) {
+                    if (value != null) {
+                      setState(() {
+                        if (value != null) {
+                          SearchReturnValueModel returnValue =
+                              value as SearchReturnValueModel;
+                          screenData.categoryguid = returnValue.code;
+                        }
+                      });
+                    }
+                  });
+                },
+              ),
+              border: const OutlineInputBorder(),
+              labelText: global.language("product_group"),
+            ))));
+    nodeIndex++;
+    formWidgets.add(Padding(
+        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        child: TextFormField(
+            readOnly: !isEditMode,
+            onFieldSubmitted: (value) {
+              findFocusNext(nodeIndex);
             },
             textInputAction: TextInputAction.next,
             focusNode: fieldFocusNodes[nodeIndex],
