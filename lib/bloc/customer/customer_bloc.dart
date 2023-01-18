@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:thai7merchant/model/customer.dart';
+import 'package:thai7merchant/model/customer_model.dart';
 import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/master_model.dart';
 import 'package:thai7merchant/repositories/customer_repository.dart';

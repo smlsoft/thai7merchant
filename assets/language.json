@@ -3591,15 +3591,15 @@
         ]
     },
     {
-        "code": "choice_add_price",
+        "code": "choice_add_price_persent",
         "langs": [
             {
                 "code": "en",
-                "text": "Added price"
+                "text": "Additional price (amount, percentage)"
             },
             {
                 "code": "th",
-                "text": "ราคาเพิ่ม"
+                "text": "ราคาเพิ่ม (จำนวนเงิน,เปอร์เซ็นต์)"
             },
             {
                 "code": "lo",
@@ -4305,183 +4305,15 @@
         ]
     },
     {
-        "code": "customer_individual",
+        "code": "product",
         "langs": [
             {
                 "code": "en",
-                "text": "Customer Individual"
+                "text": ""
             },
             {
                 "code": "th",
-                "text": "ลูกค้าบุคคล"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
-        "code": "customer_company",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Customer Company"
-            },
-            {
-                "code": "th",
-                "text": "ลูกค้าบริษัท"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
-        "code": "product_is_stock",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Stock Control"
-            },
-            {
-                "code": "th",
-                "text": "สต๊อกสินค้า"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
-        "code": "product_is_service",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Service"
-            },
-            {
-                "code": "th",
-                "text": "สินค้าบริการ"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
-        "code": "product_vat_type_1",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Include Vat"
-            },
-            {
-                "code": "th",
-                "text": "ภาษีรวมใน"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
-        "code": "product_vat_type_2",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Exclude Vat"
-            },
-            {
-                "code": "th",
-                "text": "ภาษีแยกนอก"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
-        "code": "product_use_point_1",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Point Available"
-            },
-            {
-                "code": "th",
-                "text": "ใช้คะแนนได้"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
-        "code": "product_use_point_2",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Point Unavailable"
-            },
-            {
-                "code": "th",
-                "text": "ใช้คะแนนได้ไม่ได้"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
-        "code": "product_unit_cost",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Unit Cost"
-            },
-            {
-                "code": "th",
-                "text": "หน่วยต้นทุน"
+                "text": "สินค้า"
             },
             {
                 "code": "lo",
@@ -4498,11 +4330,11 @@
         "langs": [
             {
                 "code": "en",
-                "text": "Unit Standard"
+                "text": ""
             },
             {
                 "code": "th",
-                "text": "หน่วยมาตราฐาน"
+                "text": "หน่วยนับมาตรฐาน"
             },
             {
                 "code": "lo",
@@ -4519,11 +4351,11 @@
         "langs": [
             {
                 "code": "en",
-                "text": "Single Unit"
+                "text": ""
             },
             {
                 "code": "th",
-                "text": "หน่วยนับเดียว"
+                "text": "หน่วยนับเดี่ยว"
             },
             {
                 "code": "lo",
@@ -4540,7 +4372,7 @@
         "langs": [
             {
                 "code": "en",
-                "text": "Multi Unit"
+                "text": ""
             },
             {
                 "code": "th",
@@ -4557,53 +4389,11 @@
         ]
     },
     {
-        "code": "product_unit_code",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Code"
-            },
-            {
-                "code": "th",
-                "text": "รหัส"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
-        "code": "product_unit_name",
-        "langs": [
-            {
-                "code": "en",
-                "text": "Name"
-            },
-            {
-                "code": "th",
-                "text": "ชื่อ"
-            },
-            {
-                "code": "lo",
-                "text": ""
-            },
-            {
-                "code": "ch",
-                "text": ""
-            }
-        ]
-    },
-    {
         "code": "product_unit_stand",
         "langs": [
             {
                 "code": "en",
-                "text": "Stand Value"
+                "text": ""
             },
             {
                 "code": "th",
@@ -4624,7 +4414,7 @@
         "langs": [
             {
                 "code": "en",
-                "text": "Divider Value"
+                "text": ""
             },
             {
                 "code": "th",
@@ -4641,15 +4431,36 @@
         ]
     },
     {
-        "code": "product_unit_stock_count",
+        "code": "product_unit_code",
         "langs": [
             {
                 "code": "en",
-                "text": "Stock Count"
+                "text": ""
             },
             {
                 "code": "th",
-                "text": "นับสต๊อก"
+                "text": "รหัสหน่วยนับ"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_name",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "ชื่อหน่วยนับ"
             },
             {
                 "code": "lo",
@@ -4666,11 +4477,179 @@
         "langs": [
             {
                 "code": "en",
-                "text": "Add unit"
+                "text": ""
             },
             {
                 "code": "th",
-                "text": "เพิ่มหน่่วยนับ"
+                "text": "เพิ่มหน่วยนับ"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_stock_count",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "ใช้นับสต๊อก"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_unit_cost",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "หน่วยต้นทุน"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_is_stock",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "ประเภทสินค้ามีสต๊อก"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "procust_is_service",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "ประเภทบริการไม่มีสต๊อก"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_vat_type_1",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "สินค้ามีภาษีมูลค่าเพิ่ม"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_vat_type_2",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "สินค้ายกเว้นภาษีมูลค่าเพิ่ม"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_use_point_1",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "คิดคะแนนสะสม"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_use_point_2",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "ไม่คิดคะแนนสะสม"
             },
             {
                 "code": "lo",
@@ -4687,7 +4666,7 @@
         "langs": [
             {
                 "code": "en",
-                "text": "Add Image"
+                "text": ""
             },
             {
                 "code": "th",
@@ -4704,15 +4683,15 @@
         ]
     },
     {
-        "code": "guidfixed",
+        "code": "customer_individual",
         "langs": [
             {
                 "code": "en",
-                "text": "code"
+                "text": ""
             },
             {
                 "code": "th",
-                "text": "รหัส"
+                "text": "บุคคลธรรมดา"
             },
             {
                 "code": "lo",
@@ -4725,15 +4704,99 @@
         ]
     },
     {
-        "code": "category_name",
+        "code": "customer_company",
         "langs": [
             {
                 "code": "en",
-                "text": "Name"
+                "text": ""
             },
             {
                 "code": "th",
-                "text": "ชื่อกลุ่มสินค้า"
+                "text": "นิติบุคคล"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_option_choice_type_multi",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "เลือกได้หลายเงื่อนไข"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_option_choice_type_single",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "เลือกได้เงื่อนไขเดียว"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "choice_is_select_default",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "เลือก (เริ่มต้น)"
+            },
+            {
+                "code": "lo",
+                "text": ""
+            },
+            {
+                "code": "ch",
+                "text": ""
+            }
+        ]
+    },
+    {
+        "code": "product_is_service",
+        "langs": [
+            {
+                "code": "en",
+                "text": ""
+            },
+            {
+                "code": "th",
+                "text": "ประเภทสินค้าบริการ"
             },
             {
                 "code": "lo",
@@ -4745,8 +4808,4 @@
             }
         ]
     }
-
-    
-    
-    
 ]

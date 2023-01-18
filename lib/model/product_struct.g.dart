@@ -139,6 +139,9 @@ ProductBarcodeModel _$ProductBarcodeModelFromJson(Map<String, dynamic> json) =>
           .map((e) => PriceDataModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       imageuri: json['imageuri'] as String,
+      useimageorcolor: json['useimageorcolor'] as bool,
+      colorselect: json['colorselect'] as String,
+      colorselecthex: json['colorselecthex'] as String,
       options: (json['options'] as List<dynamic>)
           .map((e) => ProductOptionModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -156,6 +159,9 @@ Map<String, dynamic> _$ProductBarcodeModelToJson(
       'itemunitnames': instance.itemunitnames.map((e) => e.toJson()).toList(),
       'prices': instance.prices.map((e) => e.toJson()).toList(),
       'imageuri': instance.imageuri,
+      'useimageorcolor': instance.useimageorcolor,
+      'colorselect': instance.colorselect,
+      'colorselecthex': instance.colorselecthex,
       'options': instance.options.map((e) => e.toJson()).toList(),
     };
 
@@ -169,7 +175,7 @@ ProductChoiceModel _$ProductChoiceModelFromJson(Map<String, dynamic> json) =>
           .map((e) => LanguageDataModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       isstock: json['isstock'] as bool,
-      price: (json['price'] as num).toDouble(),
+      price: json['price'] as String,
       qty: (json['qty'] as num).toDouble(),
     );
 
@@ -188,6 +194,7 @@ Map<String, dynamic> _$ProductChoiceModelToJson(ProductChoiceModel instance) =>
 ProductOptionModel _$ProductOptionModelFromJson(Map<String, dynamic> json) =>
     ProductOptionModel(
       guid: json['guid'] as String,
+      choicetype: json['choicetype'] as int,
       maxselect: json['maxselect'] as int,
       names: (json['names'] as List<dynamic>)
           .map((e) => LanguageDataModel.fromJson(e as Map<String, dynamic>))
@@ -201,6 +208,7 @@ ProductOptionModel _$ProductOptionModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ProductOptionModelToJson(ProductOptionModel instance) =>
     <String, dynamic>{
       'guid': instance.guid,
+      'choicetype': instance.choicetype,
       'minselect': instance.minselect,
       'maxselect': instance.maxselect,
       'names': instance.names.map((e) => e.toJson()).toList(),

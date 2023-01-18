@@ -87,4 +87,7 @@ ImagesModel _$ImagesModelFromJson(Map<String, dynamic> json) => ImagesModel(
     );
 
 Map<String, dynamic> _$ImagesModelToJson(ImagesModel instance) =>
-    <String, dynamic>{'uri': instance.uri, 'xorder': instance.xorder};
+    <String, dynamic>{
+      'uri': instance.uri,
+      'xorder': instance.xorder,
+    };

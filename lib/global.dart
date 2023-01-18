@@ -1,6 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/config_model.dart';
 import 'package:thai7merchant/model/global_model.dart';
 import 'package:thai7merchant/model/price_model.dart';
@@ -9,6 +10,11 @@ import 'package:thai7merchant/model/public_name_model.dart';
 
 enum LoginType { none, google, facebook, apple }
 
+DeviceConfigModel deviceConfig = DeviceConfigModel(
+  listDataFontSize: 12,
+);
+
+late CompanyModel companyData;
 String userLanguage = "";
 bool apiConnected = false;
 String apiToken = "";
@@ -27,6 +33,73 @@ late List<LanguageSystemModel> languageSystemData;
 late List<LanguageSystemCodeModel> languageSystemCode;
 
 ConfigModel config = ConfigModel();
+
+class ThemeStruct {
+  /// Background color
+  late Color backgroundColor;
+
+  /// head Title
+  late Color headTitleColor;
+
+  ///
+  late Color appBarColor;
+
+  /// ช่องป้อนข้อมูล (บังคับ)
+  late Color inputTextBoxForceColor;
+
+  /// ช่องป้อนข้อมูล (ไม่บังคับ)
+  late Color inputTextBoxColor;
+
+  /// Column Header
+  late Color columnHeaderColor;
+
+  /// Column Header Text
+  late Color columnHeaderTextColor;
+
+  /// สีีพื้น Column คู่
+  late Color columnAlternateEvenColor;
+
+  /// สีีพื้น Column คี่
+  late Color columnAlternateOddColor;
+
+  /// Background Icon
+  late Color buttonIconBackgroundColor;
+
+  /// ปุ่ม
+  late Color buttonColor;
+
+  /// Yes
+  late Color buttonYesColor;
+
+  /// No
+  late Color buttonNoColor;
+
+  /// Tool Bar (Edit mode)
+  late Color toolBarEditModeColor;
+}
+
+ThemeStruct theme = ThemeStruct();
+
+void themeSelect(int mode) {
+  switch (mode) {
+    default:
+      theme.backgroundColor = colorFromHex('DFECED');
+      theme.appBarColor = colorFromHex("012A4A");
+      theme.headTitleColor = Colors.white;
+      theme.inputTextBoxForceColor = colorFromHex("8A1606");
+      theme.inputTextBoxColor = Colors.black;
+      theme.columnHeaderColor = colorFromHex("89C2D9");
+      theme.columnHeaderTextColor = Colors.black;
+      theme.columnAlternateEvenColor = colorFromHex("F3F7FA");
+      theme.columnAlternateOddColor = Colors.white;
+      theme.buttonIconBackgroundColor = Colors.white;
+      theme.buttonColor = colorFromHex("2A6F97");
+      theme.buttonYesColor = colorFromHex("2A6F97");
+      theme.buttonNoColor = colorFromHex("A9D6E5");
+      theme.toolBarEditModeColor = colorFromHex("2A6F97");
+      break;
+  }
+}
 
 String packName(List<LanguageDataModel> names) {
   String result = "";
@@ -69,11 +142,11 @@ void loadConfig() {
   config.languages = [
     LanguageModel(code: "th", codeTranslator: "th", name: "ไทย", use: true),
     LanguageModel(code: "en", codeTranslator: "en", name: "อังกฤษ", use: true),
-    LanguageModel(code: "cn", codeTranslator: "zh-cn", name: "จีน", use: true),
+    LanguageModel(code: "cn", codeTranslator: "zh-cn", name: "จีน", use: false),
     LanguageModel(
         code: "jp", codeTranslator: "th", name: "ญี่ปุ่น", use: false),
     LanguageModel(code: "kr", codeTranslator: "th", name: "เกาหลี", use: false),
-    LanguageModel(code: "lo", codeTranslator: "lo", name: "ลาว", use: true),
+    LanguageModel(code: "lo", codeTranslator: "lo", name: "ลาว", use: false),
     LanguageModel(
         code: "mr", codeTranslator: "th", name: "เมียนม่า", use: false),
     LanguageModel(
@@ -253,7 +326,7 @@ void loadConfig() {
   for (var i = 0; i < publicColors.length; i++) {
     for (var j = 0; j < publicColors[i].names.length; j++) {
       publicColors[i].name = "";
-      if (publicColors[i].names[j].languageCode == global.systemLanguage) {
+      if (publicColors[i].names[j].languageCode == systemLanguage) {
         publicColors[i].name = publicColors[i].names[j].name;
         break;
       }
@@ -305,4 +378,31 @@ void languageSelect(String languageCode) {
   /*global.languageSystemData.sort((a, b) {
     return a.code.compareTo(b.code);
   });*/
+}
+
+Future<void> deviceConfigLoad() async {
+  try {
+    dynamic json = await appConfig.read("device");
+    deviceConfig = DeviceConfigModel.fromJson(jsonDecode(json));
+  } catch (e) {
+    print(e.toString());
+  }
+}
+
+Future<void> deviceConfigSaveJson() async {
+  try {
+    await appConfig.write("device", jsonEncode(deviceConfig.toJson()));
+    print(await appConfig.read("device"));
+  } catch (e) {
+    print(e.toString());
+  }
+}
+
+void listDataFontSizeChange() {
+  if (deviceConfig.listDataFontSize > 24) {
+    deviceConfig.listDataFontSize = 12;
+  } else {
+    deviceConfig.listDataFontSize += 2;
+  }
+  deviceConfigSaveJson();
 }

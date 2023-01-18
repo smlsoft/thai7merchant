@@ -72,6 +72,19 @@ class CategoryUpdateXOrder extends CategoryEvent {
   List<Object> get props => [List<XSortModel>];
 }
 
+class CategoryUpdate extends CategoryEvent {
+  final String guid;
+  final CategoryModel categoryModel;
+
+  const CategoryUpdate({
+    required this.guid,
+    required this.categoryModel,
+  });
+
+  @override
+  List<Object> get props => [categoryModel];
+}
+
 class CategoryWithImageSave extends CategoryEvent {
   final File imageFile;
   final CategoryModel categoryModel;
@@ -84,19 +97,6 @@ class CategoryWithImageSave extends CategoryEvent {
 
   @override
   List<Object> get props => [categoryModel, imageFile];
-}
-
-class CategoryUpdate extends CategoryEvent {
-  final String guid;
-  final CategoryModel categoryModel;
-
-  const CategoryUpdate({
-    required this.guid,
-    required this.categoryModel,
-  });
-
-  @override
-  List<Object> get props => [categoryModel];
 }
 
 class CategoryWithImageUpdate extends CategoryEvent {

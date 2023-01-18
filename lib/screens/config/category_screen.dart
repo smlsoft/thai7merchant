@@ -63,7 +63,6 @@ class CategoryScreenState extends State<CategoryScreen>
 
   void updateXOrder() {
     List<XSortModel> updateList = [];
-    print("-------------------------");
     List<String> distinctXOrder = xorderUpdateList.toSet().toList();
     for (int index = 0; index < distinctXOrder.length; index++) {
       String guid = xorderUpdateList[index];
@@ -73,11 +72,6 @@ class CategoryScreenState extends State<CategoryScreen>
             guidfixed: getCategory.detail.guidfixed,
             xorder: getCategory.detail.xsorts![0].xorder,
             code: "X"));
-        print(getCategory.detail.guidfixed +
-            " " +
-            getCategory.detail.names![0].name +
-            " " +
-            getCategory.detail.xsorts![0].xorder.toString());
       }
     }
     if (updateList.isNotEmpty) {

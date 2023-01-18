@@ -15,7 +15,7 @@ class PriceModel {
 @JsonSerializable(explicitToJson: true)
 class PriceDataModel {
   int keynumber;
-  double price;
+  String price;
 
   PriceDataModel({required this.keynumber, required this.price});
 

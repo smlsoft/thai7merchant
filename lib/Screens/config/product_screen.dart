@@ -135,7 +135,7 @@ class ProductScreenState extends State<ProductScreen>
     for (int i = 0; i < priceList.length; i++) {
       prices.add(PriceDataModel(
         keynumber: priceList[i].keynumber,
-        price: 0,
+        price: "",
       ));
     }
 
@@ -699,8 +699,10 @@ class ProductScreenState extends State<ProductScreen>
       ));
     }
     formWidgets.add(Row(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        RadioButton(
+        Expanded(
+            child: RadioButton(
           description: global.language("product_is_stock"),
           value: 0,
           groupValue: screenData.itemstocktype,
@@ -709,8 +711,9 @@ class ProductScreenState extends State<ProductScreen>
               screenData.itemstocktype = 0;
             });
           },
-        ),
-        RadioButton(
+        )),
+        Expanded(
+            child: RadioButton(
           description: global.language("product_is_service"),
           value: 1,
           groupValue: screenData.itemstocktype,
@@ -720,12 +723,13 @@ class ProductScreenState extends State<ProductScreen>
               screenData.itemstocktype = 1;
             });
           },
-        ),
+        )),
       ],
     ));
     formWidgets.add(Row(
       children: [
-        RadioButton(
+        Expanded(
+            child: RadioButton(
           description: global.language("product_vat_type_1"),
           value: 1,
           groupValue: screenData.vattype,
@@ -734,8 +738,9 @@ class ProductScreenState extends State<ProductScreen>
               screenData.vattype = 1;
             });
           },
-        ),
-        RadioButton(
+        )),
+        Expanded(
+            child: RadioButton(
           description: global.language("product_vat_type_2"),
           value: 2,
           groupValue: screenData.vattype,
@@ -745,12 +750,13 @@ class ProductScreenState extends State<ProductScreen>
               screenData.vattype = 2;
             });
           },
-        ),
+        )),
       ],
     ));
     formWidgets.add(Row(
       children: [
-        RadioButton(
+        Expanded(
+            child: RadioButton(
           description: global.language("product_use_point_1"),
           value: true,
           groupValue: screenData.issumpoint,
@@ -759,8 +765,9 @@ class ProductScreenState extends State<ProductScreen>
               screenData.issumpoint = true;
             });
           },
-        ),
-        RadioButton(
+        )),
+        Expanded(
+            child: RadioButton(
           description: global.language("product_use_point_2"),
           value: false,
           groupValue: screenData.issumpoint,
@@ -770,7 +777,7 @@ class ProductScreenState extends State<ProductScreen>
               screenData.issumpoint = false;
             });
           },
-        ),
+        )),
       ],
     ));
     nodeIndex++;
@@ -865,7 +872,8 @@ class ProductScreenState extends State<ProductScreen>
             ))));
     formWidgets.add(Row(
       children: [
-        RadioButton(
+        Expanded(
+            child: RadioButton(
           description: global.language("product_single_unit"),
           value: false,
           groupValue: screenData.multiunit,
@@ -874,8 +882,9 @@ class ProductScreenState extends State<ProductScreen>
               screenData.multiunit = false;
             });
           },
-        ),
-        RadioButton(
+        )),
+        Expanded(
+            child: RadioButton(
           description: global.language("product_multi_unit"),
           value: true,
           groupValue: screenData.multiunit,
@@ -895,7 +904,7 @@ class ProductScreenState extends State<ProductScreen>
               }
             });
           },
-        ),
+        )),
       ],
     ));
     if (screenData.multiunit) {
@@ -1117,9 +1126,9 @@ class ProductScreenState extends State<ProductScreen>
             if (foundPrice == -1) {
               screenData.prices.add(PriceDataModel(
                   keynumber: priceList[priceIndex].keynumber,
-                  price: double.tryParse(value)!));
+                  price: value));
             } else {
-              screenData.prices[foundPrice].price = double.tryParse(value)!;
+              screenData.prices[foundPrice].price = value;
             }
           },
           onFieldSubmitted: (value) {
@@ -1431,7 +1440,7 @@ class ProductScreenState extends State<ProductScreen>
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.only(top: 10, bottom: 10),
-                  child: Form(child: Column(children: formWidgets)),
+                  child: Column(children: formWidgets),
                 ))));
   }
 

@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,6 +27,7 @@ class ProductBarcodeBloc
     on<ProductBarcodeDeleteMany>(productbarcodeDeleteMany);
     on<ProductBarcodeGet>(onProductBarcodeGet);
     on<ProductBarcodeWithImageSave>(onProductBarcodeWithImageSave);
+    on<ProductBarcodeWithImageUpdate>(onProductBarcodeWithImageUpdate);
   }
 
   void onProductBarcodeLoad(
@@ -47,6 +49,7 @@ class ProductBarcodeBloc
             message: 'ProductBarcode Not Found'));
       }
     } catch (e) {
+      log("Failed to load ProductBarcode: $e");
       emit(ProductBarcodeLoadFailed(message: e.toString()));
     }
   }
@@ -135,6 +138,27 @@ class ProductBarcodeBloc
       }
     } catch (e) {
       emit(ProductBarcodeSaveFailed(message: e.toString()));
+    }
+  }
+
+  void onProductBarcodeWithImageUpdate(ProductBarcodeWithImageUpdate event,
+      Emitter<ProductBarcodeState> emit) async {
+    emit(ProductBarcodeUpdateInProgress());
+    try {
+      ApiResponse result = await _productBarcodeRepository.uploadImage(
+          event.imageFile, event.imageWeb);
+      if (result.success) {
+        UploadImageModel uploadImage = UploadImageModel.fromJson(result.data);
+        ProductBarcodeModel productBarcodeModel = event.productBarcodeModel;
+        productBarcodeModel.imageuri = uploadImage.uri;
+        await _productBarcodeRepository.updateProductBarcode(
+            event.guid, productBarcodeModel);
+        emit(ProductBarcodeUpdateSuccess());
+      } else {
+        emit(ProductBarcodeUpdateFailed(message: result.message));
+      }
+    } catch (e) {
+      emit(ProductBarcodeUpdateFailed(message: e.toString()));
     }
   }
 }

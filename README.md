@@ -16,5 +16,13 @@ For help getting started with Flutter, view our
 samples, guidance on mobile development, and a full API reference.
 
 flutter pub run build_runner build --delete-conflicting-outputs
-flutter pub run build_runner watch --delete-conflicting-outputs
 
+# ดึงจาก github (แก้ที่ branch customer)
+git pull origin feature/customer
+
+# ส่งขึ้น github
+git push origin feature/customer
+
+# firease deploy
+flutter build web --web-renderer html --release
+firebase deploy

@@ -1,3 +1,4 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -129,13 +130,13 @@ class UnitScreenState extends State<UnitScreen>
                 content: Text(global.language('leave_this_screen')),
                 actions: <Widget>[
                   ElevatedButton(
-                      style:
-                          ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: global.theme.buttonNoColor),
                       onPressed: () => Navigator.pop(context),
                       child: Text(global.language('no'))),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue),
+                          backgroundColor: global.theme.buttonYesColor),
                       onPressed: () {
                         Navigator.pop(context);
                         callBack();
@@ -158,6 +159,7 @@ class UnitScreenState extends State<UnitScreen>
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
+        backgroundColor: global.theme.appBarColor,
         automaticallyImplyLeading: false,
         title: Text(global.language('product_unit')),
         leading: IconButton(
@@ -210,18 +212,18 @@ class UnitScreenState extends State<UnitScreen>
                         actions: <Widget>[
                           ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red),
+                                  backgroundColor: global.theme.buttonNoColor),
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('ไม่')),
+                              child: Text(global.language('no'))),
                           ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue),
+                                  backgroundColor: global.theme.buttonYesColor),
                               onPressed: () {
                                 Navigator.pop(context);
                                 context.read<UnitBloc>().add(
                                     UnitDeleteMany(guid: unitGuidListChecked));
                               },
-                              child: Text(global.language('delete'))),
+                              child: Text(global.language('confirm'))),
                         ],
                       ),
                     );
@@ -291,76 +293,83 @@ class UnitScreenState extends State<UnitScreen>
             children: [
               Container(
                   padding: const EdgeInsets.all(5),
-                  color: Colors.blue,
-                  child: Container(
-                      padding: const EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 5,
-                            blurRadius: 7,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                          padding: const EdgeInsets.only(left: 10, right: 10),
-                          child: TextFormField(
-                              onFieldSubmitted: (value) {
-                                searchFocusNode.requestFocus();
-                              },
-                              autofocus: true,
-                              focusNode: searchFocusNode,
-                              controller: searchController,
-                              decoration: InputDecoration(
-                                isDense: true,
-                                contentPadding:
-                                    const EdgeInsets.only(top: 10, bottom: 10),
-                                border: InputBorder.none,
-                                hintText: (kIsWeb)
-                                    ? "${global.language('search')} (F2)"
-                                    : global.language('search'),
-                              ))))),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Row(children: [
+                    Expanded(
+                        child: TextFormField(
+                            onFieldSubmitted: (value) {
+                              searchFocusNode.requestFocus();
+                            },
+                            autofocus: true,
+                            focusNode: searchFocusNode,
+                            controller: searchController,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: const EdgeInsets.only(
+                                  top: 0, bottom: 0, left: 0, right: 0),
+                              border: InputBorder.none,
+                              hintText: (kIsWeb)
+                                  ? "${global.language('search')} (F2)"
+                                  : global.language('search'),
+                            ))),
+                    IconButton(
+                        focusNode: FocusNode(skipTraversal: true),
+                        icon: const FaIcon(FontAwesomeIcons.font),
+                        onPressed: () async {
+                          setState(() {
+                            global.listDataFontSizeChange();
+                          });
+                        })
+                  ])),
               Container(
+                color: global.theme.appBarColor,
+                height: 2,
+              ),
+              Container(
+                  color: global.theme.columnHeaderColor,
                   key: headerKey,
                   padding: const EdgeInsets.only(
                       left: 10, right: 10, top: 5, bottom: 5),
-                  decoration: const BoxDecoration(
-                      color: Colors.lightBlueAccent,
-                      border: Border(
-                        bottom: BorderSide(width: 1.0, color: Colors.grey),
-                      )),
                   child: Row(children: [
                     Expanded(
                         flex: 5,
                         child: Text(global.language("unit_code"),
-                            style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold))),
+                            style: TextStyle(
+                                color: global.theme.columnHeaderTextColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize:
+                                    global.deviceConfig.listDataFontSize + 2))),
                     Expanded(
                         flex: 10,
                         child: Text(
                           global.language("unit_name"),
-                          style: const TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              color: global.theme.columnHeaderTextColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize:
+                                  global.deviceConfig.listDataFontSize + 2),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         )),
                     if (showCheckBox)
-                      const Expanded(
+                      Expanded(
                           flex: 1,
-                          child:
-                              Icon(Icons.check, color: Colors.black, size: 12))
+                          child: Icon(Icons.check,
+                              color: global.theme.columnHeaderTextColor,
+                              size: 12))
                   ])),
               Expanded(
                   child: SingleChildScrollView(
                       controller: listScrollController,
                       child: Column(
                           children: unitListDatas
-                              .map((value) => listObject(value, showCheckBox))
+                              .map((value) => listObject(
+                                  unitListDatas.indexOf(value),
+                                  value,
+                                  showCheckBox))
                               .toList())))
             ],
           )),
@@ -377,7 +386,7 @@ class UnitScreenState extends State<UnitScreen>
     });
   }
 
-  Widget listObject(UnitModel value, bool showCheckBox) {
+  Widget listObject(int index, UnitModel value, bool showCheckBox) {
     bool isCheck = false;
     for (int i = 0; i < unitGuidListChecked.length; i++) {
       if (unitGuidListChecked[i] == value.guidfixed) {
@@ -430,10 +439,9 @@ class UnitScreenState extends State<UnitScreen>
             decoration: BoxDecoration(
               color: (selectGuid == value.guidfixed)
                   ? Colors.cyan[100]
-                  : Colors.white,
-              border: const Border(
-                bottom: BorderSide(width: 1.0, color: Colors.grey),
-              ),
+                  : (index % 2 == 0)
+                      ? global.theme.columnAlternateEvenColor
+                      : global.theme.columnAlternateOddColor,
             ),
             padding:
                 const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
@@ -441,19 +449,23 @@ class UnitScreenState extends State<UnitScreen>
               Expanded(
                   flex: 5,
                   child: Text(value.unitcode,
-                      maxLines: 2, overflow: TextOverflow.ellipsis)),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: global.deviceConfig.listDataFontSize))),
               Expanded(
                   flex: 10,
-                  child: Text(
-                    global.packName(value.names),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  )),
+                  child: Text(global.packName(value.names),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: global.deviceConfig.listDataFontSize))),
               if (showCheckBox)
                 Expanded(
                     flex: 1,
                     child: (isCheck)
-                        ? const Icon(Icons.check, size: 12)
+                        ? Icon(Icons.check,
+                            size: global.deviceConfig.listDataFontSize)
                         : Container())
             ])));
   }
@@ -523,9 +535,12 @@ class UnitScreenState extends State<UnitScreen>
 
   Widget editScreen({mobileScreen}) {
     return Scaffold(
+        backgroundColor: global.theme.backgroundColor,
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
-            backgroundColor: (isEditMode) ? Colors.green : Colors.blue,
+            backgroundColor: (isEditMode)
+                ? global.theme.toolBarEditModeColor
+                : global.theme.appBarColor,
             automaticallyImplyLeading: false,
             leading: mobileScreen
                 ? IconButton(
@@ -558,12 +573,14 @@ class UnitScreenState extends State<UnitScreen>
                             actions: <Widget>[
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red),
+                                      backgroundColor:
+                                          global.theme.buttonNoColor),
                                   onPressed: () => Navigator.pop(context),
                                   child: Text(global.language('no'))),
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue),
+                                      backgroundColor:
+                                          global.theme.buttonYesColor),
                                   onPressed: () {
                                     Navigator.pop(context);
                                     context
@@ -644,35 +661,40 @@ class UnitScreenState extends State<UnitScreen>
             child: SingleChildScrollView(
                 controller: editScrollController,
                 child: Container(
+                    color: Colors.white,
                     width: double.infinity,
                     padding: const EdgeInsets.all(10),
                     child: Column(children: [
-                      Form(
-                          child: TextFormField(
-                              readOnly: !isEditMode,
-                              onFieldSubmitted: (value) {
-                                findFocusNext(0);
-                              },
-                              textInputAction: TextInputAction.next,
-                              focusNode: fieldFocusNodes[0],
-                              textAlign: TextAlign.left,
-                              controller: fieldTextController[0],
-                              textCapitalization: TextCapitalization.characters,
-                              inputFormatters: <TextInputFormatter>[
-                                FilteringTextInputFormatter.allow(
-                                    RegExp('[a-z A-Z 0-9]'))
-                              ],
-                              onChanged: (value) {
-                                isChange = true;
-                                fieldTextController[0].value = TextEditingValue(
-                                    text: value.toUpperCase(),
-                                    selection:
-                                        fieldTextController[0].selection);
-                              },
-                              decoration: InputDecoration(
-                                border: const OutlineInputBorder(),
-                                labelText: global.language("unit_code"),
-                              ))),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                          readOnly: !isEditMode,
+                          onFieldSubmitted: (value) {
+                            findFocusNext(0);
+                          },
+                          textInputAction: TextInputAction.next,
+                          focusNode: fieldFocusNodes[0],
+                          textAlign: TextAlign.left,
+                          controller: fieldTextController[0],
+                          textCapitalization: TextCapitalization.characters,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.allow(
+                                RegExp('[a-z A-Z 0-9]'))
+                          ],
+                          onChanged: (value) {
+                            isChange = true;
+                            fieldTextController[0].value = TextEditingValue(
+                                text: value.toUpperCase(),
+                                selection: fieldTextController[0].selection);
+                          },
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            contentPadding: const EdgeInsets.only(
+                                left: 10, top: 0, bottom: 0, right: 10),
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            labelText: global.language("unit_code"),
+                            labelStyle: TextStyle(
+                                color: global.theme.inputTextBoxForceColor),
+                          )),
                       const SizedBox(height: 10),
                       for (int i = 0; i < languageList.length; i++)
                         Padding(
@@ -690,6 +712,16 @@ class UnitScreenState extends State<UnitScreen>
                             textAlign: TextAlign.left,
                             controller: fieldTextController[i + 1],
                             decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.only(
+                                  left: 10, top: 0, bottom: 0, right: 10),
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always,
+                              labelStyle: (i == 0)
+                                  ? TextStyle(
+                                      color:
+                                          global.theme.inputTextBoxForceColor)
+                                  : TextStyle(
+                                      color: global.theme.inputTextBoxColor),
                               border: const OutlineInputBorder(),
                               labelText:
                                   "${global.language("unit_name")} (${languageList[i].name})",
@@ -701,6 +733,8 @@ class UnitScreenState extends State<UnitScreen>
                         SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: global.theme.buttonColor),
                                 focusNode: FocusNode(skipTraversal: true),
                                 onPressed: () {
                                   saveOrUpdateData();
@@ -889,7 +923,7 @@ class UnitScreenState extends State<UnitScreen>
               child: (constraints.maxWidth > 800)
                   ? SplitView(
                       gripSize: 8,
-                      gripColor: Colors.blue.shade400,
+                      gripColor: global.theme.appBarColor,
                       gripColorActive: Colors.blue,
                       viewMode: SplitViewMode.Horizontal,
                       indicator: const SplitIndicator(

@@ -191,6 +191,15 @@ class ProductBarcodeModel {
   /// uri รูปภาพ
   String imageuri;
 
+  /// ใช้รูปหรือสี True=Image,False=Color
+  bool useimageorcolor;
+
+  /// สีที่เลือก
+  String colorselect;
+
+  /// สีที่เลือก (Hex)
+  String colorselecthex;
+
   /// ข้อเลือกสินค้า (เช่น เพิ่มไข่)
   List<ProductOptionModel> options;
 
@@ -204,6 +213,9 @@ class ProductBarcodeModel {
     required this.itemunitnames,
     required this.prices,
     required this.imageuri,
+    required this.useimageorcolor,
+    required this.colorselect,
+    required this.colorselecthex,
     required this.options,
   });
 
@@ -221,8 +233,8 @@ class ProductChoiceModel {
   /// ชื่อข้อเลือกย่อย
   List<LanguageDataModel> names;
 
-  /// ราคาข้อเลือกย่อย (เพิ่ม)
-  double price;
+  /// ราคาข้อเลือกย่อย (เพิ่ม) บาท/เปอร์เซ็นต์
+  String price;
 
   /// ตัดสต๊อกสินค้า
   bool isstock;
@@ -261,6 +273,9 @@ class ProductChoiceModel {
 class ProductOptionModel {
   String guid;
 
+  /// ประเภทข้อเลือก (0=Check Box,1=Radio Button)
+  int choicetype = 0;
+
   /// เลือกได้น้อยสุด
   int minselect = 0;
 
@@ -275,6 +290,7 @@ class ProductOptionModel {
 
   ProductOptionModel({
     required this.guid,
+    required this.choicetype,
     required this.maxselect,
     required this.names,
     required this.minselect,

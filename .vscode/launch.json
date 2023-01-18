@@ -7,19 +7,37 @@
         {
             "name": "thai7merchant",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            /*"args": [
+                "-d",
+                "chrome",
+                "--web-renderer",
+                "html",
+            ]*/
         },
         {
             "name": "thai7merchant (profile mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "flutterMode": "profile",
+            "args": [
+                "-d",
+                "chrome",
+                "--web-renderer",
+                "html",                
+            ]
         },
         {
             "name": "thai7merchant (release mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "release"
+            "flutterMode": "release",
+            "args": [
+                "-d",
+                "chrome",
+                "--web-renderer",
+                "html",
+            ]
         }
     ]
 }

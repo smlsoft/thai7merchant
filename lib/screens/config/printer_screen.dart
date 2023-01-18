@@ -6,23 +6,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dropzone/flutter_dropzone.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:remove_background/crop_widget.dart';
-import 'package:thai7merchant/bloc/customer/customer_bloc.dart';
+import 'package:thai7merchant/bloc/printer/printer_bloc.dart';
 import 'package:thai7merchant/global.dart' as global;
 import 'package:thai7merchant/model/global_model.dart';
-import 'package:thai7merchant/model/customer_model.dart';
+import 'package:thai7merchant/model/printer_model.dart';
 import 'package:split_view/split_view.dart';
 import 'package:translator/translator.dart';
 import 'package:email_validator/email_validator.dart';
 
-class CustomerScreen extends StatefulWidget {
-  const CustomerScreen({Key? key}) : super(key: key);
+class PrinterScreen extends StatefulWidget {
+  const PrinterScreen({Key? key}) : super(key: key);
 
   @override
-  State<CustomerScreen> createState() => CustomerScreenState();
+  State<PrinterScreen> createState() => PrinterScreenState();
 }
 
-class CustomerScreenState extends State<CustomerScreen>
+class PrinterScreenState extends State<PrinterScreen>
     with SingleTickerProviderStateMixin {
   final translator = GoogleTranslator();
   late TabController tabController;
@@ -33,7 +32,7 @@ class CustomerScreenState extends State<CustomerScreen>
   List<FocusNode> fieldFocusNodes = [];
   int focusNodeIndex = 0;
   List<File> imageFile = [];
-  List<CustomerModel> listDatas = [];
+  List<PrinterModel> listDatas = [];
   List<String> guidListChecked = [];
   List<LanguageDataModel> names = [];
   ScrollController listScrollController = ScrollController();
@@ -43,7 +42,7 @@ class CustomerScreenState extends State<CustomerScreen>
   String selectGuid = "";
   bool isChange = false;
   bool isSaveAllow = false;
-  late CustomerState blocCustomerState;
+  late PrinterState blocPrinterState;
   String headerEdit = "";
   late MediaQueryData queryData;
   int currentListIndex = -1;
@@ -52,10 +51,7 @@ class CustomerScreenState extends State<CustomerScreen>
   bool isKeyDown = false;
   bool showCheckBox = false;
   bool isEditMode = false;
-  late CustomerModel screenData;
-  List<Uint8List> imageWeb = [];
-  final ImagePicker imagePicker = ImagePicker();
-  late DropzoneViewController dropZoneController;
+  late PrinterModel screenData;
 
   @override
   void initState() {
@@ -81,7 +77,7 @@ class CustomerScreenState extends State<CustomerScreen>
   }
 
   void loadDataList(String search) {
-    context.read<CustomerBloc>().add(CustomerLoadList(
+    context.read<PrinterBloc>().add(PrinterLoadList(
         offset: (listDatas.isEmpty) ? 0 : listDatas.length,
         limit: loaDataPerPage,
         search: search));
@@ -127,29 +123,8 @@ class CustomerScreenState extends State<CustomerScreen>
     for (int k = 0; k < languageList.length; k++) {
       nameBill.add(LanguageDataModel(code: languageList[k].code, name: ""));
     }
-    screenData = CustomerModel(
-      guidfixed: "",
-      code: "",
-      names: names,
-      personaltype: 1,
-      addressforbilling: CustomerAddressModel(
-        address: ["", "", ""],
-        countryCode: "",
-        provincecode: "",
-        districtcode: "",
-        subDistrictcode: "",
-        zipcode: "",
-        latitude: 0,
-        longitude: 0,
-        contactnames: nameBill,
-        phoneprimary: "",
-        phonesecondary: "",
-      ),
-      addressforshipping: [],
-      images: [],
-      taxid: "",
-      email: "",
-    );
+    screenData =
+        PrinterModel(guidfixed: "", code: "", name1: "", address: "", type: 0);
     isChange = false;
     focusNodeIndex = 0;
   }
@@ -185,7 +160,7 @@ class CustomerScreenState extends State<CustomerScreen>
   void getData(String guid) {
     headerEdit = global.language("show");
     isEditMode = false;
-    context.read<CustomerBloc>().add(CustomerGet(guid: guid));
+    context.read<PrinterBloc>().add(PrinterGet(guid: guid));
   }
 
   Widget listScreen({bool mobileScreen = false}) {
@@ -193,7 +168,7 @@ class CustomerScreenState extends State<CustomerScreen>
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(global.language('customer')),
+        title: Text(global.language('printer')),
         leading: IconButton(
           focusNode: FocusNode(skipTraversal: true),
           icon: const Icon(Icons.arrow_back),
@@ -252,8 +227,8 @@ class CustomerScreenState extends State<CustomerScreen>
                                   backgroundColor: Colors.blue),
                               onPressed: () {
                                 Navigator.pop(context);
-                                context.read<CustomerBloc>().add(
-                                    CustomerDeleteMany(guid: guidListChecked));
+                                context.read<PrinterBloc>().add(
+                                    PrinterDeleteMany(guid: guidListChecked));
                               },
                               child: Text(global.language('delete'))),
                         ],
@@ -370,14 +345,14 @@ class CustomerScreenState extends State<CustomerScreen>
                   child: Row(children: [
                     Expanded(
                         flex: 5,
-                        child: Text(global.language("customer_code"),
+                        child: Text(global.language("printer_code"),
                             style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold))),
                     Expanded(
                         flex: 10,
                         child: Text(
-                          global.language("customer_name"),
+                          global.language("printer_name"),
                           style: const TextStyle(
                               color: Colors.black, fontWeight: FontWeight.bold),
                           maxLines: 2,
@@ -401,7 +376,7 @@ class CustomerScreenState extends State<CustomerScreen>
     );
   }
 
-  void switchToEdit(CustomerModel value) {
+  void switchToEdit(PrinterModel value) {
     setState(() {
       selectGuid = value.guidfixed;
       getData(selectGuid);
@@ -411,7 +386,7 @@ class CustomerScreenState extends State<CustomerScreen>
     });
   }
 
-  Widget listObject(CustomerModel value, bool showCheckBox) {
+  Widget listObject(PrinterModel value, bool showCheckBox) {
     bool isCheck = false;
     for (int i = 0; i < guidListChecked.length; i++) {
       if (guidListChecked[i] == value.guidfixed) {
@@ -479,7 +454,7 @@ class CustomerScreenState extends State<CustomerScreen>
               Expanded(
                   flex: 10,
                   child: Text(
-                    global.packName(value.names),
+                    value.name1,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   )),
@@ -496,17 +471,7 @@ class CustomerScreenState extends State<CustomerScreen>
     showCheckBox = false;
 
     if (selectGuid.trim().isEmpty) {
-      if (imageFile.isNotEmpty) {
-        context.read<CustomerBloc>().add(CustomerWithImageSave(
-              customerModel: screenData,
-              imageFile: imageFile,
-              imageWeb: imageWeb,
-            ));
-      } else {
-        context
-            .read<CustomerBloc>()
-            .add(CustomerSave(customerModel: screenData));
-      }
+      context.read<PrinterBloc>().add(PrinterSave(printerModel: screenData));
     } else {
       updateData(selectGuid);
     }
@@ -514,56 +479,19 @@ class CustomerScreenState extends State<CustomerScreen>
 
   void updateData(String guid) {
     showCheckBox = false;
-    List<File> imageFileUpdate = [];
-    List<Uint8List> imageWebUpdate = [];
-    List<ImagesModel> imageUris = [];
-    for (int i = 0; i < imageWeb.length; i++) {
-      print(imageWeb.length);
-      print(imageFile.length);
-      print(screenData.images.length);
-      if (imageWeb[i].isNotEmpty || screenData.images[i].uri != '') {
-        imageFileUpdate.add(imageFile[i]);
-        imageWebUpdate.add(imageWeb[i]);
-        imageUris.add(ImagesModel(uri: screenData.images[i].uri, xorder: i));
-      }
-    }
-    print("imageWebUpdate.isNotEmpty " + imageWebUpdate.isNotEmpty.toString());
-    if (imageWebUpdate.isNotEmpty) {
-      context.read<CustomerBloc>().add(CustomerWithImageUpdate(
-            guid: guid,
-            customerModel: screenData,
-            imageFile: imageFile,
-            imagesUri: imageUris,
-            imageWeb: imageWeb,
-          ));
-    } else {
-      screenData.images = [];
-      context
-          .read<CustomerBloc>()
-          .add(CustomerUpdate(guid: guid, customerModel: screenData));
-    }
+    context
+        .read<PrinterBloc>()
+        .add(PrinterUpdate(guid: guid, printerModel: screenData));
   }
 
-  void getDataToEditScreen(CustomerModel customer) {
+  void getDataToEditScreen(PrinterModel printer) {
     isChange = false;
-    selectGuid = customer.guidfixed;
-    screenData.addressforbilling = customer.addressforbilling;
-    screenData.addressforshipping = customer.addressforshipping;
-    screenData.code = customer.code;
-    screenData.email = customer.email;
-    screenData.guidfixed = customer.guidfixed;
-    screenData.images = customer.images;
-    screenData.names = customer.names;
-    screenData.personaltype = customer.personaltype;
-    screenData.taxid = customer.taxid;
-
-    imageWeb = [];
-    imageFile = [];
-
-    for (int i = 0; i < customer.images.length; i++) {
-      imageWeb.add(Uint8List(0));
-      imageFile.add(File(''));
-    }
+    selectGuid = printer.guidfixed;
+    screenData.code = printer.code;
+    screenData.name1 = printer.name1;
+    screenData.guidfixed = printer.guidfixed;
+    screenData.address = printer.address;
+    screenData.type = printer.type;
   }
 
   void findFocusNext(int index) {
@@ -577,7 +505,6 @@ class CustomerScreenState extends State<CustomerScreen>
   Widget editScreen({mobileScreen}) {
     int nodeIndex = 0;
     List<Widget> formWidgets = [];
-    print(isEditMode);
     formWidgets.add(Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: TextFormField(
@@ -599,43 +526,30 @@ class CustomerScreenState extends State<CustomerScreen>
             },
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              labelText: global.language("customer_code"),
+              labelText: global.language("printer_code"),
             ))));
-    for (int languageIndex = 0;
-        languageIndex < languageList.length;
-        languageIndex++) {
-      LanguageDataModel name = screenData.names.firstWhere(
-          (element) => element.code == languageList[languageIndex].code,
-          orElse: () => LanguageDataModel(code: '', name: ''));
-      if (name.code == '') {
-        screenData.names.add(LanguageDataModel(
-            code: languageList[languageIndex].code, name: ''));
-      }
-      nodeIndex++;
-      formWidgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: TextFormField(
-          readOnly: !isEditMode,
-          onChanged: (value) {
-            isChange = true;
-            screenData.names[languageIndex].name = value;
-          },
-          onFieldSubmitted: (value) {
-            findFocusNext(focusNodeIndex);
-          },
-          textInputAction: TextInputAction.next,
-          focusNode: fieldFocusNodes[nodeIndex],
-          textAlign: TextAlign.left,
-          controller:
-              TextEditingController(text: screenData.names[languageIndex].name),
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            labelText:
-                "${global.language("customer_name")} (${getLangName(screenData.names[languageIndex].code)})",
-          ),
+    nodeIndex++;
+    formWidgets.add(Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextFormField(
+        readOnly: !isEditMode,
+        onChanged: (value) {
+          isChange = true;
+          screenData.name1 = value;
+        },
+        onFieldSubmitted: (value) {
+          findFocusNext(focusNodeIndex);
+        },
+        textInputAction: TextInputAction.next,
+        focusNode: fieldFocusNodes[nodeIndex],
+        textAlign: TextAlign.left,
+        controller: TextEditingController(text: screenData.name1),
+        decoration: InputDecoration(
+          border: const OutlineInputBorder(),
+          labelText: global.language("printer_name"),
         ),
-      ));
-    }
+      ),
+    ));
     nodeIndex++;
     formWidgets.add(Container(
         width: double.infinity,
@@ -645,26 +559,26 @@ class CustomerScreenState extends State<CustomerScreen>
             Radio(
               focusNode: FocusNode(skipTraversal: true),
               value: 1,
-              groupValue: screenData.personaltype,
+              groupValue: screenData.type,
               onChanged: (value) {
                 setState(() {
-                  screenData.personaltype = value!;
+                  screenData.type = value!;
                 });
               },
             ),
-            Text(global.language("customer_individual")),
+            Text(global.language("printer_use_ip")),
             const SizedBox(width: 10),
             Radio(
               focusNode: FocusNode(skipTraversal: true),
               value: 2,
-              groupValue: screenData.personaltype,
+              groupValue: screenData.type,
               onChanged: (value) {
                 setState(() {
-                  screenData.personaltype = value!;
+                  screenData.type = value!;
                 });
               },
             ),
-            Text(global.language("customer_company")),
+            Text(global.language("printer_use_usb")),
           ],
         )));
     nodeIndex++;
@@ -678,540 +592,22 @@ class CustomerScreenState extends State<CustomerScreen>
             textInputAction: TextInputAction.next,
             focusNode: fieldFocusNodes[nodeIndex],
             textAlign: TextAlign.left,
-            controller: TextEditingController(text: screenData.taxid),
+            controller: TextEditingController(text: screenData.address),
             textCapitalization: TextCapitalization.characters,
             inputFormatters: <TextInputFormatter>[
-              FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9]'))
+              FilteringTextInputFormatter.allow(RegExp('[a-z A-Z 0-9 .]'))
             ],
             onChanged: (value) {
               isChange = true;
-              screenData.taxid = value;
+              screenData.address = value;
             },
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              labelText: global.language((screenData.personaltype == 1)
-                  ? "customer_tax_id_card_number"
-                  : "customer_tax_id_bussiness"),
+              labelText: global.language((screenData.type == 0)
+                  ? "printer_ip_address"
+                  : "printer_name"),
             ))));
     nodeIndex++;
-    formWidgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: TextFormField(
-            readOnly: !isEditMode,
-            onFieldSubmitted: (value) {
-              bool isValid = (screenData.email.isEmpty)
-                  ? true
-                  : EmailValidator.validate(screenData.email);
-              if (!isValid) {
-                global.showSnackBar(
-                    context,
-                    const Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                    ),
-                    global.language("email_error"),
-                    Colors.red);
-              }
-              findFocusNext(focusNodeIndex);
-            },
-            textInputAction: TextInputAction.next,
-            focusNode: fieldFocusNodes[nodeIndex],
-            textAlign: TextAlign.left,
-            controller: TextEditingController(text: screenData.email),
-            textCapitalization: TextCapitalization.characters,
-            onChanged: (value) {
-              isChange = true;
-              screenData.email = value;
-            },
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: global.language("customer_email"),
-            ))));
-    for (int addressIndex = 0; addressIndex < 3; addressIndex++) {
-      nodeIndex++;
-      formWidgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: TextFormField(
-          readOnly: !isEditMode,
-          onChanged: (value) {
-            isChange = true;
-            screenData.addressforbilling.address[addressIndex] = value;
-          },
-          onFieldSubmitted: (value) {
-            findFocusNext(focusNodeIndex);
-          },
-          textInputAction: TextInputAction.next,
-          focusNode: fieldFocusNodes[nodeIndex],
-          textAlign: TextAlign.left,
-          controller: TextEditingController(
-              text: screenData.addressforbilling.address[addressIndex]),
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            labelText: global.language("tax_address_${addressIndex + 1}"),
-          ),
-        ),
-      ));
-    }
-    nodeIndex++;
-    formWidgets.add(Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextFormField(
-        readOnly: !isEditMode,
-        onChanged: (value) {
-          isChange = true;
-          screenData.addressforbilling.phoneprimary = value;
-        },
-        onFieldSubmitted: (value) {
-          findFocusNext(focusNodeIndex);
-        },
-        textInputAction: TextInputAction.next,
-        focusNode: fieldFocusNodes[nodeIndex],
-        textAlign: TextAlign.left,
-        controller: TextEditingController(
-            text: screenData.addressforbilling.phoneprimary),
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(),
-          labelText: global.language("telephone_primary"),
-        ),
-      ),
-    ));
-    nodeIndex++;
-    formWidgets.add(Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextFormField(
-        readOnly: !isEditMode,
-        onChanged: (value) {
-          isChange = true;
-          screenData.addressforbilling.phonesecondary = value;
-        },
-        onFieldSubmitted: (value) {
-          findFocusNext(focusNodeIndex);
-        },
-        textInputAction: TextInputAction.next,
-        focusNode: fieldFocusNodes[nodeIndex],
-        textAlign: TextAlign.left,
-        controller: TextEditingController(
-            text: screenData.addressforbilling.phonesecondary),
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(),
-          labelText: global.language("telephone_secondary"),
-        ),
-      ),
-    ));
-    formWidgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(left: 5, right: 5),
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: const BorderRadius.all(Radius.circular(5.0))),
-            child: Wrap(
-              alignment: WrapAlignment.start,
-              spacing: 5.0,
-              children: [
-                ElevatedButton(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onPressed: () {},
-                    child: Text(
-                        (screenData.addressforbilling.countryCode.isNotEmpty)
-                            ? screenData.addressforbilling.countryCode
-                            : global.language("address_country"))),
-                ElevatedButton(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onPressed: () {},
-                    child: Text(
-                        (screenData.addressforbilling.provincecode.isNotEmpty)
-                            ? screenData.addressforbilling.provincecode
-                            : global.language("address_province"))),
-                ElevatedButton(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onPressed: () {},
-                    child: Text(
-                        (screenData.addressforbilling.districtcode.isNotEmpty)
-                            ? screenData.addressforbilling.districtcode
-                            : global.language("address_district"))),
-                ElevatedButton(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onPressed: () {},
-                    child: Text((screenData
-                            .addressforbilling.subDistrictcode.isNotEmpty)
-                        ? screenData.addressforbilling.subDistrictcode
-                        : global.language("address_sub_district"))),
-                ElevatedButton(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onPressed: () {},
-                    child: Text(
-                        (screenData.addressforbilling.zipcode.isNotEmpty)
-                            ? screenData.addressforbilling.zipcode
-                            : global.language("address_zipcode"))),
-                ElevatedButton(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onPressed: () {},
-                    child: Text((screenData.addressforbilling.latitude == 0 &&
-                            screenData.addressforbilling.longitude == 0)
-                        ? global.language("address_location_pin")
-                        : "${global.language("address_location_pin_success")} ${screenData.addressforbilling.latitude},${screenData.addressforbilling.longitude}")),
-              ],
-            ))));
-    for (int addressShipIndex = 0;
-        addressShipIndex < screenData.addressforshipping.length;
-        addressShipIndex++) {
-      for (int addressIndex = 0; addressIndex < 3; addressIndex++) {
-        nodeIndex++;
-        formWidgets.add(Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: TextFormField(
-            readOnly: !isEditMode,
-            onChanged: (value) {
-              isChange = true;
-              screenData.addressforshipping[addressShipIndex]
-                  .address[addressIndex] = value;
-            },
-            onFieldSubmitted: (value) {
-              findFocusNext(focusNodeIndex);
-            },
-            textInputAction: TextInputAction.next,
-            focusNode: fieldFocusNodes[nodeIndex],
-            textAlign: TextAlign.left,
-            controller: TextEditingController(
-                text: screenData.addressforshipping[addressShipIndex]
-                    .address[addressIndex]),
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText:
-                  global.language("shipping_address_${addressIndex + 1}"),
-            ),
-          ),
-        ));
-      }
-      nodeIndex++;
-      formWidgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: TextFormField(
-          readOnly: !isEditMode,
-          onChanged: (value) {
-            isChange = true;
-            screenData.addressforshipping[addressShipIndex].phoneprimary =
-                value;
-          },
-          onFieldSubmitted: (value) {
-            findFocusNext(focusNodeIndex);
-          },
-          textInputAction: TextInputAction.next,
-          focusNode: fieldFocusNodes[nodeIndex],
-          textAlign: TextAlign.left,
-          controller: TextEditingController(
-              text:
-                  screenData.addressforshipping[addressShipIndex].phoneprimary),
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            labelText: global.language("shipping_telephone_primary"),
-          ),
-        ),
-      ));
-      nodeIndex++;
-      formWidgets.add(Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: TextFormField(
-          readOnly: !isEditMode,
-          onChanged: (value) {
-            isChange = true;
-            screenData.addressforshipping[addressShipIndex].phonesecondary =
-                value;
-          },
-          onFieldSubmitted: (value) {
-            findFocusNext(focusNodeIndex);
-          },
-          textInputAction: TextInputAction.next,
-          focusNode: fieldFocusNodes[nodeIndex],
-          textAlign: TextAlign.left,
-          controller: TextEditingController(
-              text: screenData
-                  .addressforshipping[addressShipIndex].phonesecondary),
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
-            labelText: global.language("shipping_telephone_secondary"),
-          ),
-        ),
-      ));
-      formWidgets.add(Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.only(left: 5, right: 5),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: const BorderRadius.all(Radius.circular(5.0))),
-              child: Wrap(
-                alignment: WrapAlignment.start,
-                spacing: 5.0,
-                children: [
-                  ElevatedButton(
-                      focusNode: FocusNode(skipTraversal: true),
-                      onPressed: () {},
-                      child: Text((screenData
-                              .addressforshipping[addressShipIndex]
-                              .countryCode
-                              .isNotEmpty)
-                          ? screenData
-                              .addressforshipping[addressShipIndex].countryCode
-                          : global.language("address_country"))),
-                  ElevatedButton(
-                      focusNode: FocusNode(skipTraversal: true),
-                      onPressed: () {},
-                      child: Text((screenData
-                              .addressforshipping[addressShipIndex]
-                              .provincecode
-                              .isNotEmpty)
-                          ? screenData
-                              .addressforshipping[addressShipIndex].provincecode
-                          : global.language("address_province"))),
-                  ElevatedButton(
-                      focusNode: FocusNode(skipTraversal: true),
-                      onPressed: () {},
-                      child: Text((screenData
-                              .addressforshipping[addressShipIndex]
-                              .districtcode
-                              .isNotEmpty)
-                          ? screenData
-                              .addressforshipping[addressShipIndex].districtcode
-                          : global.language("address_district"))),
-                  ElevatedButton(
-                      focusNode: FocusNode(skipTraversal: true),
-                      onPressed: () {},
-                      child: Text((screenData
-                              .addressforshipping[addressShipIndex]
-                              .subDistrictcode
-                              .isNotEmpty)
-                          ? screenData.addressforshipping[addressShipIndex]
-                              .subDistrictcode
-                          : global.language("address_sub_district"))),
-                  ElevatedButton(
-                      focusNode: FocusNode(skipTraversal: true),
-                      onPressed: () {},
-                      child: Text((screenData
-                              .addressforshipping[addressShipIndex]
-                              .zipcode
-                              .isNotEmpty)
-                          ? screenData
-                              .addressforshipping[addressShipIndex].zipcode
-                          : global.language("address_zipcode"))),
-                  ElevatedButton(
-                      focusNode: FocusNode(skipTraversal: true),
-                      onPressed: () {},
-                      child: Text((screenData
-                                      .addressforshipping[addressShipIndex]
-                                      .latitude ==
-                                  0 &&
-                              screenData.addressforshipping[addressShipIndex]
-                                      .longitude ==
-                                  0)
-                          ? global.language("address_location_pin")
-                          : "${global.language("address_location_pin_success")} ${screenData.addressforshipping[addressShipIndex].latitude},${screenData.addressforshipping[addressShipIndex].longitude}")),
-                ],
-              ))));
-    }
-    if (isEditMode) {
-      formWidgets.add(SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-              focusNode: FocusNode(skipTraversal: true),
-              onPressed: () {
-                setState(() {
-                  List<LanguageDataModel> names = [];
-                  for (int k = 0; k < languageList.length; k++) {
-                    names.add(LanguageDataModel(
-                        code: languageList[k].code, name: ""));
-                  }
-                  screenData.addressforshipping.add(CustomerAddressModel(
-                      address: ["", "", ""],
-                      countryCode: "",
-                      provincecode: "",
-                      districtcode: "",
-                      subDistrictcode: "",
-                      zipcode: "",
-                      latitude: 0,
-                      longitude: 0,
-                      phoneprimary: "",
-                      phonesecondary: "",
-                      contactnames: names));
-                });
-              },
-              icon: const Icon(Icons.add),
-              label: Text(global.language("add_address_shipping")))));
-    }
-    List<Widget> imageList = [];
-    for (int imageIndex = 0;
-        imageIndex < screenData.images.length;
-        imageIndex++) {
-      imageList.add(Container(
-          width: 300,
-          padding: const EdgeInsets.only(left: 5, right: 5, bottom: 5, top: 5),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: const BorderRadius.all(Radius.circular(5.0))),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  (isEditMode)
-                      ? Expanded(
-                          child: IconButton(
-                          focusNode: FocusNode(skipTraversal: true),
-                          onPressed: () async {
-                            screenData.images.removeAt(imageIndex);
-                            imageWeb.removeAt(imageIndex);
-                            imageFile.removeAt(imageIndex);
-                            setState(() {});
-                          },
-                          icon: const Icon(
-                            Icons.delete,
-                          ),
-                        ))
-                      : Container(),
-                  const SizedBox(width: 5),
-                  (isEditMode)
-                      ? Expanded(
-                          child: IconButton(
-                          focusNode: FocusNode(skipTraversal: true),
-                          onPressed: (kIsWeb)
-                              ? () async {
-                                  XFile? image = await imagePicker.pickImage(
-                                      source: ImageSource.gallery,
-                                      maxHeight: 480,
-                                      maxWidth: 640,
-                                      imageQuality: 60);
-                                  if (image != null) {
-                                    var f = await image.readAsBytes();
-                                    setState(() {
-                                      imageWeb[imageIndex] = f;
-                                      imageFile[imageIndex] = File(image.path);
-                                    });
-                                    setState(() {
-                                      FocusScope.of(context).unfocus();
-                                    });
-                                  }
-                                }
-                              : () async {
-                                  final XFile? photo = await imagePicker.pickImage(
-                                      source: ImageSource.camera,
-                                      maxHeight: 480,
-                                      maxWidth: 640,
-                                      imageQuality: 60);
-                                  if (photo != null) {
-                                    var f = await photo.readAsBytes();
-                                    imageWeb[imageIndex] = f;
-                                    imageFile.add(File(photo.path));
-                                    setState(() {
-                                      FocusScope.of(context).unfocus();
-                                    });
-                                  }
-                                },
-                          icon: const Icon(
-                            Icons.folder,
-                          ),
-                        ))
-                      : Container(),
-                  const SizedBox(width: 5),
-                  if (kIsWeb == false)
-                    Expanded(
-                        child: IconButton(
-                      focusNode: FocusNode(skipTraversal: true),
-                      onPressed: () async {
-                        final XFile? photo = await imagePicker.pickImage(
-                            source: ImageSource.camera,
-                            maxHeight: 480,
-                            maxWidth: 640,
-                            imageQuality: 60);
-                        if (photo != null) {
-                          var f = await photo.readAsBytes();
-                          imageWeb[imageIndex] = f;
-                          imageFile.add(File(photo.path));
-                          setState(() {});
-                        }
-                      },
-                      icon: const Icon(
-                        Icons.camera_alt,
-                      ),
-                    )),
-                ],
-              ),
-              SizedBox(
-                  width: 300,
-                  height: 300,
-                  child: Stack(children: [
-                    DropzoneView(
-                      operation: DragOperation.copy,
-                      cursor: CursorType.grab,
-                      onCreated: (ctrl) => dropZoneController = ctrl,
-                      onLoaded: () {},
-                      onError: (ev) {},
-                      onHover: () {},
-                      onLeave: () {},
-                      onDrop: (ev) async {
-                        final bytes = await dropZoneController.getFileData(ev);
-                        setState(() {
-                          imageWeb[imageIndex] = bytes;
-                        });
-                      },
-                      onDropMultiple: (ev) async {},
-                    ),
-                    Center(
-                        child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.black),
-                        borderRadius: BorderRadius.circular(5),
-                        boxShadow: const [
-                          BoxShadow(
-                              offset: Offset(0, 4),
-                              color: Colors.cyan, //edited
-                              spreadRadius: 4,
-                              blurRadius: 10 //edited
-                              )
-                        ],
-                        image: (imageWeb[imageIndex].isNotEmpty)
-                            ? DecorationImage(
-                                image: MemoryImage(imageWeb[imageIndex]),
-                                fit: BoxFit.fill)
-                            : (screenData.images[imageIndex].uri != '')
-                                ? DecorationImage(
-                                    image: NetworkImage(
-                                        screenData.images[imageIndex].uri),
-                                    fit: BoxFit.fill)
-                                : const DecorationImage(
-                                    image: AssetImage('assets/img/noimg.png'),
-                                    fit: BoxFit.fill),
-                      ),
-                      child: const SizedBox(
-                        width: 500,
-                        height: 500,
-                      ),
-                    )),
-                  ])),
-            ],
-          )));
-    }
-    formWidgets.add(Wrap(
-      children: imageList,
-    ));
-    if (isEditMode) {
-      formWidgets.add(SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-              focusNode: FocusNode(skipTraversal: true),
-              onPressed: () {
-                setState(() {
-                  screenData.images.add(ImagesModel(uri: '', xorder: 0));
-                  imageWeb.add(Uint8List(0));
-                  imageFile.add(File(''));
-                  FocusScope.of(context).unfocus();
-                });
-              },
-              icon: const Icon(Icons.add),
-              label: Text(global.language("add_picture")))));
-    }
     if (isSaveAllow) {
       formWidgets.add(SizedBox(
           width: double.infinity,
@@ -1245,7 +641,7 @@ class CustomerScreenState extends State<CustomerScreen>
                       });
                     })
                 : null,
-            title: Text(headerEdit + global.language("customer")),
+            title: Text(headerEdit + global.language("printer")),
             actions: <Widget>[
               if (selectGuid.isNotEmpty)
                 Padding(
@@ -1270,8 +666,8 @@ class CustomerScreenState extends State<CustomerScreen>
                                   onPressed: () {
                                     Navigator.pop(context);
                                     context
-                                        .read<CustomerBloc>()
-                                        .add(CustomerDelete(guid: selectGuid));
+                                        .read<PrinterBloc>()
+                                        .add(PrinterDelete(guid: selectGuid));
                                   },
                                   child: Text(global.language('confirm'))),
                             ],
@@ -1355,19 +751,19 @@ class CustomerScreenState extends State<CustomerScreen>
     return Scaffold(
         resizeToAvoidBottomInset: true,
         body: LayoutBuilder(builder: (context, constraints) {
-          return BlocListener<CustomerBloc, CustomerState>(
+          return BlocListener<PrinterBloc, PrinterState>(
               listener: (context, state) {
-                blocCustomerState = state;
+                blocPrinterState = state;
                 // Load
-                if (state is CustomerLoadSuccess) {
+                if (state is PrinterLoadSuccess) {
                   setState(() {
-                    if (state.customers.isNotEmpty) {
-                      listDatas.addAll(state.customers);
+                    if (state.printers.isNotEmpty) {
+                      listDatas.addAll(state.printers);
                     }
                   });
                 }
                 // Save
-                if (state is CustomerSaveSuccess) {
+                if (state is PrinterSaveSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1382,7 +778,7 @@ class CustomerScreenState extends State<CustomerScreen>
                     loadDataList(searchText);
                   });
                 }
-                if (state is CustomerSaveFailed) {
+                if (state is PrinterSaveFailed) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1395,7 +791,7 @@ class CustomerScreenState extends State<CustomerScreen>
                   });
                 }
                 // Update
-                if (state is CustomerUpdateSuccess) {
+                if (state is PrinterUpdateSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1415,7 +811,7 @@ class CustomerScreenState extends State<CustomerScreen>
                     getData(selectGuid);
                   });
                 }
-                if (state is CustomerUpdateFailed) {
+                if (state is PrinterUpdateFailed) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1428,7 +824,7 @@ class CustomerScreenState extends State<CustomerScreen>
                   });
                 }
                 // Delete
-                if (state is CustomerDeleteSuccess) {
+                if (state is PrinterDeleteSuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1447,7 +843,7 @@ class CustomerScreenState extends State<CustomerScreen>
                   });
                 }
                 // Delete Many
-                if (state is CustomerDeleteManySuccess) {
+                if (state is PrinterDeleteManySuccess) {
                   setState(() {
                     global.showSnackBar(
                         context,
@@ -1464,9 +860,9 @@ class CustomerScreenState extends State<CustomerScreen>
                   });
                 }
                 // Get
-                if (state is CustomerGetSuccess) {
+                if (state is PrinterGetSuccess) {
                   setState(() {
-                    getDataToEditScreen(state.customer);
+                    getDataToEditScreen(state.printer);
                     if (isEditMode) {
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                         tabController.animateTo(1);

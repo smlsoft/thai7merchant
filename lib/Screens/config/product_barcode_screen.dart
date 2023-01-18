@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,7 @@ import 'package:split_view/split_view.dart';
 import 'package:thai7merchant/screen_search/product_group_search_screen.dart';
 import 'package:thai7merchant/screen_search/unit_search_screen.dart';
 import 'package:translator/translator.dart';
+import 'package:uuid/uuid.dart';
 
 class ProductBarcodeScreen extends StatefulWidget {
   const ProductBarcodeScreen({Key? key}) : super(key: key);
@@ -60,6 +62,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   Uint8List? imageWeb;
   final ImagePicker imagePicker = ImagePicker();
   late DropzoneViewController dropZoneController;
+  Color colorSelected = Colors.white;
 
   @override
   void initState() {
@@ -135,7 +138,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     for (int i = 0; i < priceList.length; i++) {
       prices.add(PriceDataModel(
         keynumber: priceList[i].keynumber,
-        price: 0,
+        price: "",
       ));
     }
 
@@ -149,6 +152,9 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
         itemunitnames: itemunitnames,
         prices: prices,
         imageuri: "",
+        useimageorcolor: false,
+        colorselect: "",
+        colorselecthex: "",
         options: []);
 
     isChange = false;
@@ -531,6 +537,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
   }
 
   void saveOrUpdateData() {
+    print(jsonEncode(screenData.toJson()));
     showCheckBox = false;
     if (selectGuid.trim().isEmpty) {
       if (imageFile.path.isNotEmpty) {
@@ -551,9 +558,17 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
 
   void updateData(String guid) {
     showCheckBox = false;
-    context
-        .read<ProductBarcodeBloc>()
-        .add(ProductBarcodeUpdate(guid: guid, productBarcodeModel: screenData));
+    if (imageWeb != null) {
+      context.read<ProductBarcodeBloc>().add(ProductBarcodeWithImageUpdate(
+            guid: guid,
+            productBarcodeModel: screenData,
+            imageFile: imageFile,
+            imageWeb: imageWeb!,
+          ));
+    } else {
+      context.read<ProductBarcodeBloc>().add(
+          ProductBarcodeUpdate(guid: guid, productBarcodeModel: screenData));
+    }
   }
 
   void findFocusNext(int index) {
@@ -764,9 +779,9 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
     for (int priceIndex = 0; priceIndex < priceList.length; priceIndex++) {
       PriceDataModel priceData = screenData.prices.firstWhere(
           (element) => element.keynumber == priceList[priceIndex].keynumber,
-          orElse: () => PriceDataModel(keynumber: -1, price: 0));
+          orElse: () => PriceDataModel(keynumber: -1, price: ""));
       if (priceData.keynumber < 0) {
-        screenData.prices.add(PriceDataModel(keynumber: priceIndex, price: 0));
+        screenData.prices.add(PriceDataModel(keynumber: priceIndex, price: ""));
       }
       nodeIndex++;
       formWidgets.add(Padding(
@@ -777,7 +792,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
           onChanged: (value) {
             isChange = true;
 
-            screenData.prices[priceIndex].price = double.tryParse(value)!;
+            screenData.prices[priceIndex].price = value;
           },
           onFieldSubmitted: (value) {
             findFocusNext(nodeIndex);
@@ -800,41 +815,44 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
           optionIndex < screenData.options.length;
           optionIndex++) {
         List<Widget> optionList = [];
-        optionList.add(Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-                child: Padding(
-                    padding: const EdgeInsets.only(left: 10),
-                    child: Text(
-                        "${global.language("option")} ${optionIndex + 1}",
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)))),
-            if (optionIndex > 0)
-              IconButton(
-                  onPressed: () {
-                    setState(() {
-                      screenData.options.insert(optionIndex - 1,
-                          screenData.options.removeAt(optionIndex));
-                    });
-                  },
-                  icon: const Icon(Icons.move_up),
-                  focusNode: FocusNode(skipTraversal: true),
-                  color: Colors.blue,
-                  iconSize: 20),
-            if (optionIndex < screenData.options.length - 1)
-              IconButton(
-                  onPressed: () {
-                    setState(() {
-                      screenData.options.insert(optionIndex + 1,
-                          screenData.options.removeAt(optionIndex));
-                    });
-                  },
-                  icon: const Icon(Icons.move_down),
-                  color: Colors.red,
-                  focusNode: FocusNode(skipTraversal: true),
-                  iconSize: 20),
-          ],
+        optionList.add(Container(
+          padding: const EdgeInsets.only(top: 5, bottom: 10),
+          width: double.infinity,
+          child: Row(
+            children: [
+              Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Text(
+                          "${global.language("option")} ${optionIndex + 1}",
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)))),
+              if (optionIndex > 0)
+                IconButton(
+                    onPressed: () {
+                      setState(() {
+                        screenData.options.insert(optionIndex - 1,
+                            screenData.options.removeAt(optionIndex));
+                      });
+                    },
+                    icon: const Icon(Icons.move_up),
+                    focusNode: FocusNode(skipTraversal: true),
+                    color: Colors.blue,
+                    iconSize: 20),
+              if (optionIndex < screenData.options.length - 1)
+                IconButton(
+                    onPressed: () {
+                      setState(() {
+                        screenData.options.insert(optionIndex + 1,
+                            screenData.options.removeAt(optionIndex));
+                      });
+                    },
+                    icon: const Icon(Icons.move_down),
+                    color: Colors.red,
+                    focusNode: FocusNode(skipTraversal: true),
+                    iconSize: 20),
+            ],
+          ),
         ));
         for (int languageIndex = 0;
             languageIndex < languageList.length;
@@ -875,6 +893,30 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
             ),
           ));
         }
+        optionList.add(Column(children: [
+          ListTile(
+            title: Text(global.language("product_option_choice_type_multi")),
+            leading: Radio(
+                value: 0,
+                groupValue: screenData.options[optionIndex].choicetype,
+                onChanged: (value) {
+                  setState(() {
+                    screenData.options[optionIndex].choicetype = value!;
+                  });
+                }),
+          ),
+          ListTile(
+            title: Text(global.language("product_option_choice_type_single")),
+            leading: Radio(
+                value: 1,
+                groupValue: screenData.options[optionIndex].choicetype,
+                onChanged: (value) {
+                  setState(() {
+                    screenData.options[optionIndex].choicetype = value!;
+                  });
+                }),
+          ),
+        ]));
         List<Widget> choiceList = [];
         for (int choiceIndex = 0;
             choiceIndex < screenData.options[optionIndex].choices.length;
@@ -890,7 +932,7 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
             children: [
               Expanded(
                   child: Padding(
-                      padding: const EdgeInsets.only(left: 10),
+                      padding: const EdgeInsets.all(10),
                       child: Text(
                           "${global.language("choice")} ${choiceIndex + 1}",
                           style: const TextStyle(
@@ -994,8 +1036,8 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
               readOnly: !isEditMode,
               onChanged: (value) {
                 isChange = true;
-                screenData.options[optionIndex].choices[choiceIndex].qty =
-                    double.tryParse(value)!;
+                screenData.options[optionIndex].choices[choiceIndex].price =
+                    value;
               },
               onFieldSubmitted: (value) {
                 findFocusNext(nodeIndex);
@@ -1005,11 +1047,12 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
               focusNode: fieldFocusNodes[nodeIndex],
               textAlign: TextAlign.left,
               controller: TextEditingController(
-                  text: screenData.options[optionIndex].choices[choiceIndex].qty
+                  text: screenData
+                      .options[optionIndex].choices[choiceIndex].price
                       .toString()),
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
-                labelText: global.language("choice_add_price"),
+                labelText: global.language("choice_add_price_persent"),
               ),
             ),
           ));
@@ -1149,14 +1192,14 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                       }
                       screenData.options[optionIndex].choices
                           .add(ProductChoiceModel(
-                        guid: "",
+                        guid: const Uuid().v4(),
                         refbarcode: "",
                         isstock: false,
                         refproductcode: "",
                         refunitcode: "",
                         names: names,
                         qty: 0,
-                        price: 0,
+                        price: "",
                       ));
                     });
                   },
@@ -1176,112 +1219,114 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
               )),
         ));
         nodeIndex++;
-        optionList.add(Padding(
-            padding:
-                const EdgeInsets.only(left: 5, right: 5, top: 5, bottom: 10),
-            child: Row(children: [
-              Expanded(
-                  child: TextFormField(
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
-                      readOnly: true,
-                      textInputAction: TextInputAction.next,
-                      focusNode: FocusNode(skipTraversal: true),
-                      textAlign: TextAlign.center,
-                      controller: TextEditingController(
-                          text: screenData.options[optionIndex].minselect
-                              .toString()),
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText:
-                            "${screenData.options[optionIndex].names[0].name} ${global.language("option_min_select_choice")}",
-                        suffixIcon: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  icon: const Icon(Icons.arrow_downward),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (screenData
-                                              .options[optionIndex].minselect >
-                                          0) {
-                                        screenData
-                                            .options[optionIndex].minselect--;
-                                      }
-                                    });
-                                  }),
-                              IconButton(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  icon: const Icon(Icons.arrow_upward),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (screenData
-                                              .options[optionIndex].minselect <
-                                          screenData.options[optionIndex]
-                                              .choices.length) {
-                                        screenData
-                                            .options[optionIndex].minselect++;
-                                      }
-                                    });
-                                  })
-                            ]),
-                      ))),
-              const SizedBox(width: 5),
-              Expanded(
-                  child: TextFormField(
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
-                      readOnly: true,
-                      textInputAction: TextInputAction.next,
-                      focusNode: FocusNode(skipTraversal: true),
-                      textAlign: TextAlign.center,
-                      controller: TextEditingController(
-                          text: screenData.options[optionIndex].maxselect
-                              .toString()),
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText:
-                            "${screenData.options[optionIndex].names[0].name} ${global.language("option_max_select_choice")}",
-                        suffixIcon: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  icon: const Icon(Icons.arrow_downward),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (screenData
-                                              .options[optionIndex].maxselect >
-                                          0) {
-                                        screenData
-                                            .options[optionIndex].maxselect--;
-                                      }
-                                    });
-                                  }),
-                              IconButton(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  icon: const Icon(Icons.arrow_upward),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (screenData
-                                              .options[optionIndex].maxselect <
-                                          screenData.options[optionIndex]
-                                              .choices.length) {
-                                        screenData
-                                            .options[optionIndex].maxselect++;
-                                      }
-                                    });
-                                  })
-                            ]),
-                      ))),
-            ])));
+        if (screenData.options[optionIndex].choicetype == 0) {
+          optionList.add(Padding(
+              padding:
+                  const EdgeInsets.only(left: 5, right: 5, top: 5, bottom: 10),
+              child: Row(children: [
+                Expanded(
+                    child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        readOnly: true,
+                        textInputAction: TextInputAction.next,
+                        focusNode: FocusNode(skipTraversal: true),
+                        textAlign: TextAlign.center,
+                        controller: TextEditingController(
+                            text: screenData.options[optionIndex].minselect
+                                .toString()),
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText:
+                              global.language("option_min_select_choice"),
+                          suffixIcon: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                    focusNode: FocusNode(skipTraversal: true),
+                                    icon: const Icon(Icons.arrow_downward),
+                                    onPressed: () {
+                                      setState(() {
+                                        if (screenData.options[optionIndex]
+                                                .minselect >
+                                            0) {
+                                          screenData
+                                              .options[optionIndex].minselect--;
+                                        }
+                                      });
+                                    }),
+                                IconButton(
+                                    focusNode: FocusNode(skipTraversal: true),
+                                    icon: const Icon(Icons.arrow_upward),
+                                    onPressed: () {
+                                      setState(() {
+                                        if (screenData.options[optionIndex]
+                                                .minselect <
+                                            screenData.options[optionIndex]
+                                                .choices.length) {
+                                          screenData
+                                              .options[optionIndex].minselect++;
+                                        }
+                                      });
+                                    })
+                              ]),
+                        ))),
+                const SizedBox(width: 5),
+                Expanded(
+                    child: TextFormField(
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        readOnly: true,
+                        textInputAction: TextInputAction.next,
+                        focusNode: FocusNode(skipTraversal: true),
+                        textAlign: TextAlign.center,
+                        controller: TextEditingController(
+                            text: screenData.options[optionIndex].maxselect
+                                .toString()),
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          labelText:
+                              global.language("option_max_select_choice"),
+                          suffixIcon: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                    focusNode: FocusNode(skipTraversal: true),
+                                    icon: const Icon(Icons.arrow_downward),
+                                    onPressed: () {
+                                      setState(() {
+                                        if (screenData.options[optionIndex]
+                                                .maxselect >
+                                            0) {
+                                          screenData
+                                              .options[optionIndex].maxselect--;
+                                        }
+                                      });
+                                    }),
+                                IconButton(
+                                    focusNode: FocusNode(skipTraversal: true),
+                                    icon: const Icon(Icons.arrow_upward),
+                                    onPressed: () {
+                                      setState(() {
+                                        if (screenData.options[optionIndex]
+                                                .maxselect <
+                                            screenData.options[optionIndex]
+                                                .choices.length) {
+                                          screenData
+                                              .options[optionIndex].maxselect++;
+                                        }
+                                      });
+                                    })
+                              ]),
+                        ))),
+              ])));
+        }
       }
     }
     if (isEditMode) {
@@ -1298,7 +1343,8 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                         code: languageList[k].code, name: ""));
                   }
                   screenData.options.add(ProductOptionModel(
-                      guid: "",
+                      guid: const Uuid().v4(),
+                      choicetype: 0,
                       minselect: 1,
                       maxselect: 1,
                       names: names,
@@ -1306,6 +1352,38 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                 });
               },
               child: Text(global.language("add_option")))));
+    }
+    formWidgets.add(Container(
+        width: double.infinity,
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          children: [
+            Radio(
+              focusNode: FocusNode(skipTraversal: true),
+              value: true,
+              groupValue: screenData.useimageorcolor,
+              onChanged: (value) {
+                setState(() {
+                  screenData.useimageorcolor = true;
+                });
+              },
+            ),
+            const Text("ใช้รูปภาพ"),
+            const SizedBox(width: 10),
+            Radio(
+              focusNode: FocusNode(skipTraversal: true),
+              value: false,
+              groupValue: screenData.useimageorcolor,
+              onChanged: (value) {
+                setState(() {
+                  screenData.useimageorcolor = false;
+                });
+              },
+            ),
+            const Text("ใช้สี"),
+          ],
+        )));
+    if (isEditMode) {
       formWidgets.add(Row(
         children: [
           Expanded(
@@ -1442,7 +1520,60 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
             ),
           )),
         ])));
-
+    formWidgets.add(
+      Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+              color: colorSelected,
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(5)),
+          child: Container(
+              padding: const EdgeInsets.all(10),
+              child: ColorPicker(
+                color: colorSelected,
+                padding: const EdgeInsets.all(0),
+                heading: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(5)),
+                    child: Row(children: [
+                      Container(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Text(
+                            'เลือกสี (เพื่อแสดงตัวอย่างสีในระบบ)',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          )),
+                      const Spacer(),
+                      IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setState(() {
+                              colorSelected = Colors.white;
+                            });
+                          })
+                    ])),
+                showColorName: true,
+                showColorCode: true,
+                onColorChanged: (Color colorValue) {
+                  setState(() {
+                    colorSelected = colorValue;
+                    screenData.colorselect = colorValue.value.toString();
+                    screenData.colorselecthex =
+                        colorValue.value.toRadixString(16).toString();
+                  });
+                },
+                pickersEnabled: const <ColorPickerType, bool>{
+                  ColorPickerType.both: true,
+                  ColorPickerType.primary: true,
+                  ColorPickerType.accent: true,
+                  ColorPickerType.bw: false,
+                  ColorPickerType.custom: true,
+                  ColorPickerType.wheel: true,
+                },
+              ))),
+    );
     if (isSaveAllow) {
       formWidgets.add(Container(
           width: double.infinity,
@@ -1705,34 +1836,8 @@ class ProductBarcodeScreenState extends State<ProductBarcodeScreen>
                     isChange = false;
 
                     screenData = state.productbarcode;
-                    // screenData.barcode = state.productbarcode.barcode;
-                    // screenData.guidfixed = state.productbarcode.guidfixed;
-                    // screenData.categoryguid = state.productbarcode.categoryguid;
-                    // screenData.itemcode = state.productbarcode.itemcode;
-                    // screenData.itemunitcode = state.productbarcode.itemunitcode;
-                    // screenData.imageuri = state.productbarcode.imageuri;
-                    // for (int i = 0; i < screenData.names.length; i++) {
-                    //   LanguageDataModel productName = state.productbarcode.names
-                    //       .firstWhere(
-                    //           (element) =>
-                    //               element.code == screenData.names[i].code,
-                    //           orElse: () =>
-                    //               LanguageDataModel(code: '', name: ''));
-                    //   if (productName.code != '') {
-                    //     screenData.names[i] = productName;
-                    //   }
-                    // }
-                    // for (int i = 0; i < screenData.itemunitnames.length; i++) {
-                    //   LanguageDataModel itemunitsNames = state.productbarcode.itemunitnames
-                    //       .firstWhere(
-                    //           (element) =>
-                    //               element.code == screenData.itemunitnames[i].code,
-                    //           orElse: () =>
-                    //               LanguageDataModel(code: '', name: ''));
-                    //   if (itemunitsNames.code != '') {
-                    //     screenData.itemunitnames[i] = itemunitsNames;
-                    //   }
-                    // }
+                    colorSelected = global.colorFromHex(
+                        screenData.colorselecthex.replaceAll("#", ""));
 
                     if (isEditMode) {
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {

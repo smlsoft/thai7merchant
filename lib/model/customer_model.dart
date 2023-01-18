@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:thai7merchant/model/global_model.dart';
 
-part 'customer.g.dart';
+part 'customer_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class CustomerModel {

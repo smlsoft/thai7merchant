@@ -5,7 +5,9 @@ import 'package:thai7merchant/bloc/color/color_bloc.dart';
 import 'package:thai7merchant/bloc/customer/customer_bloc.dart';
 import 'package:thai7merchant/bloc/customer_group/customer_group_bloc.dart';
 import 'package:thai7merchant/bloc/image/image_upload_bloc.dart';
+import 'package:thai7merchant/bloc/kitchen/kitchen_bloc.dart';
 import 'package:thai7merchant/bloc/option/option_bloc.dart';
+import 'package:thai7merchant/bloc/printer/printer_bloc.dart';
 import 'package:thai7merchant/bloc/product/product_bloc.dart';
 import 'package:thai7merchant/bloc/product_barcode/product_barcode_bloc.dart';
 import 'package:thai7merchant/bloc/unit/unit_bloc.dart';
@@ -15,6 +17,8 @@ import 'package:thai7merchant/repositories/client.dart';
 import 'package:thai7merchant/repositories/color_repository.dart';
 import 'package:thai7merchant/repositories/customer_group_repository.dart';
 import 'package:thai7merchant/repositories/customer_repository.dart';
+import 'package:thai7merchant/repositories/kitchen_repository.dart';
+import 'package:thai7merchant/repositories/printer_repository.dart';
 import 'package:thai7merchant/repositories/product_repository.dart';
 import 'package:thai7merchant/repositories/unit_repository.dart';
 import 'package:thai7merchant/select_language_screen.dart';
@@ -40,6 +44,7 @@ import 'global.dart' as global;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init("thai7merchant");
+  global.themeSelect(0);
 
   if (global.apiConnected == false) {
     if (!global.isLoginProcess) {
@@ -111,6 +116,7 @@ void main() async {
     () => runApp(const MyApp()),
     blocObserver: AppObserver(),
   );*/
+  global.deviceConfigLoad();
   runApp(const MyApp());
 }
 
@@ -160,6 +166,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<ColorBloc>(
           create: (_) => ColorBloc(colorRepository: ColorRepository()),
         ),
+        BlocProvider<PrinterBloc>(
+          create: (_) => PrinterBloc(printerRepository: PrinterRepository()),
+        ),
         BlocProvider<ProductBarcodeBloc>(
           create: (_) => ProductBarcodeBloc(
               productBarcodeRepository: ProductBarcodeRepository()),
@@ -167,10 +176,13 @@ class MyApp extends StatelessWidget {
         BlocProvider<ProductBloc>(
           create: (_) => ProductBloc(productRepository: ProductRepository()),
         ),
+        BlocProvider<KitchenBloc>(
+          create: (_) => KitchenBloc(kitchenRepository: KitchenRepository()),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Thai7 MERCHANT',
+        title: 'COCO MERCHANT',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),

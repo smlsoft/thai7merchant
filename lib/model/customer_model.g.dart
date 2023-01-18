@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'customer.dart';
+part of 'customer_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
@@ -45,10 +45,10 @@ CustomerAddressModel _$CustomerAddressModelFromJson(
     CustomerAddressModel(
       address:
           (json['address'] as List<dynamic>).map((e) => e as String).toList(),
-      countryCode: json['countrycode'] as String ?? "1",
-      provincecode: json['provincecode'] as String ?? "1",
-      districtcode: json['districtcode'] as String ?? "1",
-      subDistrictcode: json['subdistrictcode'] as String ?? "1",
+      countryCode: json['countryCode'] as String,
+      provincecode: json['provincecode'] as String,
+      districtcode: json['districtcode'] as String,
+      subDistrictcode: json['subDistrictcode'] as String,
       zipcode: json['zipcode'] as String,
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),

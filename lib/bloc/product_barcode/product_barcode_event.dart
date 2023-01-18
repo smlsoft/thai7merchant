@@ -73,7 +73,6 @@ class ProductBarcodeUpdate extends ProductBarcodeEvent {
   @override
   List<Object> get props => [productBarcodeModel];
 }
-
 class ProductBarcodeWithImageSave extends ProductBarcodeEvent {
   final File imageFile;
   final ProductBarcodeModel productBarcodeModel;
@@ -86,5 +85,22 @@ class ProductBarcodeWithImageSave extends ProductBarcodeEvent {
 
   @override
   List<Object> get props => [productBarcodeModel, imageFile];
+}
+
+class ProductBarcodeWithImageUpdate extends ProductBarcodeEvent {
+  final String guid;
+  final ProductBarcodeModel productBarcodeModel;
+  final File imageFile;
+  final Uint8List imageWeb;
+  const ProductBarcodeWithImageUpdate({
+    required this.guid,
+    required this.imageFile,
+    required this.imageWeb,
+    required this.productBarcodeModel,
+  });
+
+  @override
+  List<Object> get props =>
+      [productBarcodeModel, imageWeb, productBarcodeModel];
 }
 

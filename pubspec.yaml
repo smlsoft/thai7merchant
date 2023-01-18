@@ -45,6 +45,9 @@ dependencies:
   flutter_staggered_grid_view: any
   translator: any
   email_validator: any
+  geolocator: ^9.0.2
+  font_awesome_flutter: ^9.2.0
+  google_maps_flutter: ^2.2.2
 
 flutter_icons:
   #  image_path: "assets/images/icon-128x128.png"

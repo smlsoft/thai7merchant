@@ -102,9 +102,11 @@ class ImageUpload {
   Map<String, dynamic> toJson() => _$ImageUploadToJson(this);
 }
 
+@JsonSerializable()
 class ImagesModel {
   String uri;
   int xorder;
+
   ImagesModel({
     required this.uri,
     required this.xorder,
